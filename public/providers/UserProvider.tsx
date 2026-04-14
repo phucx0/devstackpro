@@ -5,7 +5,7 @@ import { UserPublic } from "../lib/types";
 
 interface AuthContextProps {
     user: UserPublic | null;
-    token: string | null;
+    token: string | "";
     loading: boolean;
     login: (data: { user: UserPublic; token: string }) => void;
     logout: () => void;
@@ -15,7 +15,7 @@ const UserContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<UserPublic | null>(null);
-    const [token, setToken] = useState<string | null>(null);
+    const [token, setToken] = useState<string | "">("");
     const [loading, setLoading] = useState(true);
 
     // Load từ localStorage khi refresh
@@ -41,7 +41,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     // Hàm logout
     const logout = () => {
         setUser(null);
-        setToken(null);
+        setToken("");
         
         localStorage.removeItem("token");
         localStorage.removeItem("user");

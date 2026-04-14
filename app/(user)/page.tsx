@@ -1,12 +1,15 @@
-import ArticleCard from "@/public/components/ArticleCard";
+import ArticlesList from "@/public/components/user/ArticlesList";
+import Featured from "@/public/components/user/Featured";
+import SideBar from "@/public/components/user/SideBar";
 import { articleAPI } from "@/public/lib/api";
 import { ArticleWithTags } from "@/public/lib/types";
+import { Metadata } from "next";
 import Image from "next/image";
 
-async function fetchArticles() {
+async function fetchArticles(page: number, limit: number) {
   const data = await articleAPI.getArticles({
-    page: 1,
-    limit: 10,
+    page: page,
+    limit: limit,
     status: 'published'
   });
   if (data.success) {
@@ -15,28 +18,32 @@ async function fetchArticles() {
   return [];
 }
 
-export default async  function Home() {
-  const articles: ArticleWithTags[] = await fetchArticles();
+export const metadata : Metadata = {
+  title: "Dev Stack Pro",
+  description: "Dev Stack Pro delivers the latest tech news, insights, and practical guides on UI/UX, frontend, AI, and modern software development.",
+};
+
+
+export default async  function HomePage() {
+  const featuredArticles = await articleAPI.getFeaturedArticles();
+
+  let articles: ArticleWithTags[] = []
+  const data = await articleAPI.getArticles({
+    page: 1,
+    limit: 10,
+    status: 'published'
+  });
+  if (data.success) articles = data.data;
+
+
   return (
     <div>
-      
-      {/* <br /> */}
-      <div className="box-border">
-        <div className=" bg-white p-2 md:p-4">
-          <div className="text-lg pb-2 border-b border-b-neutral-400">Latest Articles</div> 
-          <div className="flex flex-col gap-4 md:gap-4 mt-4">
-            {articles && articles?.length > 0 ? (
-              articles.map((article) => (
-                <ArticleCard key={article.id} article={article} />
-              ))
-            ) : (
-              <div className="text-center text-neutral-500 py-10">
-                No articles found.
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <Featured articles={featuredArticles.data}/>
+      <ArticlesList 
+        initialArticles={articles} 
+        initialPage={data.pagination.page || 1} 
+        initialTotalPages={data.pagination.total_pages || 1}
+      />
     </div>
   );
 }

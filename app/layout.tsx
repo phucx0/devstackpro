@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { UserProvider } from "@/public/providers/UserProvider";
+import Script from "next/script";
+import { Metadata } from "next";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -12,61 +13,68 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+
 export const metadata: Metadata = {
-  title: "UI/UX Design & Development Resources | CSS, Flutter, Next.js",
-  description: "Comprehensive guide and resources for modern UI/UX design, CSS frameworks, responsive web design, mobile app development with Flutter, and Next.js best practices. Learn to build beautiful, performant applications.",
-  keywords: [
-    "UI design",
-    "UX design",
-    "CSS tutorials",
-    "responsive design",
-    "Flutter development",
-    "Next.js framework",
-    "mobile app design",
-    "web development",
-    "frontend development",
-    "UI components"
-  ],
-  authors: [{ name: "Dev Stack Pro" }],
-  creator: "Dev Stack Pro",
-  publisher: "Dev Stack Pro",
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
-  openGraph: {
-    type: "website",
-    locale: "vi_VN",
-    url: "https://dev-stack-pro.vercel.app/",
-    title: "UI/UX Design & Development Resources",
-    description: "Master modern web and mobile development with expert guides on CSS, Flutter, Next.js, and UI design principles",
-    siteName: "Dev Stack Pro",
-    images: [
-      {
-        url: "https://dev-stack-pro.vercel.app/images/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "UI/UX Design Resources",
-      },
+    title: "Dev Stack Pro – AI, Technology & IT Solutions",
+    keywords: [
+        "AI",
+        "Artificial Intelligence",
+        "Technology innovations",
+        "IT solutions",
+        // "Blockchain",
+        // "Crypto",
+        "Machine Learning",
+        "Web development",
+        "Frontend development",
+        "Backend development",
+        "Next.js",
+        "Flutter"
     ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "UI/UX Design & Development Resources",
-    description: "Learn CSS, Flutter, Next.js and modern UI design",
-    images: ["https://dev-stack-pro.vercel.app/images/og-image.png"],
-    creator: "@elonmusk",
-  },
-  alternates: {
-    canonical: "https://dev-stack-pro.vercel.app/",
-  },
-  category: "technology",
+    authors: [{ name: "Dev Stack Pro" }],
+    creator: "Dev Stack Pro",
+    publisher: "Dev Stack Pro",
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+        },
+    },
+    openGraph: {
+        type: "website",
+        locale: "en_US",
+        url: "https://devstackpro.cloud/",
+        title: "Dev Stack Pro – Blog on AI, Technology & IT Solutions",
+        description: "Stay updated on the latest technology innovations, AI, Machine Learning, Blockchain, and modern IT solutions. Expert guides, analysis, and in-depth knowledge for developers and businesses.",
+        siteName: "Dev Stack Pro",
+        images: [
+        {
+            url: "https://devstackpro.cloud/images/og-image.png",
+            width: 1200,
+            height: 630,
+            alt: "Dev Stack Pro – AI & Technology",
+        },
+        ],
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Dev Stack Pro – AI & Technology",
+        description: "Explore trends in AI, technology innovations, and IT solutions for developers and businesses.",
+        images: ["https://devstackpro.cloud/images/og-image.png"],
+        creator: "@elonmusk",
+    },
+    alternates: {
+        canonical: "https://devstackpro.cloud/",
+    },
+    category: "technology",
+    icons: {
+      icon: '/favicon.ico',
+      shortcut: '/favicon.ico',
+      apple: '/favicon.png'
+    },
 };
 
 export default function RootLayout({
@@ -76,6 +84,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Google Analytics */}
+        <Script
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=G-TMJEF9T77H"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-TMJEF9T77H');
+          `}
+        </Script>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

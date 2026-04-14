@@ -8,7 +8,7 @@ export default function CopyButton() {
     return (
         <div
             onClick={() => handleCopy()}
-            className="text-neutral-700 p-3 bg-neutral-200 rounded-full w-fit cursor-pointer hover:bg-black hover:text-white transition-all ease-in-out"
+            className="text-neutral-700 p-2 bg-neutral-200 rounded-full w-fit cursor-pointer hover:bg-black hover:text-white transition-all ease-in-out"
         >
             <Link 
                 size={24}

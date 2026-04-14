@@ -30,6 +30,7 @@ export interface Article {
   user_id: number;
   title: string;
   slug: string;
+  description: string;
   content_md: string;
   content_html?: string | null;
   thumbnail?: string | null;
@@ -37,6 +38,7 @@ export interface Article {
   status: ArticleStatus;
   created_at: string;
   updated_at: string;
+  images?: string[];
 }
 
 export interface ArticleWithAuthor extends Article {
@@ -81,31 +83,38 @@ export interface AuthResponse {
   error?: string;
 }
 
+export interface FeaturedArticlesResponse {
+  success: boolean;
+  data: ArticleWithTags[];
+}
+
 export interface ArticleResponse {
   success: boolean;
   message?: string;
-  data?: ArticleWithTags;
+  data: ArticleWithTags;
   error?: string;
 }
+
 
 export interface ArticlesResponse {
   success: boolean;
   data: ArticleWithTags[];
-  pagination:{
+  pagination : {
     page: number;
     limit: number;
     total: number;
     total_pages: number;
   };
-  error?: string;
 }
 
 export interface CreateArticleRequest {
   title: string;
   slug: string;
+  description: string;
   content_md: string;
   content_html?: string;
   thumbnail?: File | null;
+  images?: File[] | null;
   status?: ArticleStatus;
   tag_ids?: number[];
 }
@@ -113,8 +122,48 @@ export interface CreateArticleRequest {
 export interface UpdateArticleRequest {
   title?: string;
   slug?: string;
+  description?: string;
   content_md?: string;
   thumbnail?: File | null;
+  images?: File[] | null;
   status?: ArticleStatus;
   tag_ids?: number[];
+}
+
+// CONTACTS 
+export interface Contact {
+  id: number;
+  name: string;
+  email: string;
+  message: string;
+  status: 'new' | 'read' | 'replied';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ContactFormData {
+  name: string;
+  email: string;
+  message: string;
+}
+
+export interface ContactSubmitResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface ContactListResponse {
+  success: boolean;
+  data: Contact[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    total_pages: number;
+  };
+}
+
+export interface ContactSingleResponse {
+  success: boolean;
+  data: Contact;
 }
