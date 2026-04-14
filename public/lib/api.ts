@@ -9,6 +9,11 @@ import {
     CreateArticleRequest,
     UpdateArticleRequest,
     ArticleStatus,
+    FeaturedArticlesResponse,
+    ContactFormData,
+    ContactSubmitResponse,
+    ContactListResponse,
+    ContactSingleResponse,
 } from '@/public/lib/types';
 
 const API_BASE_URL = 'https://easytrade.site/api/v2';
@@ -66,6 +71,15 @@ export const authAPI = {
 // Article APIs
 export const articleAPI = {
   // Lấy danh sách bài viết
+  getFeaturedArticles: async(): Promise<FeaturedArticlesResponse> => {
+    const response = await fetch(
+      `${API_BASE_URL}/articles/featured`, {
+        cache: "no-cache"
+      }
+    );
+    return handleResponse<FeaturedArticlesResponse>(response);
+  },
+
   getArticles: async (params?: {
     page?: number;
     limit?: number;
@@ -98,6 +112,11 @@ export const articleAPI = {
     return handleResponse<ArticleResponse>(response);
   },
 
+  searchArticles: async (q: string) : Promise<ArticlesResponse> => {
+    const response = await fetch(`${API_BASE_URL}/articles/search?q=${q}`);
+    return handleResponse<ArticlesResponse>(response);
+  },
+
   // Tạo bài viết mới (cần token)
   createArticle: async (
     data: CreateArticleRequest,
@@ -108,7 +127,12 @@ export const articleAPI = {
     formData.append("slug", data.slug);
     formData.append("content_md", data.content_md);
     formData.append("status", data.status ?? "draft");
+    formData.append("description", data.description);
+    if (data.tag_ids && data.tag_ids.length > 0) {
+      formData.append("tags", JSON.stringify(data.tag_ids));
+    }
     if (data.thumbnail) formData.append("thumbnail", data.thumbnail);
+    if (data.images) data.images.forEach(file => formData.append('images[]', file));
 
     const response = await fetch(`${API_BASE_URL}/admin/articles`, {
       method: 'POST',
@@ -141,7 +165,7 @@ export const articleAPI = {
     id: number,
     token: string
   ): Promise<{ success: boolean; message: string }> => {
-    const response = await fetch(`${API_BASE_URL}/articles/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/admin/articles/${id}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -201,25 +225,164 @@ export const articleAPI = {
 
 // Tag APIs
 export const tagAPI = {
-  // Lấy tất cả tags
-  getAllTags: async (): Promise<{ success: boolean; data: any[] }> => {
-    const response = await fetch(`${API_BASE_URL}/tags`);
-    return handleResponse(response);
+    // Lấy tất cả tags
+    getAllTags: async (token: string) => {
+        const response = await fetch(`${API_BASE_URL}/admin/tags`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        return await response.json();
+    },
+
+    // Lấy tags với số lượng articles
+    getTagsWithCount: async (token: string) => {
+        const response = await fetch(`${API_BASE_URL}/admin/tags?with_count=true`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        return await response.json();
+    },
+
+    // Lấy tag by ID
+    getTagById: async (token: string, tagId: number) => {
+        const response = await fetch(`${API_BASE_URL}/admin/tags/${tagId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        return await response.json();
+    },
+
+    // Tạo tag mới
+    createTag: async (token: string, name: string) => {
+        const response = await fetch(`${API_BASE_URL}/admin/tags`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name })
+        });
+        return await response.json();
+    },
+
+    // Cập nhật tag
+    updateTag: async (token: string, tagId: number, name: string) => {
+        const response = await fetch(`${API_BASE_URL}/admin/tags/${tagId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name })
+        });
+        return await response.json();
+    },
+
+    // Xóa tag
+    deleteTag: async (token: string, tagId: number) => {
+        const response = await fetch(`${API_BASE_URL}/admin/tags/${tagId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        return await response.json();
+    },
+
+    // Lấy tags của một article
+    getArticleTags: async (token: string, articleId: number) => {
+        const response = await fetch(`${API_BASE_URL}/admin/articles/${articleId}/tags`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        return await response.json();
+    },
+
+    // Thêm tag vào article
+    addTagToArticle: async (token: string, articleId: number, tagId: number) => {
+        const response = await fetch(`${API_BASE_URL}/admin/articles/${articleId}/tags`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ tag_id: tagId })
+        });
+        return await response.json();
+    },
+
+    // Xóa tag khỏi article
+    removeTagFromArticle: async (token: string, articleId: number, tagId: number) => {
+        const response = await fetch(`${API_BASE_URL}/admin/articles/${articleId}/tags/${tagId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        return await response.json();
+    },
+
+    // Sync tất cả tags cho article
+    syncArticleTags: async (token: string, articleId: number, tagIds: number[]) => {
+        const response = await fetch(`${API_BASE_URL}/admin/articles/${articleId}/tags`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ tag_ids: tagIds })
+        });
+        return await response.json();
+    }
+};
+
+
+export const contactAPI = {
+  // Submit form liên hệ (Public)
+  submit: async (data: ContactFormData): Promise<ContactSubmitResponse> => {
+    const response = await fetch(
+      `${API_BASE_URL}/contact/submit.php`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+        cache: 'no-cache'
+      }
+    );
+    return handleResponse<ContactSubmitResponse>(response);
   },
 
-  // Tạo tag mới (cần token admin)
-  createTag: async (
-    name: string,
-    token: string
-  ): Promise<{ success: boolean; data: any }> => {
-    const response = await fetch(`${API_BASE_URL}/tags`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name }),
-    });
-    return handleResponse(response);
+  // Lấy danh sách contacts (Admin only)
+  getContacts: async (page: number = 1, limit: number = 10, token: string): Promise<ContactListResponse> => {
+    const response = await fetch(
+      `${API_BASE_URL}/admin/contact.php?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        cache: 'no-cache'
+      }
+    );
+    return handleResponse<ContactListResponse>(response);
+  },
+
+  // Lấy chi tiết contact theo ID (Admin only)
+  getContactById: async (id: number): Promise<ContactSingleResponse> => {
+    const response = await fetch(
+      `${API_BASE_URL}/admin/contact.php?id=${id}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        cache: 'no-cache'
+      }
+    );
+    return handleResponse<ContactSingleResponse>(response);
   },
 };
