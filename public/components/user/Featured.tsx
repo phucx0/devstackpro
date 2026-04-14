@@ -1,78 +1,136 @@
 "use client"
 import { ArticleWithTags } from "@/public/lib/types"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { ArrowRight } from "lucide-react"
 
-export default ({articles} : {articles : ArticleWithTags[]}) => {
-    const router = useRouter();
+// Ticker topics shown in the accent bar
+const TICKER_ITEMS = [
+    "AI & Machine Learning",
+    "Frontend Development",
+    "Backend Systems",
+    "DevOps & Cloud",
+    "TypeScript",
+    "React & Next.js",
+    "System Design",
+    "Open Source",
+]
+
+export default function Featured({ articles }: { articles: ArticleWithTags[] }) {
+    if (!articles || articles.length < 3) return null
+
+    const [main, second, third] = articles
+
+    const formatDate = (dateStr: string) =>
+        new Intl.DateTimeFormat("en-US", {
+            month: "short",
+            day: "2-digit",
+            year: "numeric",
+        }).format(new Date(dateStr))
+
     return (
-        <div className="w-full md:aspect-8/3 featured-wrapper box-border mb-8">
-            <div className="featured-content">
-                <div 
-                    onClick={() => router.push(`/articles/${articles[0].slug}`)}
-                    className="featured-item-1 relative cursor-pointer"
-                >
-                    <Image 
-                        src={articles[0].thumbnail 
-                            ? `https://easytrade.site/api/v2/${articles[0].thumbnail}` 
-                            : "/images/og-image.png"
-                        }
-                        alt={articles[0].title}
-                        fill 
-                        priority
-                        fetchPriority="high"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover" 
-                    />
-                    <div className="w-full absolute bottom-0 p-2 md:p-4 bg-linear-to-b from-black/10 to-black">
-                        <div className="text-white font-bold text-base md:text-2xl">{articles[0].title}</div>
-                        <div className="text-sm text-neutral-200 line-clamp-1 md:line-clamp-2">{articles[1].description}</div>
-                    </div>
-                </div>
-                <div 
-                    onClick={() => router.push(`/articles/${articles[1].slug}`)}
-                    className="featured-item-2 relative cursor-pointer"
-                >
-                    <Image 
-                        src={articles[1].thumbnail 
-                            ? `https://easytrade.site/api/v2/${articles[1].thumbnail}` 
-                            : "/images/og-image.png"
-                        }
-                        alt={articles[1].title}
-                        fill 
-                        priority
-                        fetchPriority="high"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover" 
-                    />
-                    <div className="absolute bottom-0 p-2 md:p-4 bg-linear-to-b from-black/10 to-black">
-                        <div className="text-white font-bold text-base md:text-xl">{articles[1].title}</div>
-                        <p className="text-sm text-neutral-200 line-clamp-1 md:line-clamp-2">{articles[1].description}</p>
-                    </div>
-                </div>
-                <div 
-                    onClick={() => router.push(`/articles/${articles[2].slug}`)}
-                    className="featured-item-3 relative cursor-pointer"
-                >
-                    <Image 
-                        src={articles[2].thumbnail 
-                            ? `https://easytrade.site/api/v2/${articles[2].thumbnail}` 
-                            : "/images/og-image.png"
-                        }
+        <>
+            {/* Featured Grid */}
+            <section className="noir-featured-wrap">
+                <div className="noir-featured-grid">
+                    {/* Main Featured Article */}
+                    <Link href={`/articles/${main.slug}`} className="noir-featured-main" style={{ textDecoration: 'none' }}>
+                        <Image
+                            src={
+                                main.thumbnail
+                                    ? `https://easytrade.site/api/v2/${main.thumbnail}`
+                                    : "/images/og-image.png"
+                            }
+                            alt={main.title}
+                            fill
+                            priority
+                            fetchPriority="high"
+                            sizes="(max-width: 900px) 100vw, 65vw"
+                            className="noir-featured-main-img"
+                        />
 
-                        alt={articles[2].title}
-                        fill 
-                        priority
-                        fetchPriority="high"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover" 
-                    />
-                    <div className="absolute bottom-0 p-2 md:p-4 bg-linear-to-b from-black/10 to-black">
-                        <div className="text-white font-bold text-base md:text-xl">{articles[2].title}</div>
-                        <p className="text-sm text-neutral-200 line-clamp-1 md:line-clamp-2">{articles[2].description}</p>
+                        {/* Ghost number */}
+                        <span className="noir-featured-main-num" aria-hidden="true">01</span>
+
+                        <div className="noir-featured-main-content">
+                            <span className="category-label">
+                                {main.tags?.[0]?.name ?? "Featured"} · Featured
+                            </span>
+                            <h2 className="noir-featured-main-title">{main.title}</h2>
+                            <p className="noir-featured-main-desc">{main.description}</p>
+                            <div className="noir-featured-main-footer">
+                                <span className="noir-read-btn">
+                                    Read Article <ArrowRight size={12} />
+                                </span>
+                                <span style={{
+                                    fontFamily: 'var(--font-mono)',
+                                    fontSize: '11px',
+                                    color: 'rgba(244,244,240,0.3)',
+                                    letterSpacing: '0.06em'
+                                }}>
+                                    {formatDate(main.created_at)}
+                                </span>
+                            </div>
+                        </div>
+                    </Link>
+
+                    {/* Stack — 2 secondary featured */}
+                    <div className="noir-featured-stack">
+                        {[second, third].map((article, i) => (
+                            <Link
+                                key={article.id}
+                                href={`/articles/${article.slug}`}
+                                className="noir-featured-item"
+                                style={{ textDecoration: 'none' }}
+                            >
+                                <Image
+                                    src={
+                                        article.thumbnail
+                                            ? `https://easytrade.site/api/v2/${article.thumbnail}`
+                                            : "/images/og-image.png"
+                                    }
+                                    alt={article.title}
+                                    fill
+                                    priority
+                                    sizes="380px"
+                                    className="noir-featured-item-img"
+                                />
+
+                                {/* Ghost number */}
+                                <span className="noir-featured-item-num" aria-hidden="true">
+                                    0{i + 2}
+                                </span>
+
+                                <div className="noir-featured-item-content">
+                                    <span className="category-label">
+                                        {article.tags?.[0]?.name ?? "Article"}
+                                    </span>
+                                    <h3 className="noir-featured-item-title">{article.title}</h3>
+                                    <div className="noir-featured-item-meta">
+                                        <span className="noir-tag">{formatDate(article.created_at)}</span>
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Ticker Bar */}
+            <div className="noir-ticker" aria-hidden="true">
+                <span className="noir-ticker-label">Trending</span>
+                <div style={{ overflow: 'hidden', flex: 1 }}>
+                    <div className="noir-ticker-track">
+                        {/* Duplicated for seamless loop */}
+                        {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
+                            <span key={i} className="noir-ticker-item">
+                                {item}
+                                <span className="noir-ticker-sep">·</span>
+                            </span>
+                        ))}
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     )
 }

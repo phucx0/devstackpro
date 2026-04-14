@@ -1,53 +1,84 @@
 "use client"
-import { ArticleWithTags } from "@/public/lib/types";
-import { useState } from "react";
-import ArticleCard from "./ArticleCard";
-import { articleAPI } from "@/public/lib/api";
+import { ArticleWithTags } from "@/public/lib/types"
+import { useState } from "react"
+import ArticleCard from "./ArticleCard"
+import { articleAPI } from "@/public/lib/api"
 
 interface Props {
-    initialArticles  : ArticleWithTags[],
-    initialPage: number,
+    initialArticles: ArticleWithTags[]
+    initialPage: number
     initialTotalPages: number
 }
 
-export default function ArticlesList({ initialArticles, initialPage, initialTotalPages } : Props) {
+export default function ArticlesList({ initialArticles, initialPage, initialTotalPages }: Props) {
     const [articles, setArticles] = useState<ArticleWithTags[]>(initialArticles)
-    const [page, setPage] = useState(initialPage);
+    const [page, setPage] = useState(initialPage)
     const [totalPages, setTotalPages] = useState(initialTotalPages)
-    const limit = 10;
+    const [loading, setLoading] = useState(false)
+
+    const limit = 10
+
     const handleShowMore = async () => {
-        const newPage = page + 1;
+        if (loading) return
+        setLoading(true)
+        const newPage = page + 1
         setPage(newPage)
         const result = await articleAPI.getArticles({
             page: newPage,
-            limit: limit,
-            status: 'published'
-        });
+            limit,
+            status: "published",
+        })
         if (result.success) {
-            setArticles([...articles, ...result.data])
+            setArticles((prev) => [...prev, ...result.data])
             setTotalPages(result.pagination.total_pages)
         }
+        setLoading(false)
     }
+
     return (
-        <div className="space-y-8">
-            <div className="text-2xl text-white font-bold">Latest Articles</div> 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {articles && articles?.length > 0 ? (
-                articles.map((article) => (
-                    <ArticleCard key={article.id} article={article} />
-                ))
-            ) : (
-                <div className="text-center text-neutral-300/80 py-10">
-                    No articles found.
+        <div className="noir-articles-section">
+            {/* Section Header */}
+            <div className="noir-section-bar">
+                <div className="noir-section-bar-left">
+                    <div className="noir-section-line" aria-hidden="true" />
+                    <span className="noir-section-title">Latest Articles</span>
                 </div>
-            )}
+                <span style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '11px',
+                    color: 'var(--noir-muted)',
+                    letterSpacing: '0.06em'
+                }}>
+                    {articles.length} articles
+                </span>
             </div>
-            {page != totalPages && (
-                <div 
-                    onClick={handleShowMore}
-                    className="text-center text-white cursor-pointer"
-                >
-                    Show more
+
+            {/* Grid */}
+            {articles && articles.length > 0 ? (
+                <>
+                    <div className="noir-articles-grid">
+                        {articles.map((article, i) => (
+                            <ArticleCard key={article.id} article={article} index={i} />
+                        ))}
+                    </div>
+
+                    {/* Show More */}
+                    {page !== totalPages && (
+                        <div className="noir-show-more">
+                            <button
+                                className="noir-show-more-btn"
+                                onClick={handleShowMore}
+                                disabled={loading}
+                            >
+                                {loading ? "Loading..." : "Load More Articles"}
+                            </button>
+                        </div>
+                    )}
+                </>
+            ) : (
+                <div className="noir-empty">
+                    <div className="noir-empty-num" aria-hidden="true">∅</div>
+                    <p className="noir-empty-text">No articles found.</p>
                 </div>
             )}
         </div>

@@ -1,71 +1,96 @@
-"use client"
+"use client";
 import { UserRound } from "lucide-react";
 import Image from "next/image";
 import { ArticleWithTags } from "../../lib/types";
 import Link from "next/link";
 
-export default function ArticleCard({article} : {article : ArticleWithTags}) {
-    function formatArticleTime(dateString: string) {
-        const date = new Date(dateString)
-        const now = new Date()
-        const diffMs = now.getTime() - date.getTime()
-        const diffSeconds = Math.floor(diffMs / 1000)
-        const diffMinutes = Math.floor(diffSeconds / 60)
-        const diffHours = Math.floor(diffMinutes / 60)
+export default function ArticleCard({
+  article,
+  index = 0,
+}: {
+  article: ArticleWithTags;
+  index?: number;
+}) {
+  function formatArticleTime(dateString: string) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMinutes / 60);
 
-        if (diffHours < 24) {
-            if (diffMinutes < 1) return "Just now"
-            if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes > 1 ? "s" : ""} ago`
-            return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`
-        }
-
-        // Nếu > 24h, hiển thị ngày + giờ
-        return new Intl.DateTimeFormat("en-US", {
-            year: "numeric",
-            month: "short",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            hourCycle: "h23",
-            timeZone: "UTC"
-        }).format(date);
+    if (diffHours < 24) {
+      if (diffMinutes < 1) return "Just now";
+      if (diffMinutes < 60) return `${diffMinutes}m ago`;
+      return `${diffHours}h ago`;
     }
 
-    return (
-        <Link 
-            href={`/articles/${article.slug}`} 
-            className="bg-gray-800/80 shadow transition-all duration-300 ease-in-out rounded-lg overflow-hidden"
-        >
-            <article
-                className="flex flex-col cursor-pointer h-full"
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    }).format(date);
+  }
+
+  // Zero-padded index for the card corner
+  const num = String(index + 1).padStart(2, "0");
+
+  return (
+    <Link href={`/articles/${article.slug}`} className="noir-card">
+      {/* Thumbnail */}
+      <div className="noir-card-thumb-wrap">
+        <Image
+          src={`https://easytrade.site/api/v2/${article.thumbnail}`}
+          alt={article.title ?? ""}
+          fill
+          priority={index < 3}
+          className="noir-card-thumb"
+          placeholder="blur"
+          blurDataURL="/images/og-image.png"
+          sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 33vw"
+        />
+        {/* Ghost number on thumb */}
+        <span className="noir-card-thumb-num" aria-hidden="true">
+          {num}
+        </span>
+      </div>
+
+      {/* Body */}
+      <div className="noir-card-body">
+        <div>
+          {/* Tags */}
+          {article.tags && article.tags.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                gap: "6px",
+                flexWrap: "wrap",
+                marginBottom: "4px",
+              }}
             >
-                <div className="relative w-full aspect-video bg-neutral-300 overflow-hidden">
-                    <Image
-                        src={`https://easytrade.site/api/v2/${article.thumbnail}`}
-                        alt={article.title ?? ""}
-                        fill
-                        priority
-                        className="object-cover"
-                        placeholder="blur"
-                        blurDataURL="/images/og-image.png"
-                        decoding="async"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-                </div>
-                <div className="p-2 md:p-4 flex-1 flex flex-col justify-between">
-                    <div>
-                        <h2 className="text-lg md:text-xl font-medium text-white m-0 line-clamp-2">{article.title}</h2>
-                        <p className="text-sm text-neutral-300 line-clamp-2 mt-4">{article.description}</p>
-                    </div>
-                    <div className="flex items-center justify-between text-neutral-300/80 mb-2 mt-6">
-                        <div className="flex items-center gap-1">
-                            <UserRound size={16}/>
-                            <div className="text-xs">{article.display_name}</div>
-                        </div>
-                        <div className="text-xs">{formatArticleTime(article.created_at)}</div>
-                    </div>
-                </div>
-            </article>
-        </Link>
-    )
+              {article.tags.slice(0, 2).map((tag) => (
+                <span key={tag.id} className="noir-tag">
+                  {tag.name}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <h2 className="noir-card-title">{article.title}</h2>
+          <p className="noir-card-desc">{article.description}</p>
+        </div>
+
+        <div className="noir-card-footer">
+          <div className="noir-card-author">
+            <div className="noir-card-author-dot">
+              <UserRound size={10} />
+            </div>
+            <span>{article.display_name}</span>
+          </div>
+          <span className="noir-card-author">
+            {formatArticleTime(article.created_at)}
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
 }
