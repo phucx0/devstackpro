@@ -42,8 +42,8 @@ export default function ArticleDetailPage() {
     return (
         <div className="max-w-2/4 m-auto">
             <div className="">
-                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                    <h3 className="text-2xl font-bold text-black mb-2">{article?.title}</h3>
+                <div className="bg-primary rounded-lg p-6 border">
+                    <h3 className="text-2xl font-bold text-white mb-2">{article?.title}</h3>
                     <p className="text-gray-500 text-sm mb-4 font-mono">/{article?.slug}</p>
                     {thumbnailPreview && (
                         <img
