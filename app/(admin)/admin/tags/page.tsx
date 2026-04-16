@@ -1,196 +1,273 @@
 "use client"
-import Loading from "@/public/components/Loading";
-import { tagAPI } from "@/public/lib/api";
-import { Tag } from "@/public/lib/types";
-import { useUser } from "@/public/providers/UserProvider";
-import { Newspaper, Trash2, Plus, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import Loading from "@/public/components/Loading"
+import { tagAPI } from "@/public/lib/api"
+import { Tag } from "@/public/lib/types"
+import { useUser } from "@/public/providers/UserProvider"
+import { Newspaper, Trash2, Plus, X } from "lucide-react"
+import { useEffect, useState } from "react"
 
-export default () => {
-    const { token, loading } = useUser();
-    const [tags, setTags] = useState<Tag[]>([]);
-    const [isLoadingTags, setIsLoadingTags] = useState(true);
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [newTagName, setNewTagName] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState("");
+const monoLabel = {
+    fontFamily: "var(--font-mono)",
+    fontSize: "10px",
+    letterSpacing: "0.12em",
+    textTransform: "uppercase" as const,
+    color: "var(--noir-muted)",
+} as const
+
+export default function TagsPage() {
+    const { token, loading } = useUser()
+    const [tags, setTags] = useState<Tag[]>([])
+    const [isLoadingTags, setIsLoadingTags] = useState(true)
+    const [showAddModal, setShowAddModal] = useState(false)
+    const [newTagName, setNewTagName] = useState("")
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [error, setError] = useState("")
 
     useEffect(() => {
-        if (!loading && token) {
-            fetchTags();
-        }
-    }, [loading, token]);
+        if (!loading && token) fetchTags()
+    }, [loading, token])
 
     const fetchTags = async () => {
-        setIsLoadingTags(true);
-            try {
-                const result = await tagAPI.getAllTags(token);
-                if (result.success) setTags(result.data);
-            } catch (err) {
-                console.error(err);
-                setTags([]);
-            } finally {
-                setIsLoadingTags(false);
-            }
-        setIsLoadingTags(false);
-    };
+        setIsLoadingTags(true)
+        try {
+            const result = await tagAPI.getAllTags(token)
+            if (result.success) setTags(result.data)
+        } catch (err) {
+            console.error(err)
+            setTags([])
+        } finally {
+            setIsLoadingTags(false)
+        }
+    }
 
     const handleAddTag = async () => {
-        if (!newTagName.trim()) {
-            setError("Tên tag không được để trống");
-            return;
-        }
-
-        setIsSubmitting(true);
-        setError("");
+        if (!newTagName.trim()) { setError("Tên tag không được để trống"); return }
+        setIsSubmitting(true)
+        setError("")
         try {
-            const result = await tagAPI.createTag(token, newTagName.trim());
+            const result = await tagAPI.createTag(token, newTagName.trim())
             if (result.success) {
-                await fetchTags();
-                setNewTagName("");
-                setShowAddModal(false);
+                await fetchTags()
+                setNewTagName("")
+                setShowAddModal(false)
             } else {
-                setError(result.message || "Không thể tạo tag");
+                setError(result.message || "Không thể tạo tag")
             }
         } catch (err: any) {
-            setError(err.message || "Đã có lỗi xảy ra");
+            setError(err.message || "Đã có lỗi xảy ra")
         } finally {
-            setIsSubmitting(false);
+            setIsSubmitting(false)
         }
-    };
+    }
 
     const handleDeleteTag = async (tagId: number) => {
-        if (!confirm("Bạn có chắc muốn xóa tag này?")) return;
-
+        if (!confirm("Bạn có chắc muốn xóa tag này?")) return
         try {
-            const result = await tagAPI.deleteTag(token, tagId);
-            if (result.success) {
-                await fetchTags();
-            } else {
-                alert(result.message || "Không thể xóa tag");
-            }
+            const result = await tagAPI.deleteTag(token, tagId)
+            if (result.success) await fetchTags()
+            else alert(result.message || "Không thể xóa tag")
         } catch (err: any) {
-            alert(err.message || "Đã có lỗi xảy ra");
+            alert(err.message || "Đã có lỗi xảy ra")
         }
-    };
+    }
 
-    if (loading || isLoadingTags) return <Loading/>;
+    if (loading || isLoadingTags) return <Loading />
 
     return (
         <div>
-            {/* Header với nút thêm tag */}
-            <div className="mb-4 flex justify-between items-center">
-                <h2 className="text-xl font-bold text-gray-800">Quản lý Tags</h2>
+            {/* Page header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "28px" }}>
+                <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                        <div style={{ width: "3px", height: "22px", background: "var(--noir-accent)", borderRadius: "2px" }} />
+                        <h1 style={{
+                            fontFamily: "var(--font-display)",
+                            fontWeight: 800,
+                            fontSize: "clamp(20px, 3vw, 28px)",
+                            color: "var(--noir-white)",
+                            letterSpacing: "-0.02em",
+                            margin: 0,
+                        }}>
+                            Quản lý Tags
+                        </h1>
+                    </div>
+                    <p style={{ ...monoLabel, paddingLeft: "13px" }}>
+                        {tags.length} tags
+                    </p>
+                </div>
                 <button
                     onClick={() => setShowAddModal(true)}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="noir-read-btn"
+                    style={{ gap: "6px" }}
                 >
-                    <Plus size={20} />
+                    <Plus size={13} />
                     Thêm Tag
                 </button>
             </div>
 
             {/* Table */}
-            <table className="w-full rounded-lg overflow-hidden shadow-sm bg-white">
-                <thead className="text-base">
-                    <tr className="font-bold">
-                        <th className="px-4 py-2 text-left text-gray-700 border-b border-neutral-300">ID</th>
-                        <th className="px-4 py-2 text-left text-gray-700 border-b border-neutral-300">Name</th>
-                        <th className="px-4 py-2 text-left text-gray-700 border-b border-neutral-300">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {tags.length > 0 ? 
-                        tags.map((tag) => (
-                            <tr key={tag.id} className="hover:bg-gray-50">
-                                <td className="px-4 py-3 border-b border-neutral-300">{tag.id}</td>
-                                <td className="px-4 py-3 border-b border-neutral-300">
-                                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                                        {tag.name}
-                                    </span>
+            <div style={{
+                background: "var(--noir-surface)",
+                border: "0.5px solid var(--noir-border)",
+                borderRadius: "6px",
+                overflow: "hidden",
+            }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                        <tr style={{ background: "var(--noir-card)" }}>
+                            {["ID", "Name", "Action"].map(h => (
+                                <th key={h} style={{
+                                    ...monoLabel,
+                                    padding: "12px 16px",
+                                    textAlign: "left",
+                                    borderBottom: "0.5px solid var(--noir-border)",
+                                    fontWeight: 500,
+                                }}>
+                                    {h}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {tags.length > 0 ? tags.map(tag => (
+                            <tr key={tag.id} style={{ borderBottom: "0.5px solid var(--noir-border)", transition: "background 0.15s" }}
+                                onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "var(--noir-card)"}
+                                onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                            >
+                                <td style={{ padding: "14px 16px", fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--noir-muted)" }}>
+                                    #{String(tag.id).padStart(3, "0")}
                                 </td>
-                                <td className="px-4 py-3 border-b border-neutral-300">
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => handleDeleteTag(tag.id)}
-                                            className="border border-red-400 text-red-600 hover:bg-red-50 p-2 rounded-lg cursor-pointer transition-colors"
-                                        >
-                                            <Trash2 size={16}/>
-                                        </button>
-                                    </div>
+                                <td style={{ padding: "14px 16px" }}>
+                                    <span className="noir-tag noir-tag-accent">{tag.name}</span>
+                                </td>
+                                <td style={{ padding: "14px 16px" }}>
+                                    <button
+                                        onClick={() => handleDeleteTag(tag.id)}
+                                        style={{
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            width: "32px",
+                                            height: "32px",
+                                            background: "transparent",
+                                            border: "0.5px solid var(--noir-border)",
+                                            borderRadius: "5px",
+                                            cursor: "pointer",
+                                            color: "var(--noir-muted)",
+                                            transition: "all 0.15s",
+                                        }}
+                                        onMouseEnter={e => {
+                                            const el = e.currentTarget as HTMLElement
+                                            el.style.borderColor = "#ff4444"
+                                            el.style.color = "#ff4444"
+                                            el.style.background = "rgba(255,68,68,0.06)"
+                                        }}
+                                        onMouseLeave={e => {
+                                            const el = e.currentTarget as HTMLElement
+                                            el.style.borderColor = "var(--noir-border)"
+                                            el.style.color = "var(--noir-muted)"
+                                            el.style.background = "transparent"
+                                        }}
+                                    >
+                                        <Trash2 size={13} />
+                                    </button>
                                 </td>
                             </tr>
                         )) : (
                             <tr>
-                                <td colSpan={3} className="py-10 border-b border-neutral-300">
-                                    <div className="flex flex-col items-center justify-center gap-4">
-                                        <Newspaper className="text-neutral-700" size={60}/>
-                                        <div>Không tìm thấy tag nào!</div>
+                                <td colSpan={3}>
+                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "12px", padding: "60px 0" }}>
+                                        <Newspaper size={40} color="var(--noir-subtle)" />
+                                        <div style={{ ...monoLabel }}>Không tìm thấy tag nào</div>
                                     </div>
                                 </td>
                             </tr>
                         )}
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
 
-            {/* Modal thêm tag */}
+            {/* Add Modal */}
             {showAddModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-xl font-bold text-gray-800">Thêm Tag Mới</h3>
+                <div style={{
+                    position: "fixed", inset: 0,
+                    background: "rgba(0,0,0,0.75)",
+                    backdropFilter: "blur(6px)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    zIndex: 50, padding: "16px",
+                }}>
+                    <div style={{
+                        background: "var(--noir-surface)",
+                        border: "0.5px solid var(--noir-border)",
+                        borderRadius: "8px",
+                        padding: "28px",
+                        width: "100%",
+                        maxWidth: "400px",
+                    }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
+                            <div>
+                                <div style={{ ...monoLabel, color: "var(--noir-accent)", marginBottom: "4px" }}>New</div>
+                                <div style={{
+                                    fontFamily: "var(--font-display)",
+                                    fontWeight: 700,
+                                    fontSize: "20px",
+                                    color: "var(--noir-white)",
+                                    letterSpacing: "-0.01em",
+                                }}>
+                                    Thêm Tag Mới
+                                </div>
+                            </div>
                             <button
-                                onClick={() => {
-                                    setShowAddModal(false);
-                                    setNewTagName("");
-                                    setError("");
-                                }}
-                                className="text-gray-500 hover:text-gray-700"
+                                onClick={() => { setShowAddModal(false); setNewTagName(""); setError("") }}
+                                style={{ background: "none", border: "none", color: "var(--noir-muted)", cursor: "pointer", padding: 0 }}
                             >
-                                <X size={24} />
+                                <X size={18} />
                             </button>
                         </div>
 
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Tên Tag
-                            </label>
+                        <div style={{ marginBottom: "20px" }}>
+                            <label style={{ ...monoLabel, display: "block", marginBottom: "8px" }}>Tên Tag</label>
                             <input
                                 type="text"
                                 value={newTagName}
-                                onChange={(e) => {
-                                    setNewTagName(e.target.value);
-                                    setError("");
-                                }}
+                                onChange={e => { setNewTagName(e.target.value); setError("") }}
                                 placeholder="Nhập tên tag..."
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                onKeyPress={(e) => {
-                                    if (e.key === 'Enter' && !isSubmitting) {
-                                        handleAddTag();
-                                    }
+                                style={{
+                                    width: "100%",
+                                    background: "var(--noir-card)",
+                                    border: "0.5px solid var(--noir-border)",
+                                    borderRadius: "5px",
+                                    color: "var(--noir-white)",
+                                    fontFamily: "var(--font-body)",
+                                    fontSize: "14px",
+                                    padding: "10px 14px",
+                                    outline: "none",
                                 }}
+                                onFocus={e => (e.currentTarget.style.borderColor = "var(--noir-accent)")}
+                                onBlur={e => (e.currentTarget.style.borderColor = "var(--noir-border)")}
+                                onKeyDown={e => { if (e.key === "Enter" && !isSubmitting) handleAddTag() }}
+                                autoFocus
                             />
                             {error && (
-                                <p className="text-red-500 text-sm mt-1">{error}</p>
+                                <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "#ff4444", marginTop: "6px", letterSpacing: "0.05em" }}>
+                                    {error}
+                                </p>
                             )}
                         </div>
 
-                        <div className="flex gap-3 justify-end">
+                        <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
                             <button
-                                onClick={() => {
-                                    setShowAddModal(false);
-                                    setNewTagName("");
-                                    setError("");
-                                }}
-                                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                                onClick={() => { setShowAddModal(false); setNewTagName(""); setError("") }}
+                                className="noir-read-btn-ghost"
                                 disabled={isSubmitting}
                             >
                                 Hủy
                             </button>
                             <button
                                 onClick={handleAddTag}
+                                className="noir-read-btn"
                                 disabled={isSubmitting}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed"
+                                style={{ opacity: isSubmitting ? 0.6 : 1 }}
                             >
                                 {isSubmitting ? "Đang tạo..." : "Tạo Tag"}
                             </button>
@@ -199,5 +276,5 @@ export default () => {
                 </div>
             )}
         </div>
-    );
+    )
 }
