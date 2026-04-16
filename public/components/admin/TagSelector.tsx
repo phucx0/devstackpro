@@ -1,86 +1,135 @@
-import { tagAPI } from "@/public/lib/api";
-import { Tag } from "@/public/lib/types";
-import { useUser } from "@/public/providers/UserProvider";
-import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { tagAPI } from "@/public/lib/api"
+import { Tag } from "@/public/lib/types"
+import { useUser } from "@/public/providers/UserProvider"
+import { X } from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface TagSelectorProps {
-    selectedTags: Tag[],
-    setSelectedTags: (tags :Tag[]) => void
-    // onChange: (tags :number[]) => void
+    selectedTags: Tag[]
+    setSelectedTags: (tags: Tag[]) => void
 }
+
 export default function TagSelector({ selectedTags, setSelectedTags }: TagSelectorProps) {
-    const { token, loading} = useUser()
-    const [tags, setTags] = useState<Tag[]>([]);
+    const { token, loading } = useUser()
+    const [tags, setTags] = useState<Tag[]>([])
+
     const toggleTag = (tag: Tag) => {
         if (selectedTags.some(t => t.id === tag.id)) {
-            setSelectedTags(selectedTags.filter(t => t.id !== tag.id));
+            setSelectedTags(selectedTags.filter(t => t.id !== tag.id))
         } else {
-            setSelectedTags([...selectedTags, tag]);
+            setSelectedTags([...selectedTags, tag])
         }
-    };
+    }
 
     const fetchTags = async () => {
         try {
-            const result = await tagAPI.getAllTags(token);
-            if (result.success) setTags(result.data);
+            const result = await tagAPI.getAllTags(token)
+            if (result.success) setTags(result.data)
         } catch (err) {
-            console.error(err);
-            setTags([]);
-        } finally {
-            
+            console.error(err)
+            setTags([])
         }
-    };
+    }
 
-    // Lấy danh sách tags
     useEffect(() => {
-        if (!loading && token) {
-            fetchTags();
-        }
+        if (!loading && token) fetchTags()
     }, [loading, token])
 
     return (
-        <div className="w-full">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Tags <span className="text-red-500">*</span>
+        <div style={{ width: "100%" }}>
+            <label style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "10px",
+                fontWeight: 500,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase" as const,
+                color: "var(--noir-muted)",
+                display: "block",
+                marginBottom: "10px",
+            }}>
+                Tags <span style={{ color: "var(--noir-accent)" }}>*</span>
             </label>
-            {/* Hiển thị tất cả tag có thể click để chọn/bỏ */}
-            <div className="flex flex-wrap gap-1">
-                {tags.map(tag => (
-                <button
-                    key={tag.id}
-                    type="button"
-                    onClick={() => toggleTag(tag)}
-                    className={`px-4 py-1 rounded-full border border-gray-300 text-xs cursor-pointer hover:bg-neutral-700 hover:text-white ${
-                    selectedTags.some(t => t.id === tag.id)
-                        ? "bg-black text-white"
-                        : "bg-white text-black border-black"
-                    }`}
-                >
-                    {tag.name}
-                </button>
-                ))}
+
+            {/* All tags */}
+            <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "6px", marginBottom: "12px" }}>
+                {tags.map(tag => {
+                    const isActive = selectedTags.some(t => t.id === tag.id)
+                    return (
+                        <button
+                            key={tag.id}
+                            type="button"
+                            onClick={() => toggleTag(tag)}
+                            style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                fontFamily: "var(--font-mono)",
+                                fontSize: "9px",
+                                fontWeight: 500,
+                                letterSpacing: "0.12em",
+                                textTransform: "uppercase" as const,
+                                color: isActive ? "var(--noir-black)" : "var(--noir-muted)",
+                                background: isActive ? "var(--noir-accent)" : "var(--noir-card)",
+                                border: `0.5px solid ${isActive ? "var(--noir-accent)" : "var(--noir-border)"}`,
+                                padding: "5px 10px",
+                                borderRadius: "3px",
+                                cursor: "pointer",
+                                transition: "all 0.15s",
+                            }}
+                        >
+                            {tag.name}
+                        </button>
+                    )
+                })}
             </div>
-            
-            {/* Hiển thị các tag đã chọn */}
+
+            {/* Selected tags */}
             {selectedTags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-4">
+                <div style={{
+                    display: "flex",
+                    flexWrap: "wrap" as const,
+                    gap: "6px",
+                    padding: "10px",
+                    background: "var(--noir-card)",
+                    border: "0.5px solid var(--noir-border)",
+                    borderRadius: "5px",
+                }}>
                     {selectedTags.map(tag => (
                         <span
                             key={tag.id}
-                            className="pl-4 pr-2 py-1 rounded-full border border-gray-300 flex items-center gap-4 text-xs"
+                            style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                fontFamily: "var(--font-mono)",
+                                fontSize: "9px",
+                                letterSpacing: "0.1em",
+                                textTransform: "uppercase" as const,
+                                color: "var(--noir-accent)",
+                                background: "var(--noir-accent-bg)",
+                                border: "0.5px solid rgba(232,255,0,0.2)",
+                                padding: "4px 8px",
+                                borderRadius: "3px",
+                            }}
                         >
                             {tag.name}
-                            <div 
+                            <div
                                 onClick={() => toggleTag(tag)}
-                                className="p-1 rounded-full bg-red-700 text-white cursor-pointer"
+                                style={{
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    color: "var(--noir-muted)",
+                                    transition: "color 0.15s",
+                                }}
+                                onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "#ff4444"}
+                                onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "var(--noir-muted)"}
                             >
-                                <X size={12}/>
+                                <X size={10} />
                             </div>
                         </span>
                     ))}
                 </div>
             )}
         </div>
-    );
+    )
 }

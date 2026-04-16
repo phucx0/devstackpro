@@ -1,101 +1,232 @@
 "use client"
-import { useUser } from "@/public/providers/UserProvider";
-import { LayoutDashboard, LogOut, NotepadText, Tag } from "lucide-react";
-import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
-import { ReactNode } from "react";
+import { useUser } from "@/public/providers/UserProvider"
+import { LayoutDashboard, LogOut, NotepadText, Tag, MessageSquare } from "lucide-react"
+import Image from "next/image"
+import { usePathname, useRouter } from "next/navigation"
+import { ReactNode } from "react"
 
 interface Props {
-    path: string; 
-    name: string; 
-    Icon: ReactNode;
-    selected: boolean;
+    path: string
+    name: string
+    Icon: ReactNode
+    selected: boolean
 }
 
-const Button = ({ path, name, Icon, selected }: Props) => {
-    const router = useRouter();
+const NavButton = ({ path, name, Icon, selected }: Props) => {
+    const router = useRouter()
     return (
-        <div 
+        <div
             onClick={() => router.push("/admin/" + path)}
-            className={`flex items-center gap-2 p-4 cursor-pointer rounded-lg
-                ${selected ? "bg-blue-100 text-blue-600" : " text-neutral-700"}
-                hover:${selected ? "" : "bg-blue-200"}
-            `}
+            style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "10px 14px",
+                borderRadius: "5px",
+                cursor: "pointer",
+                marginBottom: "2px",
+                background: selected ? "var(--noir-accent-bg)" : "transparent",
+                border: selected ? "0.5px solid rgba(232,255,0,0.15)" : "0.5px solid transparent",
+                color: selected ? "var(--noir-accent)" : "var(--noir-muted)",
+                transition: "all 0.2s",
+                fontFamily: "var(--font-mono)",
+                fontSize: "11px",
+                fontWeight: 500,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase" as const,
+                position: "relative" as const,
+            }}
+            onMouseEnter={e => {
+                if (!selected) {
+                    const el = e.currentTarget as HTMLElement
+                    el.style.background = "var(--noir-surface)"
+                    el.style.color = "var(--noir-white)"
+                }
+            }}
+            onMouseLeave={e => {
+                if (!selected) {
+                    const el = e.currentTarget as HTMLElement
+                    el.style.background = "transparent"
+                    el.style.color = "var(--noir-muted)"
+                }
+            }}
         >
-            {Icon}
-            <div className="text-base">{name}</div>
+            {selected && (
+                <div style={{
+                    position: "absolute",
+                    left: 0,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: "2px",
+                    height: "16px",
+                    background: "var(--noir-accent)",
+                    borderRadius: "0 2px 2px 0",
+                }} />
+            )}
+            <span style={{ opacity: selected ? 1 : 0.6 }}>{Icon}</span>
+            <span>{name}</span>
         </div>
     )
 }
 
 export default function SideBar() {
     const { user, logout } = useUser()
-    const router = useRouter();
-    const pathname = usePathname(); // lấy đường dẫn hiện tại
-
-    const handleRouter = (path: string) => {
-        router.push("/admin"+path)
-    }
+    const pathname = usePathname()
 
     const isSelected = (path: string) => {
-        const fullPath = "/admin" + (path === "/" ? "" : path);
-        return pathname === fullPath;
+        const fullPath = "/admin" + (path === "/" ? "" : "/" + path)
+        return pathname === fullPath
     }
 
-
     return (
-        <div className="w-[300px] bg-white max-h-screen min-h-screen border-r border-r-neutral-300 flex flex-col justify-between">
+        <div style={{
+            width: "240px",
+            minWidth: "240px",
+            minHeight: "100vh",
+            maxHeight: "100vh",
+            background: "var(--noir-surface)",
+            borderRight: "0.5px solid var(--noir-border)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            overflow: "hidden",
+        }}>
+            {/* Logo */}
             <div>
-                <div className="px-4 py-10">
-                    <div className="flex items-center gap-4">
-                        <Image
-                            src={"svg/logo.svg"}
-                            alt=""
-                            width={30}
-                            height={30}
-                        />
-                        <div className="text-lg font-bold">Dev Stack Pro</div>
+                <div style={{
+                    padding: "20px 16px",
+                    borderBottom: "0.5px solid var(--noir-border)",
+                    marginBottom: "8px",
+                }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div style={{
+                            width: "26px",
+                            height: "26px",
+                            background: "var(--noir-accent)",
+                            borderRadius: "5px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                        }}>
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                <rect x="1" y="1" width="5" height="5" fill="#080808" />
+                                <rect x="8" y="1" width="5" height="5" fill="#080808" />
+                                <rect x="1" y="8" width="5" height="5" fill="#080808" />
+                                <rect x="8" y="8" width="5" height="5" fill="#080808" opacity="0.4" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div style={{
+                                fontFamily: "var(--font-display)",
+                                fontWeight: 700,
+                                fontSize: "13px",
+                                color: "var(--noir-white)",
+                                letterSpacing: "0.04em",
+                                textTransform: "uppercase",
+                                lineHeight: 1.2,
+                            }}>
+                                DevStack Pro
+                            </div>
+                            <div style={{
+                                fontFamily: "var(--font-mono)",
+                                fontSize: "9px",
+                                color: "var(--noir-accent)",
+                                letterSpacing: "0.1em",
+                                textTransform: "uppercase",
+                            }}>
+                                Admin
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div className="px-2">
-                    <Button 
-                        path="/"
-                        name="Dashboard"
-                        Icon={<LayoutDashboard />}
-                        selected={isSelected("/")}
-                    />
-                    <Button 
-                        path="/articles"
-                        name="Articles"
-                        Icon={<NotepadText />}
-                        selected={isSelected("/articles")}
-                    />
-                    <Button 
-                        path="/tags"
-                        name="Tags"
-                        Icon={<Tag />}
-                        selected={isSelected("/tags")}
-                    />
-                    <Button 
-                        path="/messages"
-                        name="Messages"
-                        Icon={<Tag />}
-                        selected={isSelected("/messages")}
-                    />
+
+                {/* Section Label */}
+                <div style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "9px",
+                    color: "var(--noir-subtle)",
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                    padding: "8px 16px 6px",
+                }}>
+                    Navigation
+                </div>
+
+                {/* Nav items */}
+                <div style={{ padding: "0 8px" }}>
+                    <NavButton path="/" name="Dashboard" Icon={<LayoutDashboard size={14} />} selected={isSelected("/")} />
+                    <NavButton path="articles" name="Articles" Icon={<NotepadText size={14} />} selected={isSelected("articles")} />
+                    <NavButton path="tags" name="Tags" Icon={<Tag size={14} />} selected={isSelected("tags")} />
+                    <NavButton path="messages" name="Messages" Icon={<MessageSquare size={14} />} selected={isSelected("messages")} />
                 </div>
             </div>
-            <div className="p-2">
-                <div className="border border-neutral-300 p-2 rounded-lg flex items-center justify-between text-neutral-600">
-                    <img width={50} height={50} className="rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlaonRU6uW-97jwwRM2on97_Nq8KfKtM3l5bggew2D1Jj9bs0_rNm53Bgiy1uzvoXcEgkUSIUkEyFFMciLaBS39gdGavEqpO61otSqiNt_zA3JSDlJThlFHkWIyxIlpeCogcgRIti8h5vFD_doWDoEQe0SnAG5LT3rEba9wuCbUG5mJv-tZpzmJt5XJzQlxcl2Avax4L_7r4-W46MTnWNDBjYwLZ0OhZjDmkiu5CfbzLXYe_RHbBt71mAz4G0f0uTC6fgmxX01nlg" alt="" />
-                    <div className="space-y-1">
-                        <div className="text-base text-neutral-600 font-bold">{user?.display_name}</div>
-                        <div className="text-sm text-neutral-600">{user?.role}</div>
+
+            {/* User footer */}
+            <div style={{
+                borderTop: "0.5px solid var(--noir-border)",
+                padding: "12px",
+            }}>
+                <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    background: "var(--noir-card)",
+                    border: "0.5px solid var(--noir-border)",
+                    borderRadius: "6px",
+                    padding: "10px 12px",
+                }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <div style={{
+                            width: "28px",
+                            height: "28px",
+                            borderRadius: "50%",
+                            background: "var(--noir-accent)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontFamily: "var(--font-display)",
+                            fontWeight: 700,
+                            fontSize: "11px",
+                            color: "var(--noir-black)",
+                            flexShrink: 0,
+                        }}>
+                            {user?.display_name?.charAt(0)?.toUpperCase() ?? "A"}
+                        </div>
+                        <div>
+                            <div style={{
+                                fontFamily: "var(--font-display)",
+                                fontWeight: 600,
+                                fontSize: "12px",
+                                color: "var(--noir-white)",
+                                letterSpacing: "-0.01em",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                maxWidth: "110px",
+                            }}>
+                                {user?.display_name}
+                            </div>
+                            <div style={{
+                                fontFamily: "var(--font-mono)",
+                                fontSize: "9px",
+                                color: "var(--noir-muted)",
+                                letterSpacing: "0.06em",
+                                textTransform: "uppercase",
+                            }}>
+                                {user?.role ?? "Admin"}
+                            </div>
+                        </div>
                     </div>
-                    <LogOut 
-                        className="cursor-pointer"
+                    <div
                         onClick={logout}
-                        size={16}
-                    />
+                        style={{ cursor: "pointer", color: "var(--noir-muted)", transition: "color 0.2s" }}
+                        onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "#ff4444"}
+                        onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "var(--noir-muted)"}
+                        title="Logout"
+                    >
+                        <LogOut size={14} />
+                    </div>
                 </div>
             </div>
         </div>

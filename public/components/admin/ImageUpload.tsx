@@ -1,223 +1,273 @@
-import { Image, Upload, X } from "lucide-react";
-import { useState } from "react";
+import { Upload, X } from "lucide-react"
+import { useState } from "react"
+
 type PreviewImage = {
-    id?: number;
-    url: string;
-    name: string;
+    id?: number
+    url: string
+    name: string
 }
 
 interface Props {
-    // previews?: PreviewImage[],
-    // setPreviews: (image : PreviewImage[]) => void
-    images: File[],
+    images: File[]
     setImages: (file: File[]) => void
 }
 
-export default function ImageUpload({ images, setImages } : Props) {
+export default function ImageUpload({ images, setImages }: Props) {
     const [previews, setPreviews] = useState<PreviewImage[]>([])
-    // Dialog states
-    const [showDialog, setShowDialog] = useState(false);
-    const [pendingFiles, setPendingFiles] = useState<File[]>([]);
-    const [currentFileIndex, setCurrentFileIndex] = useState(0);
-    const [imageName, setImageName] = useState('');
-    
-    // const [formData, setFormData] = useState<CreateArticleRequest>({
-    //     title: '',
-    //     slug: '',
-    //     description: '',
-    //     content_md: '',
-    //     thumbnail: null,
-    //     images: null,
-    //     status: 'draft',
-    //     tag_ids: []
-    // });
+    const [showDialog, setShowDialog] = useState(false)
+    const [pendingFiles, setPendingFiles] = useState<File[]>([])
+    const [currentFileIndex, setCurrentFileIndex] = useState(0)
+    const [imageName, setImageName] = useState("")
 
-    const toSlug = (text: string) => {
-        return text
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/đ/g, 'd')
-            .replace(/Đ/g, 'D')
-            .replace(/[^a-z0-9\s-]/g, '')
-            .trim()
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-');
-    };
-    
-    // Xử lý khi chọn files - hiện dialog
+    const toSlug = (text: string) =>
+        text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/đ/g, "d").replace(/Đ/g, "D")
+            .replace(/[^a-z0-9\s-]/g, "").trim()
+            .replace(/\s+/g, "-").replace(/-+/g, "-")
+
     const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (!files || files.length === 0) return;
+        const files = e.target.files
+        if (!files || files.length === 0) return
+        const filesArray = Array.from(files)
+        setPendingFiles(filesArray)
+        setCurrentFileIndex(0)
+        setImageName(toSlug(filesArray[0].name.split(".")[0]))
+        setShowDialog(true)
+        e.target.value = ""
+    }
 
-        const filesArray = Array.from(files);
-        setPendingFiles(filesArray);
-        
-        setCurrentFileIndex(0);
-        const firstFileName = filesArray[0].name.split('.')[0];
-        setImageName(toSlug(firstFileName));
-        setShowDialog(true);
-        
-        e.target.value = '';
-    };
-
-    // Xác nhận tên ảnh
     const handleConfirmName = () => {
-        const currentFile = pendingFiles[currentFileIndex];
-        const ext = currentFile.name.split('.').pop();
-        const slug = imageName.trim() ? toSlug(imageName) : toSlug(currentFile.name.split('.')[0]);
-        const newFileName = `${slug}-${Date.now()}.${ext}`;
-        
-        const renamedFile = new File([currentFile], newFileName, { type: currentFile.type });
-        
-        setImages([...images, renamedFile]);
-
-        const newPreview = {
-            url: URL.createObjectURL(renamedFile),
-            name: renamedFile.name
-        };
-        setPreviews([...previews, newPreview]);
+        const currentFile = pendingFiles[currentFileIndex]
+        const ext = currentFile.name.split(".").pop()
+        const slug = imageName.trim() ? toSlug(imageName) : toSlug(currentFile.name.split(".")[0])
+        const renamedFile = new File([currentFile], `${slug}-${Date.now()}.${ext}`, { type: currentFile.type })
+        setImages([...images, renamedFile])
+        setPreviews([...previews, { url: URL.createObjectURL(renamedFile), name: renamedFile.name }])
 
         if (currentFileIndex < pendingFiles.length - 1) {
-            const nextIndex = currentFileIndex + 1;
-            setCurrentFileIndex(nextIndex);
-            const nextFileName = pendingFiles[nextIndex].name.split('.')[0];
-            setImageName(toSlug(nextFileName));
+            const nextIndex = currentFileIndex + 1
+            setCurrentFileIndex(nextIndex)
+            setImageName(toSlug(pendingFiles[nextIndex].name.split(".")[0]))
         } else {
-            setShowDialog(false);
-            setPendingFiles([]);
-            setCurrentFileIndex(0);
-            setImageName('');
+            setShowDialog(false)
+            setPendingFiles([])
+            setCurrentFileIndex(0)
+            setImageName("")
         }
-    };
+    }
 
-    // Bỏ qua ảnh hiện tại
     const handleSkip = () => {
         if (currentFileIndex < pendingFiles.length - 1) {
-            const nextIndex = currentFileIndex + 1;
-            setCurrentFileIndex(nextIndex);
-            const nextFileName = pendingFiles[nextIndex].name.split('.')[0];
-            setImageName(toSlug(nextFileName));
+            const nextIndex = currentFileIndex + 1
+            setCurrentFileIndex(nextIndex)
+            setImageName(toSlug(pendingFiles[nextIndex].name.split(".")[0]))
         } else {
-            setShowDialog(false);
-            setPendingFiles([]);
-            setCurrentFileIndex(0);
-            setImageName('');
+            setShowDialog(false)
+            setPendingFiles([])
+            setCurrentFileIndex(0)
+            setImageName("")
         }
-    };
+    }
 
-    // Xóa ảnh preview
     const handleRemoveImage = (index: number) => {
-        setImages(images.filter((_, i) => i !== index));
-        setPreviews(previews.filter((_, i) => i!== index));
-    };
-    
+        setImages(images.filter((_, i) => i !== index))
+        setPreviews(previews.filter((_, i) => i !== index))
+    }
+
     return (
-        <div className="">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-2xl font-bold mb-6 text-gray-800">Upload Ảnh với Đặt Tên</h2>
+        <div>
+            {/* Upload Zone */}
+            <label style={{
+                display: "flex",
+                flexDirection: "column" as const,
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "10px",
+                width: "100%",
+                height: "120px",
+                background: "var(--noir-surface)",
+                border: "0.5px dashed var(--noir-border-md)",
+                borderRadius: "6px",
+                cursor: "pointer",
+                transition: "border-color 0.2s, background 0.2s",
+            }}
+            onMouseEnter={e => {
+                const el = e.currentTarget as HTMLElement
+                el.style.borderColor = "var(--noir-accent)"
+                el.style.background = "var(--noir-accent-bg)"
+            }}
+            onMouseLeave={e => {
+                const el = e.currentTarget as HTMLElement
+                el.style.borderColor = "var(--noir-border-md)"
+                el.style.background = "var(--noir-surface)"
+            }}
+            >
+                <Upload size={20} color="var(--noir-muted)" />
+                <span style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "10px",
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: "var(--noir-muted)",
+                }}>
+                    Click để chọn ảnh
+                </span>
+                <input type="file" style={{ display: "none" }} multiple accept="image/*" onChange={handleImage} />
+            </label>
 
-                {/* Upload Button */}
-                <div className="mb-6">
-                    <label className="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50">
-                        <div className="flex flex-col items-center space-y-2">
-                        <Upload className="w-8 h-8 text-gray-400" />
-                        <span className="text-sm text-gray-600">Chọn ảnh để upload</span>
-                        </div>
-                        <input
-                            type="file"
-                            className="hidden"
-                            multiple
-                            accept="image/*"
-                            onChange={handleImage}
-                        />
-                    </label>
-                </div>
-
-                {/* Preview Grid */}
-                {previews.length > 0 && (
-                <div className="grid grid-cols-1 gap-4">
+            {/* Preview Grid */}
+            {previews.length > 0 && (
+                <div style={{ display: "grid", gap: "8px", marginTop: "12px" }}>
                     {previews.map((preview, index) => (
-                    <div key={index} className="relative group">
-                        <img
-                            src={preview.url}
-                            alt={preview.name}
-                            className="w-full h-48 object-cover rounded-lg"
-                        />
-                        <button
-                            aria-label="remove image"
-                            onClick={() => handleRemoveImage(index)}
-                            className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
-                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs p-2 rounded-b-lg truncate">
-                            {preview.name}
+                        <div key={index} style={{ position: "relative", borderRadius: "5px", overflow: "hidden", border: "0.5px solid var(--noir-border)" }}>
+                            <img src={preview.url} alt={preview.name} style={{ width: "100%", height: "140px", objectFit: "cover", display: "block", filter: "brightness(0.8)" }} />
+                            <div style={{
+                                position: "absolute",
+                                bottom: 0, left: 0, right: 0,
+                                background: "rgba(8,8,8,0.85)",
+                                padding: "6px 10px",
+                                fontFamily: "var(--font-mono)",
+                                fontSize: "10px",
+                                color: "var(--noir-muted)",
+                                letterSpacing: "0.05em",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                            }}>
+                                {preview.name}
+                            </div>
+                            <button
+                                aria-label="remove image"
+                                onClick={() => handleRemoveImage(index)}
+                                style={{
+                                    position: "absolute",
+                                    top: "8px", right: "8px",
+                                    background: "#ff3b3b",
+                                    border: "none",
+                                    borderRadius: "4px",
+                                    width: "24px", height: "24px",
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                    cursor: "pointer",
+                                    color: "#fff",
+                                }}
+                            >
+                                <X size={12} />
+                            </button>
                         </div>
-                    </div>
                     ))}
                 </div>
-                )}
-            </div>
+            )}
 
-            {/* Dialog Đặt Tên */}
+            {/* Dialog */}
             {showDialog && (
-                <div className="fixed inset-0 bg-black/10 backdrop-blur-xs bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-                        <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800">
-                            Đặt tên ảnh ({currentFileIndex + 1}/{pendingFiles.length})
-                        </h3>
-                        <Image className="w-6 h-6 text-blue-500" />
+                <div style={{
+                    position: "fixed", inset: 0,
+                    background: "rgba(0,0,0,0.75)",
+                    backdropFilter: "blur(6px)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    zIndex: 50, padding: "16px",
+                }}>
+                    <div style={{
+                        background: "var(--noir-surface)",
+                        border: "0.5px solid var(--noir-border)",
+                        borderRadius: "8px",
+                        padding: "28px",
+                        width: "100%",
+                        maxWidth: "420px",
+                    }}>
+                        {/* Dialog header */}
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+                            <div>
+                                <div style={{
+                                    fontFamily: "var(--font-mono)",
+                                    fontSize: "9px",
+                                    letterSpacing: "0.15em",
+                                    textTransform: "uppercase",
+                                    color: "var(--noir-accent)",
+                                    marginBottom: "4px",
+                                }}>
+                                    Image {currentFileIndex + 1}/{pendingFiles.length}
+                                </div>
+                                <div style={{
+                                    fontFamily: "var(--font-display)",
+                                    fontWeight: 700,
+                                    fontSize: "18px",
+                                    color: "var(--noir-white)",
+                                    letterSpacing: "-0.01em",
+                                }}>
+                                    Đặt tên ảnh
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Preview ảnh hiện tại */}
+                        {/* Preview */}
                         {pendingFiles[currentFileIndex] && (
-                        <div className="mb-4">
-                            <img
-                            src={URL.createObjectURL(pendingFiles[currentFileIndex])}
-                            alt="Preview"
-                            className="w-full h-48 object-cover rounded-lg"
-                            />
-                        </div>
+                            <div style={{ marginBottom: "16px", borderRadius: "5px", overflow: "hidden", border: "0.5px solid var(--noir-border)" }}>
+                                <img
+                                    src={URL.createObjectURL(pendingFiles[currentFileIndex])}
+                                    alt="Preview"
+                                    style={{ width: "100%", height: "160px", objectFit: "cover", display: "block", filter: "brightness(0.75)" }}
+                                />
+                            </div>
                         )}
 
-                        <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Tên ảnh (slug):
-                        </label>
-                        <input
-                            type="text"
-                            value={imageName}
-                            onChange={(e) => setImageName(e.target.value)}
-                            onBlur={(e) => setImageName(toSlug(e.target.value))}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="nhap-ten-anh"
-                            autoFocus
-                            onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                                handleConfirmName();
-                            }
-                            }}
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
-                            Tên sẽ được tự động chuyển thành slug
-                        </p>
+                        {/* Input */}
+                        <div style={{ marginBottom: "20px" }}>
+                            <label style={{
+                                fontFamily: "var(--font-mono)",
+                                fontSize: "10px",
+                                letterSpacing: "0.12em",
+                                textTransform: "uppercase",
+                                color: "var(--noir-muted)",
+                                display: "block",
+                                marginBottom: "8px",
+                            }}>
+                                Tên slug
+                            </label>
+                            <input
+                                type="text"
+                                value={imageName}
+                                onChange={e => setImageName(e.target.value)}
+                                onBlur={e => setImageName(toSlug(e.target.value))}
+                                placeholder="nhap-ten-anh"
+                                autoFocus
+                                onKeyDown={e => { if (e.key === "Enter") handleConfirmName() }}
+                                style={{
+                                    width: "100%",
+                                    background: "var(--noir-card)",
+                                    border: "0.5px solid var(--noir-border)",
+                                    borderRadius: "5px",
+                                    color: "var(--noir-white)",
+                                    fontFamily: "var(--font-mono)",
+                                    fontSize: "13px",
+                                    padding: "10px 14px",
+                                    outline: "none",
+                                }}
+                                onFocus={e => (e.currentTarget.style.borderColor = "var(--noir-accent)")}
+                                // @ts-ignore
+                                onBlurCapture={e => (e.currentTarget.style.borderColor = "var(--noir-border)")}
+                            />
+                            <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--noir-muted)", marginTop: "6px", letterSpacing: "0.05em" }}>
+                                Tự động chuyển thành slug
+                            </p>
                         </div>
 
-                        <div className="flex gap-3">
-                        <button
-                            onClick={handleSkip}
-                            className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
-                        >
-                            Bỏ qua
-                        </button>
-                        <button
-                            onClick={handleConfirmName}
-                            className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-                        >
-                            Xác nhận
-                        </button>
+                        {/* Actions */}
+                        <div style={{ display: "flex", gap: "10px" }}>
+                            <button
+                                onClick={handleSkip}
+                                className="noir-read-btn-ghost"
+                                style={{ flex: 1, justifyContent: "center" }}
+                            >
+                                Bỏ qua
+                            </button>
+                            <button
+                                onClick={handleConfirmName}
+                                className="noir-read-btn"
+                                style={{ flex: 1, justifyContent: "center" }}
+                            >
+                                Xác nhận
+                            </button>
                         </div>
                     </div>
                 </div>

@@ -1,477 +1,756 @@
-"use client"
-import { useEffect, useState } from 'react';
-import { Upload, X, Eye, EyeOff, FileText, Save } from 'lucide-react';
-import { articleAPI } from '@/public/lib/api';
-import { useUser } from '@/public/providers/UserProvider';
-import { ArticleWithTags, Tag, UpdateArticleRequest } from '@/public/lib/types';
-import { redirect, useParams } from 'next/navigation';
-import MarkdownRenderer from '@/public/components/MarkdownRenderer';
-import Loading from '@/public/components/Loading';
-import MarkdownToolbar from '@/public/components/MarkdownToolbar';
-import TagSelector from '@/public/components/admin/TagSelector';
-import MarkdownTextarea from '@/public/components/MarkdownTextarea';
+"use client";
+import { useEffect, useState } from "react";
+import { Upload, X, Eye, EyeOff, Save } from "lucide-react";
+import { articleAPI } from "@/public/lib/api";
+import { useUser } from "@/public/providers/UserProvider";
+import { ArticleWithTags, Tag, UpdateArticleRequest } from "@/public/lib/types";
+import { redirect, useParams } from "next/navigation";
+import MarkdownRenderer from "@/public/components/MarkdownRenderer";
+import Loading from "@/public/components/Loading";
+import TagSelector from "@/public/components/admin/TagSelector";
+import MarkdownTextarea from "@/public/components/MarkdownTextarea";
 
-type PreviewImage = {
-    id?: number;
-    url: string;   // URL tạm thời dùng để preview <img>
-    name: string;  // tên file hiển thị / copy
+/* ─── Shared style tokens ─── */
+const S = {
+  card: {
+    background: "var(--noir-surface)",
+    border: "0.5px solid var(--noir-border)",
+    borderRadius: 6,
+    padding: "24px",
+  } as React.CSSProperties,
+  label: {
+    display: "block",
+    fontFamily: "var(--font-mono)",
+    fontSize: 10,
+    fontWeight: 500,
+    letterSpacing: "0.12em",
+    textTransform: "uppercase" as const,
+    color: "var(--noir-muted)",
+    marginBottom: 8,
+  } as React.CSSProperties,
+  required: {
+    color: "var(--noir-accent)",
+    marginLeft: 3,
+  } as React.CSSProperties,
+};
+
+type PreviewImage = { id?: number; url: string; name: string };
+
+function NoirInput({
+  label,
+  required,
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement> & {
+  label: string;
+  required?: boolean;
+}) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <div>
+      <label style={S.label}>
+        {label}
+        {required && <span style={S.required}>*</span>}
+      </label>
+      <input
+        {...props}
+        style={{
+          width: "100%",
+          background: "var(--noir-card)",
+          borderRadius: 6,
+          border: `0.5px solid ${focused ? "var(--noir-accent)" : "var(--noir-border)"}`,
+          color: "var(--noir-white)",
+          fontFamily: "var(--font-body)",
+          fontSize: 14,
+          padding: "11px 14px",
+          outline: "none",
+          transition: "border-color 0.2s",
+          boxSizing: "border-box",
+        }}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+      />
+    </div>
+  );
 }
 
 export default function UpdateArticlePage() {
-    const { id } = useParams();
-    const { token, loading } = useUser();
-    const [_loading, setLoading] = useState(true)
+  const { id } = useParams();
+  const { token, loading } = useUser();
+  const [_loading, setLoading] = useState(true);
+  const [originalData, setOriginalData] = useState<UpdateArticleRequest | null>(
+    null,
+  );
+  const [formData, setFormData] = useState<UpdateArticleRequest | null>(null);
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string>();
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailChanged, setThumbnailChanged] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previews, setPreviews] = useState<PreviewImage[]>([]);
+  const [imagesChanged, setImagesChanged] = useState(false);
 
-    // ✅ Tách riêng: dữ liệu gốc và dữ liệu hiện tại
-    const [originalData, setOriginalData] = useState<UpdateArticleRequest | null>(null);
-    const [formData, setFormData] = useState<UpdateArticleRequest | null>(null);
-    
-    const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
-    
-    const [thumbnailPreview, setThumbnailPreview] = useState<string>();
-    const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-    const [thumbnailChanged, setThumbnailChanged] = useState(false); 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [showPreview, setShowPreview] = useState(false);
-    const [previews, setPreviews] = useState<PreviewImage[]>([]);
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, [name]: value };
+      if (name === "title") {
+        next.slug = value
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[đĐ]/g, "d")
+          .replace(/[^a-z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-")
+          .trim();
+      }
+      return next;
+    });
+  };
 
-    // const [images, setImages] = useState<File[]>([]);
-    const [imagesChanged, setImagesChanged] = useState(false);
+  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    const newFiles = Array.from(files).map((file, idx) => {
+      const ext = file.name.split(".").pop();
+      return new File([file], `${Date.now()}-${idx}.${ext}`, {
+        type: file.type,
+      });
+    });
+    setFormData((prev) => ({
+      ...prev,
+      images: prev?.images ? [...prev.images, ...newFiles] : newFiles,
+    }));
+    setPreviews((prev) => [
+      ...prev,
+      ...newFiles.map((f) => ({ url: URL.createObjectURL(f), name: f.name })),
+    ]);
+    setImagesChanged(true);
+  };
 
-    // Thêm kiểu markdown
-    const handleInsert = (value: string) => {
-        setFormData(prev => ({
-            ...prev,
-            content_md: (prev?.content_md || "" ) + value
-        }));
-    };
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.size <= 5 * 1024 * 1024) {
+      setThumbnailFile(file);
+      setThumbnailChanged(true);
+      setThumbnailPreview(URL.createObjectURL(file));
+    } else if (file) alert("File quá lớn. Vui lòng chọn ảnh dưới 5MB");
+  };
 
-    // Cập nhật input
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => {
-            if (!prev) return prev;
-            const newData = { ...prev, [name]: value };
-            if (name === 'title') {
-                const slug = value
-                    .toLowerCase()
-                    .normalize('NFD')
-                    .replace(/[\u0300-\u036f]/g, '')
-                    .replace(/[đĐ]/g, 'd')
-                    .replace(/[^a-z0-9\s-]/g, '')
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-')
-                    .trim();
-                newData.slug = slug;
-            }
-            return newData;
-        });
-    };
+  const removeThumbnail = () => {
+    setThumbnailFile(null);
+    setThumbnailChanged(true);
+    setThumbnailPreview("");
+  };
 
-    const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (!files) return;
+  const isArrayEqual = (a: number[], b: number[]) => {
+    if (!a || !b || a.length !== b.length) return false;
+    return [...a].sort().every((v, i) => v === [...b].sort()[i]);
+  };
 
-        const newFiles: File[] = Array.from(files).map((file, idx) => {
-            const ext = file.name.split('.').pop();
-            const newName = `${Date.now()}-${idx}.${ext}`;
-            return new File([file], newName, { type: file.type });
-        });
-
-        // set FormData
-        setFormData(prev => ({
-            ...prev,
-            images: prev?.images ? [...prev.images, ...newFiles] : newFiles
-        }));
-
-        // set previews (URL + name)
-        const newPreviews = Array.from(newFiles).map(file => ({
-            url: URL.createObjectURL(file),
-            name: file.name
-        }));
-
-        setPreviews(prev => prev ? [...prev, ...newPreviews] : newPreviews);
-        setImagesChanged(true);
-    };
-
-
-    const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file && file.size <= 5 * 1024 * 1024) {
-            setThumbnailFile(file);
-            setThumbnailChanged(true); // ✅ Đánh dấu đã thay đổi
-            setThumbnailPreview(URL.createObjectURL(file));
-        } else if (file) {
-            alert('File quá lớn. Vui lòng chọn ảnh dưới 5MB');
+  const handleSubmit = async () => {
+    if (!id || !formData || !originalData || !token) return;
+    setIsSubmitting(true);
+    try {
+      const fd = new FormData();
+      let hasChanges = false;
+      const check = (key: keyof UpdateArticleRequest, val: string) => {
+        if (formData[key] !== originalData[key]) {
+          fd.append(key, val);
+          hasChanges = true;
         }
-    };
-
-    const removeThumbnail = () => {
-        setThumbnailFile(null);
-        setThumbnailChanged(true);
-        setThumbnailPreview("");
-    };
-    function isArrayEqual(a : number[], b: number[]) {
-        if (!a || !b) return false;
-        if (a.length !== b.length) return false;
-
-        const A = [...a].sort();
-        const B = [...b].sort();
-
-        return A.every((v, i) => v === B[i]);
+      };
+      check("title", formData.title || "");
+      check("slug", formData.slug || "");
+      check("content_md", formData.content_md || "");
+      check("status", formData.status || "draft");
+      check("description", formData.description || "");
+      if (thumbnailChanged && thumbnailFile) {
+        fd.append("thumbnail", thumbnailFile);
+        hasChanges = true;
+      }
+      if (imagesChanged && formData.images?.length) {
+        formData.images.forEach((f) => fd.append("images", f));
+        hasChanges = true;
+      }
+      if (
+        !isArrayEqual(
+          formData.tag_ids ?? [],
+          selectedTags.map((t) => t.id),
+        )
+      ) {
+        fd.append("tags", JSON.stringify(selectedTags.map((t) => t.id)));
+        hasChanges = true;
+      }
+      if (!hasChanges) {
+        alert("Không có thay đổi nào để cập nhật");
+        return;
+      }
+      const result = await articleAPI.updateArticle(Number(id), fd, token);
+      if (result.success) {
+        setThumbnailChanged(false);
+        setOriginalData(formData);
+        setImagesChanged(false);
+        alert("Cập nhật thành công!");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Có lỗi xảy ra");
+    } finally {
+      setIsSubmitting(false);
     }
+  };
 
-
-    const handleSubmit = async () => {
-        if (!id) return console.log("Id is missing");
-        if (!formData || !originalData) return console.log("FormData is null"); 
-        if (!token) redirect("/auth/sign-in");
-        
-        setIsSubmitting(true);
+  useEffect(() => {
+    if (id && token && !loading) {
+      const getArticle = async () => {
         try {
-            // ✅ Chỉ gửi những field đã thay đổi
-            const formDataToSend = new FormData();
-            let hasChanges = false;
-
-            // So sánh từng field
-            if (formData.title !== originalData.title) {
-                formDataToSend.append('title', formData.title || '');
-                hasChanges = true;
-                console.log('Title changed:', formData.title);
-            }
-
-            if (formData.slug !== originalData.slug) {
-                formDataToSend.append('slug', formData.slug || '');
-                hasChanges = true;
-                console.log('Slug changed:', formData.slug);
-            }
-
-            if (formData.content_md !== originalData.content_md) {
-                formDataToSend.append('content_md', formData.content_md || '');
-                hasChanges = true;
-                console.log('Content changed');
-            }
-
-            if (formData.status !== originalData.status) {
-                formDataToSend.append('status', formData.status || 'draft');
-                hasChanges = true;
-                console.log('Status changed:', formData.status);
-            }
-            if (formData.description !== originalData.description) {
-                formDataToSend.append('description', formData.description || '');
-                hasChanges = true;
-                console.log('Status changed:', formData.description);
-            }
-
-            if (thumbnailChanged && thumbnailFile) {
-                formDataToSend.append('thumbnail', thumbnailFile);
-                hasChanges = true;
-                console.log('Thumbnail changed - new file uploaded');
-            }
-            // Kiểm tra ảnh có thay đổi không
-            if (imagesChanged && formData.images && formData.images.length > 0) {
-                formData.images.forEach((file, index) => {
-                    formDataToSend.append('images', file);
-                    console.log(`Adding image ${index + 1}:`, file.name);
-                });
-                hasChanges = true;
-                console.log(`Total images to upload: ${formData.images.length}`);
-            }
-            // Kiểm tra danh sách tag có thay đổi không
-            if(!isArrayEqual(formData.tag_ids ?? [], selectedTags.map(tag => tag.id))) {
-                hasChanges = true;
-                formDataToSend.append("tags",JSON.stringify(selectedTags.map(tag => tag.id)))
-                console.log("Tags Changed - new tags updated")
-            }
-
-            if (!hasChanges) {
-                alert('Không có thay đổi nào để cập nhật');
-                setIsSubmitting(false);
-                return;
-            }
-
-            const result = await articleAPI.updateArticle(Number(id), formDataToSend, token);
-            if (result.success) {
-                setThumbnailChanged(false);
-                setOriginalData(formData);
-                setImagesChanged(false);
-                alert('Cập nhật thành công!');
-            }
+          const result = await articleAPI.getAdminArticleById(
+            Number(id),
+            token,
+          );
+          if (result.success) {
+            const init: UpdateArticleRequest = {
+              title: result.data?.title,
+              slug: result.data?.slug,
+              content_md: result.data?.content_md,
+              status: result.data?.status,
+              description: result.data?.description,
+              tag_ids: result.data.tags?.map((t: Tag) => t.id) ?? [],
+            };
+            setSelectedTags(result.data.tags ?? []);
+            setOriginalData(init);
+            setFormData(init);
+            setPreviews(
+              (result.data?.images ?? []).map((img: any) => ({
+                id: img.id,
+                url: `https://easytrade.site/api/v2${img.url}`,
+                name: img.name || img.alt_text || `image-${img.id}`,
+              })),
+            );
+            if (result.data?.thumbnail)
+              setThumbnailPreview(
+                `https://easytrade.site/api/v2${result.data.thumbnail}`,
+              );
+          }
         } catch (err) {
-            console.error('Error updating article:', err);
-            alert('Có lỗi xảy ra khi cập nhật');
-        } finally {
-            setIsSubmitting(false);
+          console.error(err);
         }
-    };
+      };
+      getArticle();
+      const t = setTimeout(() => setLoading(false), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [id, token, loading]);
 
-    useEffect(() => {
-        if (id && token && !loading) {
-            const getArticle = async () => {
-                try {
-                    const result = await articleAPI.getAdminArticleById(Number(id), token)
-                    if(result.success) {
-                        // ✅ Lưu cả original data và current data
-                        const initialData: UpdateArticleRequest = {
-                            title: result.data?.title,
-                            slug: result.data?.slug,
-                            content_md: result.data?.content_md,
-                            status: result.data?.status,
-                            description: result.data?.description,
-                            tag_ids: result.data.tags ? result.data.tags.map(tag => tag.id ) : []
-                        };
-                        setSelectedTags(result.data.tags ?? [])
-                        setOriginalData(initialData);
-                        setFormData(initialData);
-                        const newPreviews: PreviewImage[] = (result.data?.images ?? []).map((img: any) => ({
-                            id: img.id,
-                            url: `https://easytrade.site/api/v2` + img.url,
-                            name: img.name || img.alt_text || `image-${img.id}`
-                        }));
-                        setPreviews(newPreviews)
-
-                        if (result.data?.thumbnail) {
-                            setThumbnailPreview(`https://easytrade.site/api/v2${result.data?.thumbnail}`);
-                        }
-                    }
-                } catch (err) {
-                    console.error("Lỗi khi lấy dữ liệu:", err);
-                }
-            }
-            getArticle()
-            const load = setTimeout(() => {
-                setLoading(false)
-            }, 1500);
-            return (() => clearTimeout(load));
-        }
-    }, [id, token, loading]);
-
-    if (_loading) return <Loading/>
-    if (!_loading && !formData) return <div>Không có dữ liệu</div>
-
+  if (_loading) return <Loading />;
+  if (!formData)
     return (
-        <div className="">
-            <header className="bg-white rounded-lg shadow sticky top-0 z-100">
-                <div className="px-4 sm:px-6">
-                    <div className="flex items-center justify-between h-16">
-                        <h1 className="text-2xl font-semibold text-black flex items-center gap-2">Create New Article</h1>
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => setShowPreview(!showPreview)}
-                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition cursor-pointer"
-                            >
-                                {showPreview ? 'Hide Preview' : 'Show Preview'}
-                            </button>
-                            <button
-                                onClick={handleSubmit}
-                                disabled={isSubmitting}
-                                className="px-6 py-2 text-sm font-medium bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
-                            >
-                                <Save size={16} />
-                                {isSubmitting ? 'Đang xử lý...' : 'Đăng bài'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            {/* Main Content */}
-            <main className="grid grid-cols-[7fr_3fr] gap-4 mt-8">
-                <div className='space-y-5'>
-                    {/* Left Column - Main Form */}
-                    <div className="space-y-5">
-                        <div className='bg-white p-6 rounded-lg shadow space-y-5'>
-                            {/* Title */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                    Tiêu đề <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    name="title"
-                                    value={formData?.title}
-                                    onChange={handleInputChange}
-                                    className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                                    placeholder="Nhập tiêu đề bài viết..."
-                                />
-                            </div>
-                            {/* Slug */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                    Slug (URL)
-                                </label>
-                                <input
-                                    type="text"
-                                    name="slug"
-                                    value={formData?.slug}
-                                    onChange={handleInputChange}
-                                    className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
-                                    placeholder="slug-tu-dong-tao"
-                                />
-                            </div>
-
-                            {/* Description */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                    Description <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    name="description"
-                                    value={formData?.description}
-                                    onChange={handleInputChange}
-                                    className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
-                                    placeholder="Nhập giới thiệu về bài viết"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Content Markdown */}
-                        <div className='bg-white p-6 rounded-lg shadow'>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                Nội dung (Markdown) <span className="text-red-500">*</span>
-                            </label>
-                            <MarkdownTextarea
-                                content={formData?.content_md ?? ""}
-                                onChange={(text: string) => setFormData(prev => ({
-                                    ...prev,
-                                    content_md: text
-                                }))}
-                            />
-                        </div>
-
-                        {/* Preview Section */}
-                        {showPreview && formData?.title && (
-                        <div className="mt-8">
-                            <div className="bg-primary rounded-lg p-6 border border-gray-200">
-                                <h3 className="text-2xl font-bold text-white mb-2">{formData?.title}</h3>
-                                <p className="text-gray-300 text-sm mb-4 font-mono">slug: /{formData?.slug}</p>
-                                {thumbnailPreview && (
-                                    <img
-                                    src={thumbnailPreview}
-                                    alt="Thumbnail preview"
-                                    className="w-full h-64 object-cover rounded-lg mb-4"
-                                    />
-                                )}
-                                {formData?.content_md && (
-                                    <MarkdownRenderer content={formData.content_md}/>
-                                )}
-                            </div>
-                        </div>
-                        )}
-                    </div>
-                </div>
-                <div className='space-y-5'>
-                    {/* Status */}
-                    <div className="bg-white rounded-lg p-4 shadow">
-                        <label className="block text-sm font-medium text-gray-700 mb-3">
-                            Trạng thái
-                        </label>
-                        <div className="space-y-2">
-                            <label className="flex items-center p-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-white transition bg-white">
-                                <input
-                                    type="radio"
-                                    name="status"
-                                    value="draft"
-                                    checked={formData?.status === 'draft'}
-                                    onChange={handleInputChange}
-                                    className="w-4 h-4 text-blue-500"
-                                />
-                                <EyeOff size={18} className="ml-3 mr-2 text-gray-600" />
-                                <span className="text-sm font-medium text-gray-700">Nháp</span>
-                            </label>
-                            <label className="flex items-center p-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-white transition">
-                                <input
-                                    type="radio"
-                                    name="status"
-                                    value="published"
-                                    checked={formData?.status === 'published'}
-                                    onChange={handleInputChange}
-                                    className="w-4 h-4 text-blue-500"
-                                />
-                                <Eye size={18} className="ml-3 mr-2 text-gray-600" />
-                                <span className="text-sm font-medium text-gray-700">Xuất bản</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div className='bg-white p-6 rounded-lg shadow'>
-                        {/* Tags */}
-                        <TagSelector 
-                            selectedTags={selectedTags}
-                            setSelectedTags={setSelectedTags}
-                        />
-                    </div>
-                    <div>
-                        {/* Thumbnail Upload */}
-                        <div className="bg-white rounded-lg shadow p-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-3">
-                                Ảnh thumbnail <span className="text-red-500">*</span>
-                            </label>
-                            {!thumbnailPreview ? (
-                                <label className="block border-2 border-dashed border-gray-300 aspect-video rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition group">
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleThumbnailChange}
-                                        className="hidden"
-                                    />
-                                    <Upload className="mx-auto mb-2 text-gray-400 group-hover:text-blue-500 transition" size={32} />
-                                    <p className="text-sm text-gray-600 font-medium">Nhấn để tải ảnh lên</p>
-                                    <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF, AVIF (Max: 5MB)</p>
-                                </label>
-                            ) : (
-                                <div className="relative group">
-                                    <img
-                                        src={thumbnailPreview}
-                                        alt="Preview"
-                                        className="w-full h-48 object-cover rounded-lg"
-                                    />
-                                    <button
-                                        aria-label="remove thumbnail"
-                                        type="button"
-                                        onClick={removeThumbnail}
-                                        className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 transition opacity-0 group-hover:opacity-100"
-                                    >
-                                        <X size={16} />
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                        {/* <ImageUpload  images={images} setImages={setImages}/> */}
-                        {/* Images Upload */}
-                        <div className=' bg-white rounded-lg shadow p-6'>
-                            <label className="block text-sm font-medium text-gray-700 mb-3">
-                                Ảnh <span className="text-red-500">*</span>
-                            </label>
-                            <div className='grid grid-cols-2 gap-4'>
-                                <label className="block border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition group">
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImage}
-                                        className="hidden"
-                                    />
-                                    <Upload className="mx-auto mb-2 text-gray-400 group-hover:text-blue-500 transition" size={32} />
-                                    <p className="text-sm text-gray-600 font-medium">Nhấn để tải ảnh lên</p>
-                                    <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF (Max: 5MB)</p>
-                                </label>
-                                {/* Preview + file name */}
-                                {previews && previews.map((image, index) => (
-                                    <div key={index} className="flex flex-col items-center">
-                                        <img 
-                                            src={image.url}
-                                            alt={image.name}
-                                            className='w-full aspect-video mb-1 rounded'
-                                        />
-                                        <p className="text-xs text-gray-700">/uploads/articles/{image.name}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
+      <div
+        style={{
+          textAlign: "center",
+          padding: "80px 24px",
+          fontFamily: "var(--font-mono)",
+          fontSize: 11,
+          letterSpacing: "0.1em",
+          color: "var(--noir-muted)",
+          textTransform: "uppercase",
+        }}
+      >
+        Không có dữ liệu
+      </div>
     );
+
+  return (
+    <div style={{ fontFamily: "var(--font-body)" }}>
+      {/* Sticky header */}
+      <header
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 50,
+          background: "rgba(8,8,8,0.95)",
+          backdropFilter: "blur(16px)",
+          borderBottom: "0.5px solid var(--noir-border)",
+          marginBottom: 28,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            height: 56,
+            padding: "0 2px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div
+              style={{
+                width: 3,
+                height: 26,
+                background: "var(--noir-accent)",
+                borderRadius: 2,
+              }}
+            />
+            <h1
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 700,
+                fontSize: 20,
+                color: "var(--noir-white)",
+                letterSpacing: "-0.01em",
+                margin: 0,
+              }}
+            >
+              Update Article
+            </h1>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => setShowPreview((p) => !p)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                fontFamily: "var(--font-mono)",
+                fontSize: 10,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: showPreview ? "var(--noir-accent)" : "var(--noir-muted)",
+                background: "transparent",
+                border: `0.5px solid ${showPreview ? "var(--noir-accent)" : "var(--noir-border-md)"}`,
+                padding: "8px 14px",
+                borderRadius: 4,
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
+              {showPreview ? <EyeOff size={12} /> : <Eye size={12} />}
+              {showPreview ? "Hide Preview" : "Preview"}
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                fontFamily: "var(--font-mono)",
+                fontSize: 10,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "var(--noir-black)",
+                background: "var(--noir-accent)",
+                padding: "8px 18px",
+                borderRadius: 4,
+                border: "none",
+                cursor: isSubmitting ? "not-allowed" : "pointer",
+                opacity: isSubmitting ? 0.6 : 1,
+                transition: "opacity 0.2s",
+              }}
+            >
+              <Save size={12} />
+              {isSubmitting ? "Saving…" : "Lưu thay đổi"}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Layout: 7fr | 3fr */}
+      <main
+        style={{ display: "grid", gridTemplateColumns: "7fr 3fr", gap: 20 }}
+      >
+        {/* ── Left column ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Basic info */}
+          <div
+            style={{
+              ...S.card,
+              display: "flex",
+              flexDirection: "column",
+              gap: 18,
+            }}
+          >
+            <NoirInput
+              label="Tiêu đề"
+              required
+              name="title"
+              value={formData.title ?? ""}
+              onChange={handleInputChange}
+              placeholder="Nhập tiêu đề bài viết…"
+            />
+            <NoirInput
+              label="Slug (URL)"
+              name="slug"
+              value={formData.slug ?? ""}
+              onChange={handleInputChange}
+              placeholder="slug-tu-dong-tao"
+            />
+            <NoirInput
+              label="Description"
+              required
+              name="description"
+              value={formData.description ?? ""}
+              onChange={handleInputChange}
+              placeholder="Nhập giới thiệu về bài viết"
+            />
+          </div>
+
+          {/* Markdown editor */}
+          <div style={S.card}>
+            <label style={S.label}>
+              Nội dung (Markdown)<span style={S.required}>*</span>
+            </label>
+            <MarkdownTextarea
+              content={formData.content_md ?? ""}
+              onChange={(text: string) =>
+                setFormData((prev) => ({ ...prev, content_md: text }))
+              }
+            />
+          </div>
+
+          {/* Preview */}
+          {showPreview && formData.title && (
+            <div
+              style={{
+                ...S.card,
+                borderColor: "var(--noir-accent)",
+                borderLeftWidth: 2,
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 9,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color: "var(--noir-accent)",
+                  marginBottom: 16,
+                }}
+              >
+                Live Preview
+              </div>
+              <h3
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 800,
+                  fontSize: 24,
+                  color: "var(--noir-white)",
+                  margin: "0 0 6px",
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                {formData.title}
+              </h3>
+              <p
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 10,
+                  color: "var(--noir-muted)",
+                  marginBottom: 16,
+                  letterSpacing: "0.05em",
+                }}
+              >
+                /{formData.slug}
+              </p>
+              {thumbnailPreview && (
+                <img
+                  src={thumbnailPreview}
+                  alt="Preview"
+                  style={{
+                    width: "100%",
+                    height: 200,
+                    objectFit: "cover",
+                    borderRadius: 6,
+                    marginBottom: 20,
+                    border: "0.5px solid var(--noir-border)",
+                  }}
+                />
+              )}
+              {formData.content_md && (
+                <div className="noir-markdown">
+                  <MarkdownRenderer content={formData.content_md} />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ── Right column ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Status */}
+          <div style={S.card}>
+            <label style={S.label}>Trạng thái</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {[
+                { value: "draft", icon: <EyeOff size={14} />, label: "Nháp" },
+                {
+                  value: "published",
+                  icon: <Eye size={14} />,
+                  label: "Xuất bản",
+                },
+              ].map((opt) => {
+                const active = formData.status === opt.value;
+                return (
+                  <label
+                    key={opt.value}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "10px 14px",
+                      borderRadius: 4,
+                      cursor: "pointer",
+                      border: `0.5px solid ${active ? "var(--noir-accent)" : "var(--noir-border)"}`,
+                      background: active
+                        ? "var(--noir-accent-bg)"
+                        : "transparent",
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="status"
+                      value={opt.value}
+                      checked={active}
+                      onChange={handleInputChange}
+                      style={{ display: "none" }}
+                    />
+                    <span
+                      style={{
+                        color: active
+                          ? "var(--noir-accent)"
+                          : "var(--noir-muted)",
+                      }}
+                    >
+                      {opt.icon}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 11,
+                        letterSpacing: "0.08em",
+                        color: active
+                          ? "var(--noir-accent)"
+                          : "var(--noir-muted)",
+                      }}
+                    >
+                      {opt.label}
+                    </span>
+                    {active && (
+                      <div
+                        style={{
+                          marginLeft: "auto",
+                          width: 6,
+                          height: 6,
+                          borderRadius: "50%",
+                          background: "var(--noir-accent)",
+                        }}
+                      />
+                    )}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Tags */}
+          <div style={S.card}>
+            <TagSelector
+              selectedTags={selectedTags}
+              setSelectedTags={setSelectedTags}
+            />
+          </div>
+
+          {/* Thumbnail */}
+          <div style={S.card}>
+            <label style={S.label}>
+              Thumbnail<span style={S.required}>*</span>
+            </label>
+            {!thumbnailPreview ? (
+              <label
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  aspectRatio: "16/9",
+                  border: "1px dashed var(--noir-border-md)",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                  gap: 8,
+                  transition: "border-color 0.2s",
+                }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.borderColor = "var(--noir-accent)")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.borderColor = "var(--noir-border-md)")
+                }
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleThumbnailChange}
+                  className="hidden"
+                />
+                <Upload size={24} style={{ color: "var(--noir-muted)" }} />
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 10,
+                    letterSpacing: "0.1em",
+                    color: "var(--noir-muted)",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Upload
+                </span>
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 9,
+                    color: "var(--noir-subtle)",
+                  }}
+                >
+                  PNG / JPG / AVIF · Max 5MB
+                </span>
+              </label>
+            ) : (
+              <div style={{ position: "relative" }}>
+                <img
+                  src={thumbnailPreview}
+                  alt="Preview"
+                  style={{
+                    width: "100%",
+                    aspectRatio: "16/9",
+                    objectFit: "cover",
+                    borderRadius: 6,
+                    display: "block",
+                  }}
+                />
+                <button
+                  onClick={removeThumbnail}
+                  style={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    background: "#ff4444",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: 26,
+                    height: 26,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                  }}
+                >
+                  <X size={13} />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Images */}
+          <div style={S.card}>
+            <label style={S.label}>
+              Ảnh<span style={S.required}>*</span>
+            </label>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 10,
+              }}
+            >
+              <label
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  aspectRatio: "1",
+                  border: "1px dashed var(--noir-border-md)",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                  gap: 6,
+                  transition: "border-color 0.2s",
+                }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.borderColor = "var(--noir-accent)")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.borderColor = "var(--noir-border-md)")
+                }
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImage}
+                  className="hidden"
+                />
+                <Upload size={20} style={{ color: "var(--noir-muted)" }} />
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 9,
+                    letterSpacing: "0.1em",
+                    color: "var(--noir-muted)",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Add
+                </span>
+              </label>
+              {previews.map((img, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
+                  <img
+                    src={img.url}
+                    alt={img.name}
+                    style={{
+                      width: "100%",
+                      aspectRatio: "1",
+                      objectFit: "cover",
+                      borderRadius: 6,
+                      border: "0.5px solid var(--noir-border)",
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 8,
+                      color: "var(--noir-muted)",
+                      letterSpacing: "0.04em",
+                      textAlign: "center",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      width: "100%",
+                    }}
+                  >
+                    {img.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
 }
