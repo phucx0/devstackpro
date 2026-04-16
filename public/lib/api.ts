@@ -94,7 +94,7 @@ export const articleAPI = {
 
     const response = await fetch(
       `${API_BASE_URL}/articles?${searchParams.toString()}`, {
-        cache: "no-cache"
+        next: { revalidate: 300 }
       }
     );
     return handleResponse<ArticlesResponse>(response);
