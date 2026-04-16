@@ -1,3 +1,4 @@
+"use client";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -61,12 +62,12 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
           ),
           p: ({ node, ...props }) => {
             const children = props.children;
-            if (
-              node?.children?.length === 1
-            ) {
-              if((node.children[0] as any)?.tagName === "img") return <>{children}</>;
-              if((node.children[0] as any)?.tagName === "code") return <>{children}</>;
-            } 
+            if (node?.children?.length === 1) {
+              if ((node.children[0] as any)?.tagName === "img")
+                return <>{children}</>;
+              if ((node.children[0] as any)?.tagName === "code")
+                return <>{children}</>;
+            }
             return <p {...props} />;
           },
           table: ({ node, ...props }) => (
