@@ -1253,7 +1253,7 @@ body {
   color: var(--noir-accent);
 }
 
-.noir-markdown pre {
+/* .noir-markdown pre {
   background: var(--noir-surface);
   border: 0.5px solid var(--noir-border);
   border-left: 2px solid var(--noir-accent);
@@ -1261,7 +1261,7 @@ body {
   padding: 20px;
   overflow-x: auto;
   margin: 1.5em 0;
-}
+} */
 
 .noir-markdown pre code {
   background: none;

@@ -2,11 +2,14 @@ import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "@/public/css/markdown.css";
+import React from "react";
+import rehypeHighlight from "rehype-highlight";
 const MarkdownRenderer = ({ content }: { content: string }) => {
   return (
     <div className="markdown-body">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeHighlight]}
         components={{
           blockquote: ({ children }) => (
             <div
@@ -58,13 +61,12 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
           ),
           p: ({ node, ...props }) => {
             const children = props.children;
-            const hasOnlyImage =
-              node?.children?.length === 1 &&
-              (node.children[0] as any)?.tagName === "img";
-
-            if (hasOnlyImage) {
-              return <>{children}</>;
-            }
+            if (
+              node?.children?.length === 1
+            ) {
+              if((node.children[0] as any)?.tagName === "img") return <>{children}</>;
+              if((node.children[0] as any)?.tagName === "code") return <>{children}</>;
+            } 
             return <p {...props} />;
           },
           table: ({ node, ...props }) => (
@@ -99,16 +101,42 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
               {...props}
             />
           ),
-          code: ({ node, className, children, ...props }) => {
-            const isInline = node?.tagName?.toLowerCase() === "code";
+          code: ({ inline, className, children, node, ...props }: any) => {
+            const match = /language-(\w+)/.exec(className || "");
+            const language = match ? match[1] : "";
 
+            const isBlock =
+              language ||
+              node?.position?.start.line !== node?.position?.end.line;
+
+            // Sử dụng cho code block
+            // ```terminal
+            // npm install test
+            // ```
+            if (isBlock) {
+              return (
+                <div className="group relative my-4 rounded-xl overflow-hidden border border-neutral-700 bg-[#0d1117]">
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-4 py-2 text-xs text-neutral-400 bg-[#161b22] border-b border-neutral-700">
+                    <span className="font-mono">{language || "code"}</span>
+
+                    <div className="opacity-0 group-hover:opacity-100 transition">
+                      <CopyButton text={String(children)} />
+                    </div>
+                  </div>
+
+                  {/* Code */}
+                  <pre className="overflow-x-auto p-4 text-sm leading-relaxed">
+                    <code {...props}>{children}</code>
+                  </pre>
+                </div>
+              );
+            }
+            // sử dụng code bình thường
+            // `code`
             return (
               <code
-                className={`rounded px-1 py-0.5 text-sm ${
-                  isInline
-                    ? "bg-gray-100 text-red-500"
-                    : "bg-black text-green-400 block p-3 my-3"
-                }`}
+                className="bg-neutral-800 text-neutral-200 px-1.5 py-0.5 rounded-md font-mono text-sm border border-neutral-700"
                 {...props}
               >
                 {children}
@@ -120,6 +148,27 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
         {content}
       </ReactMarkdown>
     </div>
+  );
+};
+
+// Component Copy Button
+const CopyButton = ({ text }: { text: string }) => {
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="hover:text-white transition-colors"
+      title="Copy code"
+    >
+      {copied ? "✓ Copied" : "Copy"}
+    </button>
   );
 };
 
