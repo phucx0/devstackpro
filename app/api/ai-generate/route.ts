@@ -2,8 +2,6 @@
 import { xai } from "@ai-sdk/xai";
 import { generateText } from "ai";
 import { NextRequest, NextResponse } from "next/server";
-import path from "path";
-import fs from "fs";
 
 export async function POST(req: NextRequest) {
     try {
@@ -43,16 +41,6 @@ export async function POST(req: NextRequest) {
             temperature: 0.7
         });
 
-        // Parse JSON – strip possible markdown fences Grok may wrap around output
-        console.log("Log:", JSON.stringify(result, null, 2));
-        const logPath = path.join(process.cwd(), "logs", "ai-log.txt");
-
-        fs.mkdirSync(path.dirname(logPath), { recursive: true });
-
-        fs.appendFileSync(
-        logPath,
-        `\n==== ${new Date().toISOString()} ====\n${result.text}\n`
-        );
         const clean = result.text.replace(/```json|```/g, "").trim();
         const generated = JSON.parse(clean) as {
             title: string;
