@@ -1,48 +1,19 @@
-"use client";
-import Loading from "@/public/components/Loading";
 import MarkdownRenderer from "@/public/components/MarkdownRenderer";
-import { articleAPI } from "@/public/lib/api";
-import { ArticleWithTags } from "@/public/lib/types";
-import { useUser } from "@/public/providers/UserProvider";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { ArrowLeft, Eye, Clock, Tag } from "lucide-react";
+import { getArticle } from "@/services/articles.service";
+import NotFound from "@/public/components/NotFound";
 
-export default function ArticleDetailPage() {
-  const { id } = useParams();
-  const router = useRouter();
-  const [article, setArticle] = useState<ArticleWithTags>();
-  const { token, loading } = useUser();
-  const [thumbnailPreview, setThumbnailPreview] = useState<string>();
-  const [_loading, setLoading] = useState(true);
+export default async function ArticleDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const article = await getArticle({
+    article_id: Number(id),
+  });
 
-  useEffect(() => {
-    if (id && token && !loading) {
-      const getArticle = async () => {
-        try {
-          const result = await articleAPI.getAdminArticleById(
-            Number(id),
-            token,
-          );
-          if (result.success) {
-            setArticle(result.data);
-            if (result.data?.thumbnail) {
-              setThumbnailPreview(
-                `https://easytrade.site/api/v2${result.data?.thumbnail}`,
-              );
-            }
-          }
-        } catch (err) {
-          console.error("Lỗi khi lấy dữ liệu:", err);
-        }
-      };
-      getArticle();
-      const load = setTimeout(() => setLoading(false), 1500);
-      return () => clearTimeout(load);
-    }
-  }, [id, token, loading]);
-
-  if (_loading) return <Loading />;
+  if (!article) return <NotFound />;
 
   return (
     <div
@@ -53,32 +24,35 @@ export default function ArticleDetailPage() {
       }}
     >
       {/* Back button */}
-      <button
-        onClick={() => router.back()}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          marginBottom: 28,
-          fontFamily: "var(--font-mono)",
-          fontSize: 11,
-          fontWeight: 500,
-          letterSpacing: "0.1em",
-          textTransform: "uppercase",
-          color: "var(--noir-muted)",
-          background: "transparent",
-          border: "none",
-          cursor: "pointer",
-          padding: 0,
-          transition: "color 0.2s",
-        }}
-        onMouseOver={(e) =>
-          (e.currentTarget.style.color = "var(--noir-accent)")
-        }
-        onMouseOut={(e) => (e.currentTarget.style.color = "var(--noir-muted)")}
-      >
-        <ArrowLeft size={14} /> Back
-      </button>
+      <a href="/admin/articles">
+        <button
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 28,
+            fontFamily: "var(--font-mono)",
+            fontSize: 11,
+            fontWeight: 500,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "var(--noir-muted)",
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            padding: 0,
+            transition: "color 0.2s",
+          }}
+          // onMouseOver={(e) =>
+          //   (e.currentTarget.style.color = "var(--noir-accent)")
+          // }
+          // onMouseOut={(e) =>
+          //   (e.currentTarget.style.color = "var(--noir-muted)")
+          // }
+        >
+          <ArrowLeft size={14} /> Back
+        </button>
+      </a>
 
       {/* Article card */}
       <div
@@ -90,7 +64,7 @@ export default function ArticleDetailPage() {
         }}
       >
         {/* Thumbnail */}
-        {thumbnailPreview && (
+        {article.thumbnail && (
           <div
             style={{
               position: "relative",
@@ -100,7 +74,7 @@ export default function ArticleDetailPage() {
             }}
           >
             <img
-              src={thumbnailPreview}
+              src={`https://easytrade.site/api/v2${article.thumbnail}`}
               alt="Thumbnail"
               style={{
                 width: "100%",

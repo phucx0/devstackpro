@@ -1,7 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Upload, X, Eye, EyeOff, Save } from "lucide-react";
-import { articleAPI } from "@/public/lib/api";
 import { useUser } from "@/public/providers/UserProvider";
 import { ArticleWithTags, Tag, UpdateArticleRequest } from "@/public/lib/types";
 import { redirect, useParams } from "next/navigation";
@@ -9,7 +8,7 @@ import MarkdownRenderer from "@/public/components/MarkdownRenderer";
 import Loading from "@/public/components/Loading";
 import TagSelector from "@/public/components/admin/TagSelector";
 import MarkdownTextarea from "@/public/components/MarkdownTextarea";
-
+import { getArticle, updateArticle } from "@/services/articles.service";
 /* ─── Shared style tokens ─── */
 const S = {
   card: {
@@ -77,9 +76,6 @@ export default function UpdateArticlePage() {
   const { id } = useParams();
   const { token, loading } = useUser();
   const [_loading, setLoading] = useState(true);
-  const [originalData, setOriginalData] = useState<UpdateArticleRequest | null>(
-    null,
-  );
   const [formData, setFormData] = useState<UpdateArticleRequest | null>(null);
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [thumbnailPreview, setThumbnailPreview] = useState<string>();
@@ -90,11 +86,27 @@ export default function UpdateArticlePage() {
   const [previews, setPreviews] = useState<PreviewImage[]>([]);
   const [imagesChanged, setImagesChanged] = useState(false);
 
+  // original article
+  const [originalArticle, setOriginalArticle] = useState<ArticleWithTags>();
+  // changing article from original article
+  const [updatedArticle, setUpdatedArticle] = useState<ArticleWithTags>();
+  // Check update article
+  const isChanged = useMemo(() => {
+    if (!originalArticle || !updatedArticle) return false;
+    return (
+      originalArticle.title !== updatedArticle.title ||
+      originalArticle.content_md !== updatedArticle.content_md ||
+      originalArticle.slug !== updatedArticle.slug ||
+      originalArticle.description !== updatedArticle.description
+    );
+  }, [originalArticle, updatedArticle]);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => {
+
+    setUpdatedArticle((prev) => {
       if (!prev) return prev;
       const next = { ...prev, [name]: value };
       if (name === "title") {
@@ -147,59 +159,29 @@ export default function UpdateArticlePage() {
     setThumbnailPreview("");
   };
 
-  const isArrayEqual = (a: number[], b: number[]) => {
-    if (!a || !b || a.length !== b.length) return false;
-    return [...a].sort().every((v, i) => v === [...b].sort()[i]);
-  };
-
   const handleSubmit = async () => {
-    if (!id || !formData || !originalData || !token) return;
+    console.log("📤 updatedArticle trước update:", {
+      id: updatedArticle?.id,
+      title: updatedArticle?.title,
+      description: updatedArticle?.description,
+      content_md_length: updatedArticle?.content_md?.length,
+    });
+    if (!updatedArticle || !isChanged) {
+      alert("Không có thay đổi nào!");
+      return;
+    }
     setIsSubmitting(true);
     try {
-      const fd = new FormData();
-      let hasChanges = false;
-      const check = (key: keyof UpdateArticleRequest, val: string) => {
-        if (formData[key] !== originalData[key]) {
-          fd.append(key, val);
-          hasChanges = true;
-        }
-      };
-      check("title", formData.title || "");
-      check("slug", formData.slug || "");
-      check("content_md", formData.content_md || "");
-      check("status", formData.status || "draft");
-      check("description", formData.description || "");
-      if (thumbnailChanged && thumbnailFile) {
-        fd.append("thumbnail", thumbnailFile);
-        hasChanges = true;
-      }
-      if (imagesChanged && formData.images?.length) {
-        formData.images.forEach((f) => fd.append("images", f));
-        hasChanges = true;
-      }
-      if (
-        !isArrayEqual(
-          formData.tag_ids ?? [],
-          selectedTags.map((t) => t.id),
-        )
-      ) {
-        fd.append("tags", JSON.stringify(selectedTags.map((t) => t.id)));
-        hasChanges = true;
-      }
-      if (!hasChanges) {
-        alert("Không có thay đổi nào để cập nhật");
-        return;
-      }
-      const result = await articleAPI.updateArticle(Number(id), fd, token);
-      if (result.success) {
-        setThumbnailChanged(false);
-        setOriginalData(formData);
-        setImagesChanged(false);
+      const result = await updateArticle({
+        article: updatedArticle,
+      });
+      if (result) {
+        setOriginalArticle(updatedArticle);
         alert("Cập nhật thành công!");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Có lỗi xảy ra");
+      alert("Lỗi: " + (err.message || "Không thể cập nhật"));
     } finally {
       setIsSubmitting(false);
     }
@@ -207,48 +189,41 @@ export default function UpdateArticlePage() {
 
   useEffect(() => {
     if (id && token && !loading) {
-      const getArticle = async () => {
+      const fetchArticle = async () => {
         try {
-          const result = await articleAPI.getAdminArticleById(
-            Number(id),
-            token,
-          );
-          if (result.success) {
-            const init: UpdateArticleRequest = {
-              title: result.data?.title,
-              slug: result.data?.slug,
-              content_md: result.data?.content_md,
-              status: result.data?.status,
-              description: result.data?.description,
-              tag_ids: result.data.tags?.map((t: Tag) => t.id) ?? [],
-            };
-            setSelectedTags(result.data.tags ?? []);
-            setOriginalData(init);
-            setFormData(init);
+          const result = await getArticle({
+            article_id: Number(id),
+          });
+          setOriginalArticle(result);
+          setUpdatedArticle({ ...result });
+
+          if (result) {
+            setSelectedTags(result.tags ?? []);
             setPreviews(
-              (result.data?.images ?? []).map((img: any) => ({
+              (result.images ?? []).map((img: any) => ({
                 id: img.id,
                 url: `https://easytrade.site/api/v2${img.url}`,
                 name: img.name || img.alt_text || `image-${img.id}`,
               })),
             );
-            if (result.data?.thumbnail)
+            if (result.thumbnail) {
               setThumbnailPreview(
-                `https://easytrade.site/api/v2${result.data.thumbnail}`,
+                `https://easytrade.site/api/v2${result.thumbnail}`,
               );
+            }
           }
         } catch (err) {
           console.error(err);
         }
       };
-      getArticle();
+      fetchArticle();
       const t = setTimeout(() => setLoading(false), 1500);
       return () => clearTimeout(t);
     }
   }, [id, token, loading]);
 
   if (_loading) return <Loading />;
-  if (!formData)
+  if (!originalArticle || !updatedArticle)
     return (
       <div
         style={{
@@ -335,7 +310,7 @@ export default function UpdateArticlePage() {
             </button>
             <button
               onClick={handleSubmit}
-              disabled={isSubmitting}
+              disabled={!isChanged}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -349,8 +324,8 @@ export default function UpdateArticlePage() {
                 padding: "8px 18px",
                 borderRadius: 4,
                 border: "none",
-                cursor: isSubmitting ? "not-allowed" : "pointer",
-                opacity: isSubmitting ? 0.6 : 1,
+                cursor: isChanged ? "pointer" : "not-allowed",
+                opacity: isChanged ? 1 : 0.4,
                 transition: "opacity 0.2s",
               }}
             >
@@ -377,17 +352,17 @@ export default function UpdateArticlePage() {
             }}
           >
             <NoirInput
-              label="Tiêu đề"
+              label="Title"
               required
               name="title"
-              value={formData.title ?? ""}
+              value={updatedArticle.title ?? ""}
               onChange={handleInputChange}
               placeholder="Nhập tiêu đề bài viết…"
             />
             <NoirInput
               label="Slug (URL)"
               name="slug"
-              value={formData.slug ?? ""}
+              value={updatedArticle.slug ?? ""}
               onChange={handleInputChange}
               placeholder="slug-tu-dong-tao"
             />
@@ -395,7 +370,7 @@ export default function UpdateArticlePage() {
               label="Description"
               required
               name="description"
-              value={formData.description ?? ""}
+              value={updatedArticle.description ?? ""}
               onChange={handleInputChange}
               placeholder="Nhập giới thiệu về bài viết"
             />
@@ -407,15 +382,18 @@ export default function UpdateArticlePage() {
               Nội dung (Markdown)<span style={S.required}>*</span>
             </label>
             <MarkdownTextarea
-              content={formData.content_md ?? ""}
-              onChange={(text: string) =>
-                setFormData((prev) => ({ ...prev, content_md: text }))
-              }
+              content={updatedArticle.content_md ?? ""}
+              onChange={(text: string) => {
+                setUpdatedArticle((prev) => {
+                  if (!prev) return prev;
+                  return { ...prev, content_md: text };
+                });
+              }}
             />
           </div>
 
           {/* Preview */}
-          {showPreview && formData.title && (
+          {showPreview && updatedArticle.title && (
             <div
               style={{
                 ...S.card,
@@ -445,7 +423,7 @@ export default function UpdateArticlePage() {
                   letterSpacing: "-0.02em",
                 }}
               >
-                {formData.title}
+                {updatedArticle.title}
               </h3>
               <p
                 style={{
@@ -456,7 +434,7 @@ export default function UpdateArticlePage() {
                   letterSpacing: "0.05em",
                 }}
               >
-                /{formData.slug}
+                /{updatedArticle.slug}
               </p>
               {thumbnailPreview && (
                 <img
@@ -472,9 +450,9 @@ export default function UpdateArticlePage() {
                   }}
                 />
               )}
-              {formData.content_md && (
+              {updatedArticle.content_md && (
                 <div className="noir-markdown">
-                  <MarkdownRenderer content={formData.content_md} />
+                  <MarkdownRenderer content={updatedArticle.content_md} />
                 </div>
               )}
             </div>
@@ -495,7 +473,7 @@ export default function UpdateArticlePage() {
                   label: "Xuất bản",
                 },
               ].map((opt) => {
-                const active = formData.status === opt.value;
+                const active = updatedArticle.status === opt.value;
                 return (
                   <label
                     key={opt.value}

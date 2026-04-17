@@ -1,8 +1,13 @@
 "use client";
 import Loading from "@/public/components/Loading";
-import { articleAPI } from "@/public/lib/api";
-import { ArticleResponse, ArticleWithTags } from "@/public/lib/types";
+import { ArticleStatus, ArticleWithTags } from "@/public/lib/types";
 import { useUser } from "@/public/providers/UserProvider";
+import {
+  deleteArticleById,
+  getAllArticleByUserId,
+  getArticles,
+} from "@/services/articles.service";
+import { getUser } from "@/services/users.service";
 import {
   Eye,
   Newspaper,
@@ -15,11 +20,11 @@ import {
 import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-interface StatusProps {
-  status: "published" | "draft" | "hidden";
+interface ArticleStatusProps {
+  status: ArticleStatus;
 }
 
-export function Status({ status }: StatusProps) {
+export function Status({ status }: ArticleStatusProps) {
   const statusMap: Record<
     string,
     { label: string; color: string; bg: string }
@@ -83,12 +88,8 @@ export default () => {
     );
     if (!isConfirm) return;
     try {
-      const result = await articleAPI.deleteArticle(Number(id), token);
-      if (result.success) {
-        setArticles((prev) => prev?.filter((p) => p.id != id));
-      } else {
-        alert("Xóa thất bại, thử lại sau");
-      }
+      await deleteArticleById(id);
+      router.push("/admin/articles");
     } catch (err) {
       console.error(err);
       alert("Có lỗi xảy ra khi xóa bài viết");
@@ -97,15 +98,16 @@ export default () => {
 
   useEffect(() => {
     if (token) {
-      const getArticles = async () => {
+      const fetchArticles = async () => {
         try {
           setIsLoading(true);
-          const params = { page: pageNumber, limit: 10, status: null };
-          const result = await articleAPI.getAdminArticles(token, params);
-          if (result.success) {
-            setArticles(result.data);
-            setTotalPages(result.pagination.total_pages);
-            setTotalArticles(result.pagination.total);
+          const user = await getUser();
+          if (!user) return;
+          const _articles = await getAllArticleByUserId(user?.id);
+          if (_articles) {
+            setArticles(_articles);
+            // setTotalPages(result.pagination.total_pages);
+            // setTotalArticles(result.pagination.total);
           }
         } catch {
           console.log("Lỗi khi lấy danh sách article");
@@ -113,7 +115,7 @@ export default () => {
           setIsLoading(false);
         }
       };
-      getArticles();
+      fetchArticles();
     }
   }, [loading, token, pageNumber]);
 
@@ -295,7 +297,11 @@ export default () => {
                     {article.display_name}
                   </td>
                   <td style={{ padding: "14px 16px" }}>
-                    <Status status={article.status} />
+                    {article.status ? (
+                      <Status status={article!.status} />
+                    ) : (
+                      <div>underfined</div>
+                    )}
                   </td>
                   <td
                     style={{
