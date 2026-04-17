@@ -9,21 +9,20 @@ import {
   Youtube,
   CheckCircle2,
 } from "lucide-react";
-import { ContactFormData } from "@/public/lib/types";
-import { contactAPI } from "@/public/lib/api";
+import { MessageFormData } from "@/public/lib/types";
 
 export default function ContactPage() {
-  const [formData, setFormData] = useState<ContactFormData>({
+  const [formData, setFormData] = useState<MessageFormData>({
     name: "",
     message: "",
     email: "",
   });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Partial<ContactFormData>>({});
+  const [errors, setErrors] = useState<Partial<MessageFormData>>({});
 
   const validate = () => {
-    const newErrors: Partial<ContactFormData> = {};
+    const newErrors: Partial<MessageFormData> = {};
     if (!formData.name.trim()) newErrors.name = "Name is required";
     if (!formData.email.trim()) newErrors.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
@@ -38,7 +37,7 @@ export default function ContactPage() {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name as keyof ContactFormData]) {
+    if (errors[name as keyof MessageFormData]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
   };
@@ -48,14 +47,14 @@ export default function ContactPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      const result = await contactAPI.submit(formData);
-      if (result.success) {
-        setFormData({ name: "", email: "", message: "" });
-        setSubmitted(true);
-        setTimeout(() => setSubmitted(false), 5000);
-      } else {
-        alert(result.message || "Failed to send message. Please try again.");
-      }
+      // const result = await contactAPI.submit(formData);
+      // if (result.success) {
+      //   setFormData({ name: "", email: "", message: "" });
+      //   setSubmitted(true);
+      //   setTimeout(() => setSubmitted(false), 5000);
+      // } else {
+      //   alert(result.message || "Failed to send message. Please try again.");
+      // }
     } catch (err) {
       console.error("Submit error:", err);
       alert("An unexpected error occurred. Please try again later.");
