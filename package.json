@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@ai-sdk/xai": "^3.0.82",
+    "@supabase/ssr": "^0.10.2",
+    "@supabase/supabase-js": "^2.103.2",
     "@vercel/analytics": "^1.5.0",
     "ai": "^6.0.161",
     "lucide-react": "^0.553.0",
@@ -21,6 +23,7 @@
     "rehype-highlight": "^7.0.2",
     "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
+    "supabase": "^2.91.3",
     "swiper": "^12.0.3"
   },
   "devDependencies": {
