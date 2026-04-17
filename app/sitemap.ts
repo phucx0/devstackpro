@@ -1,5 +1,5 @@
-import { articleAPI } from '@/public/lib/api'
 import { ArticleWithTags } from '@/public/lib/types';
+import { getArticles } from '@/services/articles.service';
 import { MetadataRoute } from 'next'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -29,17 +29,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // Lấy các bài viết động từ API/database
     try {
-        const articles = await articleAPI.getArticles({
-            page: 1,
-            limit: 100,
-            status: 'published'
-        });
-        if (!articles?.data || articles.data.length === 0) {
+
+        const articles = await getArticles();
+        if (!articles || articles.length === 0) {
             return staticPages;
         }
-        const postPages: MetadataRoute.Sitemap = articles.data.map((article: ArticleWithTags) => ({
+        const postPages: MetadataRoute.Sitemap = articles.map((article: ArticleWithTags) => ({
             url: `${baseUrl}/articles/${article.slug}`,
-            lastModified: new Date(article.updated_at ?? ""),
+            lastModified: article.updated_at
+                ? new Date(article.updated_at)
+                : new Date(),
             changeFrequency: 'weekly' as const,
             priority: 0.7,
         }))
