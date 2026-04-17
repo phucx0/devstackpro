@@ -2,10 +2,9 @@ import MarkdownRenderer from "@/public/components/MarkdownRenderer";
 import NotFound from "@/public/components/NotFound";
 import CopyButton from "@/public/components/user/CopyButton";
 import FacebookShareButton from "@/public/components/user/FacebookShareButton";
-import { articleAPI } from "@/public/lib/api";
-import { ArrowLeft, Clock, User, Tag, Eye } from "lucide-react";
-import { Metadata, ResolvingMetadata } from "next";
-import Image from "next/image";
+import { getArticle } from "@/services/articles.service";
+import { ArrowLeft, Clock, User, Eye } from "lucide-react";
+import { Metadata } from "next";
 import Link from "next/link";
 
 type Props = {
@@ -13,21 +12,12 @@ type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-async function getArticle(slug: string) {
-  if (!slug) return null;
-  try {
-    const result = await articleAPI.getArticleBySlug(slug);
-    if (result.success) return result.data;
-    return null;
-  } catch {
-    return null;
-  }
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const finalSlug = Array.isArray(slug) ? slug.join("/") : slug;
-  const article = await getArticle(finalSlug);
+  const article = await getArticle({
+    slug: finalSlug,
+  });
 
   if (!article) {
     return { title: "Bài viết không tồn tại" };
@@ -40,13 +30,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       article.title ||
       "Master modern web and mobile development with expert guides on CSS, Flutter, Next.js, and UI design principles",
     alternates: {
-      canonical: `https://devstackpro.cloud/articles/${article.slug}`,
+      canonical: `https://devstackpro.cloud/article/${article.slug}`,
     },
     openGraph: {
       title: article.title + " - Dev Stack Pro",
       description: article.description || article.title,
       type: "article",
-      url: `https://devstackpro.cloud/articles/${article.slug}`,
+      url: `https://devstackpro.cloud/article/${article.slug}`,
       images: [
         {
           url: `https://easytrade.site/api/v2${article.thumbnail}`,
@@ -71,9 +61,11 @@ export default async function ArticlePage({
 }) {
   const { slug } = await params;
   const finalSlug = Array.isArray(slug) ? slug.join("/") : slug;
-  const _article = await getArticle(finalSlug);
+  const article = await getArticle({
+    slug: finalSlug,
+  });
 
-  if (!_article) return <NotFound />;
+  if (!article) return <NotFound />;
 
   function formatArticleTime(dateString: string) {
     const date = new Date(dateString);
@@ -96,10 +88,6 @@ export default async function ArticlePage({
     }).format(date);
   }
 
-  const thumbnailUrl = _article.thumbnail
-    ? `https://easytrade.site/api/v2/${_article.thumbnail}`
-    : null;
-
   return (
     <div className="noir-main">
       {/* ── Back nav ── */}
@@ -113,43 +101,6 @@ export default async function ArticlePage({
           Back to Home
         </Link>
       </div>
-
-      {/* ── Hero image (contained, not full-bleed) ── */}
-      {thumbnailUrl && (
-        <div className="noir-container" style={{ paddingTop: "28px" }}>
-          <div
-            style={{
-              position: "relative",
-              width: "100%",
-              maxHeight: "420px",
-              aspectRatio: "16/7",
-              borderRadius: "8px",
-              overflow: "hidden",
-              border: "0.5px solid var(--noir-border)",
-            }}
-          >
-            <Image
-              src={thumbnailUrl}
-              alt={_article.title}
-              fill
-              priority
-              fetchPriority="high"
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 80vw, 1000px"
-              style={{ filter: "brightness(0.9) saturate(0.95)" }}
-            />
-            {/* subtle gradient overlay at bottom */}
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background:
-                  "linear-gradient(to top, rgba(8,8,8,0.55) 0%, transparent 55%)",
-              }}
-            />
-          </div>
-        </div>
-      )}
 
       {/* ── Article layout ── */}
       <div
@@ -167,7 +118,7 @@ export default async function ArticlePage({
           {/* ── Main content ── */}
           <article>
             {/* Category / tags top */}
-            {_article.tags?.length > 0 && (
+            {article.tags?.length > 0 && (
               <div
                 style={{
                   display: "flex",
@@ -176,10 +127,10 @@ export default async function ArticlePage({
                   marginBottom: "16px",
                 }}
               >
-                {_article.tags.slice(0, 3).map((tag: any, i: number) => (
+                {article.tags.slice(0, 3).map((tag: any, i: number) => (
                   <Link
                     key={i}
-                    href={`/articles/search/${tag.name}`}
+                    href={`/article/search/${tag.name}`}
                     className="noir-tag"
                   >
                     {tag.name}
@@ -193,7 +144,7 @@ export default async function ArticlePage({
               className="noir-article-title"
               style={{ position: "static", padding: 0, maxWidth: "none" }}
             >
-              {_article.title}
+              {article.title}
             </h1>
 
             {/* Meta row */}
@@ -203,17 +154,17 @@ export default async function ArticlePage({
             >
               <span className="noir-article-meta-item">
                 <User size={12} />
-                {_article.display_name}
+                {article.display_name}
               </span>
               <span className="accent-dot" />
               <span className="noir-article-meta-item">
                 <Clock size={12} />
-                {formatArticleTime(_article.created_at)}
+                {formatArticleTime(article.created_at ?? "")}
               </span>
             </div>
 
             {/* Description */}
-            {_article.description && (
+            {article.description && (
               <p
                 style={{
                   fontSize: "16px",
@@ -225,7 +176,7 @@ export default async function ArticlePage({
                   fontStyle: "italic",
                 }}
               >
-                {_article.description}
+                {article.description}
               </p>
             )}
 
@@ -240,7 +191,7 @@ export default async function ArticlePage({
 
             {/* Markdown content */}
             <div className="noir-markdown">
-              <MarkdownRenderer content={_article.content_md} />
+              <MarkdownRenderer content={article.content_md ?? ""} />
             </div>
           </article>
 
@@ -279,7 +230,7 @@ export default async function ArticlePage({
                     flexShrink: 0,
                   }}
                 >
-                  {_article.display_name?.[0]?.toUpperCase()}
+                  {article.display_name?.[0]?.toUpperCase()}
                 </div>
                 <div>
                   <p
@@ -289,7 +240,7 @@ export default async function ArticlePage({
                       fontSize: "14px",
                     }}
                   >
-                    {_article.display_name}
+                    {article.display_name}
                   </p>
                   <p
                     style={{
@@ -299,14 +250,14 @@ export default async function ArticlePage({
                       marginTop: "2px",
                     }}
                   >
-                    {formatArticleTime(_article.created_at)}
+                    {formatArticleTime(article.created_at ?? "")}
                   </p>
                 </div>
               </div>
             </div>
 
             {/* All tags */}
-            {_article.tags?.length > 0 && (
+            {article.tags?.length > 0 && (
               <div
                 style={{
                   background: "var(--noir-surface)",
@@ -319,10 +270,10 @@ export default async function ArticlePage({
                   Topics
                 </p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                  {_article.tags.map((tag: any, i: number) => (
+                  {article.tags.map((tag: any, i: number) => (
                     <Link
                       key={i}
-                      href={`/articles/search/${tag.name}`}
+                      href={`/article/search/${tag.name}`}
                       className="noir-tag"
                     >
                       {tag.name}

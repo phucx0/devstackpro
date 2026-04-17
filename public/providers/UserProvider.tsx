@@ -1,20 +1,20 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { UserPublic } from "../lib/types";
+import { User } from "../lib/types";
 
 interface AuthContextProps {
-    user: UserPublic | null;
+    user: User | null;
     token: string | "";
     loading: boolean;
-    login: (data: { user: UserPublic; token: string }) => void;
+    login: (data: { user: User; token: string }) => void;
     logout: () => void;
 }
 
 const UserContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<UserPublic | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | "">("");
     const [loading, setLoading] = useState(true);
 
@@ -29,7 +29,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     // Hàm login
-    const login = (data: { user: UserPublic; token: string  }) => {
+    const login = (data: { user: User; token: string  }) => {
         setUser(data.user);
         setToken(data.token);
 

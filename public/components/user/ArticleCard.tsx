@@ -37,17 +37,21 @@ export default function ArticleCard({
   return (
     <Link href={`/articles/${article.slug}`} className="noir-card">
       {/* Thumbnail */}
-      <div className="noir-card-thumb-wrap">
-        <Image
-          src={`https://easytrade.site/api/v2/${article.thumbnail}`}
-          alt={article.title ?? ""}
-          fill
-          priority={index < 3}
-          className="noir-card-thumb"
-          placeholder="blur"
-          blurDataURL="/images/og-image.png"
-          sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 33vw"
-        />
+      <div className="noir-card-thumb-wrap flex items-center justify-center">
+        {article.thumbnail != null ? (
+          <Image
+            src={`https://easytrade.site/api/v2/${article.thumbnail}`}
+            alt={article.title ?? ""}
+            fill
+            priority={index < 3}
+            className="noir-card-thumb"
+            placeholder="blur"
+            blurDataURL="/images/og-image.png"
+            sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 33vw"
+          />
+        ) : (
+          <img src="/svg/logo.svg" alt="logo svg" />
+        )}
         {/* Ghost number on thumb */}
         <span className="noir-card-thumb-num" aria-hidden="true">
           {num}
@@ -87,7 +91,7 @@ export default function ArticleCard({
             <span>{article.display_name}</span>
           </div>
           <span className="noir-card-author">
-            {formatArticleTime(article.created_at)}
+            {formatArticleTime(article.created_at ?? "")}
           </span>
         </div>
       </div>
