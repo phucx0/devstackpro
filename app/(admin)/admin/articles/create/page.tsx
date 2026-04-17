@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { Upload, X, Eye, EyeOff, Save, Sparkles, Loader2 } from "lucide-react";
-import { articleAPI } from "@/public/lib/api";
 import { useUser } from "@/public/providers/UserProvider";
 import { CreateArticleRequest, Tag } from "@/public/lib/types";
 import { redirect } from "next/navigation";
@@ -379,7 +378,7 @@ export default function CreateArticle() {
         title: generated.title ?? prev.title,
         slug: toSlug(generated.title ?? prev.title),
         description: generated.description ?? prev.description,
-        content_md: generated.content_md ?? prev.content_md
+        content_md: generated.content_md ?? prev.content_md,
       }));
     } catch (err) {
       console.error("AI Generate error:", err);
@@ -399,11 +398,11 @@ export default function CreateArticle() {
     setFormData((prev) => ({ ...prev, images }));
     setIsSubmitting(true);
     try {
-      const result = await articleAPI.createArticle(formData, token);
-      if (result.success) {
-        alert("Tạo bài viết thành công");
-        redirect("/admin/articles");
-      }
+      // const result = await articleAPI.createArticle(formData, token);
+      // if (result.success) {
+      //   alert("Tạo bài viết thành công");
+      //   redirect("/admin/articles");
+      // }
     } catch (err) {
       console.error(err);
     } finally {
