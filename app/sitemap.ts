@@ -1,5 +1,5 @@
 import { ArticleWithTags } from '@/public/lib/types';
-import { getArticles } from '@/services/articles.service';
+import { getArticles } from '@/services/articles.user.service';
 import { MetadataRoute } from 'next'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
