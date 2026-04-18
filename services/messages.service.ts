@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/server";
 import { Message } from "@/public/lib/types";
 
 export async function getAllMessages(): Promise<Message[]> {

@@ -18,6 +18,7 @@ export type Tag          = Tables<'tags'>
 export type ArticleImage = Tables<'article_images'>
 export type ArticleTag   = Tables<'article_tags'>
 export type Message      = Tables<'messages'>
+export type Contact      = Tables<'contact_requests'>
 
 // =============================================
 // Insert / Update helpers
@@ -57,15 +58,13 @@ export interface RegisterRequest {
 }
 
 export interface CreateArticleRequest {
-  title: string
-  slug: string
-  description: string
-  content_md: string
-  content_html?: string
-  thumbnail?: File | null
-  images?: File[] | null
-  status?: ArticleStatus
-  tag_ids?: number[]
+  title: string;
+  slug: string;
+  description?: string;
+  content_md?: string;
+  thumbnail?: string;
+  status?: "draft" | "published";
+  tags?: Number[];
 }
 
 export interface UpdateArticleRequest extends Partial<CreateArticleRequest> {}
@@ -154,4 +153,12 @@ export interface DashboardData {
     metrics: DashboardMetrics
     trafficData: TrafficDataPoint[]
     recentActivities: RecentActivity[]
+}
+
+
+// ======== CONTACT ==========
+export interface ContactFormData {
+  email: string,
+  name: string,
+  message: string
 }
