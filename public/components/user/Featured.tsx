@@ -55,7 +55,7 @@ export default function Featured({
                 priority
                 fetchPriority="high"
                 sizes="(max-width: 900px) 100vw, 65vw"
-                className="object-contain p-8"
+                className="object-cover"
                 onError={(e) => {
                   // Phòng trường hợp URL thumbnail bị lỗi 404
                   e.currentTarget.src = "/svg/logo.svg";
@@ -113,7 +113,7 @@ export default function Featured({
                     priority
                     fetchPriority="high"
                     sizes="(max-width: 900px) 100vw, 65vw"
-                    className="object-contain p-8"
+                    className="object-cover"
                     onError={(e) => {
                       // Phòng trường hợp URL thumbnail bị lỗi 404
                       e.currentTarget.src = "/svg/logo.svg";
