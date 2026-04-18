@@ -1,37 +1,18 @@
 "use client";
+
 import { useEffect, useMemo, useState } from "react";
 import { Upload, X, Eye, EyeOff, Save } from "lucide-react";
 import { useUser } from "@/public/providers/UserProvider";
 import { ArticleWithTags, Tag, UpdateArticleRequest } from "@/public/lib/types";
-import { redirect, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import MarkdownRenderer from "@/public/components/MarkdownRenderer";
 import Loading from "@/public/components/Loading";
 import TagSelector from "@/public/components/admin/TagSelector";
 import MarkdownTextarea from "@/public/components/MarkdownTextarea";
-import { getArticle, updateArticle } from "@/services/articles.service";
-/* ─── Shared style tokens ─── */
-const S = {
-  card: {
-    background: "var(--noir-surface)",
-    border: "0.5px solid var(--noir-border)",
-    borderRadius: 6,
-    padding: "24px",
-  } as React.CSSProperties,
-  label: {
-    display: "block",
-    fontFamily: "var(--font-mono)",
-    fontSize: 10,
-    fontWeight: 500,
-    letterSpacing: "0.12em",
-    textTransform: "uppercase" as const,
-    color: "var(--noir-muted)",
-    marginBottom: 8,
-  } as React.CSSProperties,
-  required: {
-    color: "var(--noir-accent)",
-    marginLeft: 3,
-  } as React.CSSProperties,
-};
+import {
+  getArticleAction,
+  updateArticleAction,
+} from "@/services/author.actions";
 
 type PreviewImage = { id?: number; url: string; name: string };
 
@@ -44,29 +25,20 @@ function NoirInput({
   required?: boolean;
 }) {
   const [focused, setFocused] = useState(false);
+
   return (
     <div>
-      <label style={S.label}>
-        {label}
-        {required && <span style={S.required}>*</span>}
+      <label className="block font-mono text-[10px] uppercase tracking-widest text-(--noir-muted) mb-2">
+        {label} {required && <span className="text-(--noir-accent)">*</span>}
       </label>
+
       <input
         {...props}
-        style={{
-          width: "100%",
-          background: "var(--noir-card)",
-          borderRadius: 6,
-          border: `0.5px solid ${focused ? "var(--noir-accent)" : "var(--noir-border)"}`,
-          color: "var(--noir-white)",
-          fontFamily: "var(--font-body)",
-          fontSize: 14,
-          padding: "11px 14px",
-          outline: "none",
-          transition: "border-color 0.2s",
-          boxSizing: "border-box",
-        }}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
+        className={`w-full rounded-md bg-var-(--noir-card) border text-[14px] text-(--noir-white) px-3 py-2 outline-none transition
+          ${focused ? "border-(--noir-accent)" : "border-(--noir-border)"}
+        `}
       />
     </div>
   );
@@ -75,29 +47,27 @@ function NoirInput({
 export default function UpdateArticlePage() {
   const { id } = useParams();
   const { token, loading } = useUser();
+
   const [_loading, setLoading] = useState(true);
   const [formData, setFormData] = useState<UpdateArticleRequest | null>(null);
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [thumbnailPreview, setThumbnailPreview] = useState<string>();
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-  const [thumbnailChanged, setThumbnailChanged] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previews, setPreviews] = useState<PreviewImage[]>([]);
-  const [imagesChanged, setImagesChanged] = useState(false);
 
-  // original article
   const [originalArticle, setOriginalArticle] = useState<ArticleWithTags>();
-  // changing article from original article
   const [updatedArticle, setUpdatedArticle] = useState<ArticleWithTags>();
-  // Check update article
+
   const isChanged = useMemo(() => {
     if (!originalArticle || !updatedArticle) return false;
     return (
       originalArticle.title !== updatedArticle.title ||
       originalArticle.content_md !== updatedArticle.content_md ||
       originalArticle.slug !== updatedArticle.slug ||
-      originalArticle.description !== updatedArticle.description
+      originalArticle.description !== updatedArticle.description ||
+      originalArticle.status !== updatedArticle.status
     );
   }, [originalArticle, updatedArticle]);
 
@@ -108,7 +78,9 @@ export default function UpdateArticlePage() {
 
     setUpdatedArticle((prev) => {
       if (!prev) return prev;
-      const next = { ...prev, [name]: value };
+
+      const next: any = { ...prev, [name]: value };
+
       if (name === "title") {
         next.slug = value
           .toLowerCase()
@@ -124,64 +96,18 @@ export default function UpdateArticlePage() {
     });
   };
 
-  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-    const newFiles = Array.from(files).map((file, idx) => {
-      const ext = file.name.split(".").pop();
-      return new File([file], `${Date.now()}-${idx}.${ext}`, {
-        type: file.type,
-      });
-    });
-    setFormData((prev) => ({
-      ...prev,
-      images: prev?.images ? [...prev.images, ...newFiles] : newFiles,
-    }));
-    setPreviews((prev) => [
-      ...prev,
-      ...newFiles.map((f) => ({ url: URL.createObjectURL(f), name: f.name })),
-    ]);
-    setImagesChanged(true);
-  };
-
-  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.size <= 5 * 1024 * 1024) {
-      setThumbnailFile(file);
-      setThumbnailChanged(true);
-      setThumbnailPreview(URL.createObjectURL(file));
-    } else if (file) alert("File quá lớn. Vui lòng chọn ảnh dưới 5MB");
-  };
-
-  const removeThumbnail = () => {
-    setThumbnailFile(null);
-    setThumbnailChanged(true);
-    setThumbnailPreview("");
-  };
-
   const handleSubmit = async () => {
-    console.log("📤 updatedArticle trước update:", {
-      id: updatedArticle?.id,
-      title: updatedArticle?.title,
-      description: updatedArticle?.description,
-      content_md_length: updatedArticle?.content_md?.length,
-    });
-    if (!updatedArticle || !isChanged) {
-      alert("Không có thay đổi nào!");
-      return;
-    }
+    if (!updatedArticle || !isChanged) return;
+
     setIsSubmitting(true);
     try {
-      const result = await updateArticle({
-        article: updatedArticle,
-      });
+      const result = await updateArticleAction(updatedArticle);
       if (result) {
         setOriginalArticle(updatedArticle);
         alert("Cập nhật thành công!");
       }
     } catch (err: any) {
-      console.error(err);
-      alert("Lỗi: " + (err.message || "Không thể cập nhật"));
+      alert(err.message || "Lỗi");
     } finally {
       setIsSubmitting(false);
     }
@@ -189,281 +115,147 @@ export default function UpdateArticlePage() {
 
   useEffect(() => {
     if (id && token && !loading) {
-      const fetchArticle = async () => {
-        try {
-          const result = await getArticle({
-            article_id: Number(id),
-          });
-          setOriginalArticle(result);
-          setUpdatedArticle({ ...result });
+      (async () => {
+        const result = await getArticleAction(Number(id));
+        setOriginalArticle(result);
+        setUpdatedArticle({ ...result });
 
-          if (result) {
-            setSelectedTags(result.tags ?? []);
-            setPreviews(
-              (result.images ?? []).map((img: any) => ({
-                id: img.id,
-                url: `https://easytrade.site/api/v2${img.url}`,
-                name: img.name || img.alt_text || `image-${img.id}`,
-              })),
-            );
-            if (result.thumbnail) {
-              setThumbnailPreview(
-                `https://easytrade.site/api/v2${result.thumbnail}`,
-              );
-            }
-          }
-        } catch (err) {
-          console.error(err);
+        setSelectedTags(result.tags ?? []);
+        setPreviews(
+          (result.images ?? []).map((img: any) => ({
+            id: img.id,
+            url: `https://easytrade.site/api/v2${img.url}`,
+            name: img.name,
+          })),
+        );
+
+        if (result.thumbnail) {
+          setThumbnailPreview(
+            `https://easytrade.site/api/v2${result.thumbnail}`,
+          );
         }
-      };
-      fetchArticle();
-      const t = setTimeout(() => setLoading(false), 1500);
-      return () => clearTimeout(t);
+
+        setTimeout(() => setLoading(false), 1000);
+      })();
     }
   }, [id, token, loading]);
 
   if (_loading) return <Loading />;
-  if (!originalArticle || !updatedArticle)
+
+  if (!updatedArticle || !originalArticle) {
     return (
-      <div
-        style={{
-          textAlign: "center",
-          padding: "80px 24px",
-          fontFamily: "var(--font-mono)",
-          fontSize: 11,
-          letterSpacing: "0.1em",
-          color: "var(--noir-muted)",
-          textTransform: "uppercase",
-        }}
-      >
+      <div className="text-center py-20 font-mono text-[11px] uppercase tracking-widest text-(--noir-muted)">
         Không có dữ liệu
       </div>
     );
+  }
 
   return (
-    <div style={{ fontFamily: "var(--font-body)" }}>
-      {/* Sticky header */}
-      <header
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 50,
-          background: "rgba(8,8,8,0.95)",
-          backdropFilter: "blur(16px)",
-          borderBottom: "0.5px solid var(--noir-border)",
-          marginBottom: 28,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            height: 56,
-            padding: "0 2px",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div
-              style={{
-                width: 3,
-                height: 26,
-                background: "var(--noir-accent)",
-                borderRadius: 2,
-              }}
-            />
-            <h1
-              style={{
-                fontFamily: "var(--font-display)",
-                fontWeight: 700,
-                fontSize: 20,
-                color: "var(--noir-white)",
-                letterSpacing: "-0.01em",
-                margin: 0,
-              }}
-            >
+    <div className="font-body">
+      {/* HEADER */}
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-[rgba(8,8,8,0.95)] border-b border-(--noir-border) mb-7">
+        <div className="flex items-center justify-between h-14 px-1">
+          <div className="flex items-center gap-3">
+            <div className="w-[3px] h-[26px] bg-(--noir-accent) rounded" />
+            <h1 className="font-display text-xl font-bold text-(--noir-white)">
               Update Article
             </h1>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
+
+          <div className="flex gap-2">
             <button
               onClick={() => setShowPreview((p) => !p)}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                fontFamily: "var(--font-mono)",
-                fontSize: 10,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: showPreview ? "var(--noir-accent)" : "var(--noir-muted)",
-                background: "transparent",
-                border: `0.5px solid ${showPreview ? "var(--noir-accent)" : "var(--noir-border-md)"}`,
-                padding: "8px 14px",
-                borderRadius: 4,
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
+              className={`flex items-center gap-2 px-3 py-2 text-[10px] uppercase tracking-widest font-mono border rounded transition cursor-pointer 
+                ${showPreview ? "text-(--noir-accent)" : "text-(--noir-muted)"}  ${showPreview ? "border-(--noir-accent)" : "border-(--noir-border)"}
+              `}
             >
               {showPreview ? <EyeOff size={12} /> : <Eye size={12} />}
               {showPreview ? "Hide Preview" : "Preview"}
             </button>
+
             <button
               onClick={handleSubmit}
               disabled={!isChanged}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                fontFamily: "var(--font-mono)",
-                fontSize: 10,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "var(--noir-black)",
-                background: "var(--noir-accent)",
-                padding: "8px 18px",
-                borderRadius: 4,
-                border: "none",
-                cursor: isChanged ? "pointer" : "not-allowed",
-                opacity: isChanged ? 1 : 0.4,
-                transition: "opacity 0.2s",
-              }}
+              className="flex items-center gap-2 px-4 py-2 text-[10px] uppercase tracking-widest font-mono rounded bg-(--noir-accent) text-black disabled:opacity-40"
             >
               <Save size={12} />
-              {isSubmitting ? "Saving…" : "Lưu thay đổi"}
+              {isSubmitting ? "Saving..." : "Save"}
             </button>
           </div>
         </div>
       </header>
 
-      {/* Layout: 7fr | 3fr */}
-      <main
-        style={{ display: "grid", gridTemplateColumns: "7fr 3fr", gap: 20 }}
-      >
-        {/* ── Left column ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {/* Basic info */}
-          <div
-            style={{
-              ...S.card,
-              display: "flex",
-              flexDirection: "column",
-              gap: 18,
-            }}
-          >
+      {/* GRID */}
+      <main className="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-5">
+        {/* LEFT */}
+        <div className="flex flex-col gap-4">
+          <div className="p-6 rounded-sm border border-(--noir-border) bg-(--noir-surface) flex flex-col gap-4">
             <NoirInput
               label="Title"
-              required
               name="title"
               value={updatedArticle.title ?? ""}
               onChange={handleInputChange}
-              placeholder="Nhập tiêu đề bài viết…"
+              required
             />
+
             <NoirInput
-              label="Slug (URL)"
+              label="Slug"
               name="slug"
               value={updatedArticle.slug ?? ""}
               onChange={handleInputChange}
-              placeholder="slug-tu-dong-tao"
             />
+
             <NoirInput
               label="Description"
-              required
               name="description"
               value={updatedArticle.description ?? ""}
               onChange={handleInputChange}
-              placeholder="Nhập giới thiệu về bài viết"
+              required
             />
           </div>
 
-          {/* Markdown editor */}
-          <div style={S.card}>
-            <label style={S.label}>
-              Nội dung (Markdown)<span style={S.required}>*</span>
+          <div className="p-6 rounded-sm border border-(--noir-border) bg-(--noir-surface)">
+            <label className="block font-mono text-[10px] uppercase tracking-widest text-(--noir-muted) mb-2">
+              Content <span className="text-(--noir-accent)">*</span>
             </label>
+
             <MarkdownTextarea
               content={updatedArticle.content_md ?? ""}
-              onChange={(text: string) => {
-                setUpdatedArticle((prev) => {
-                  if (!prev) return prev;
-                  return { ...prev, content_md: text };
-                });
-              }}
+              onChange={(text) =>
+                setUpdatedArticle((p) => (p ? { ...p, content_md: text } : p))
+              }
             />
           </div>
 
-          {/* Preview */}
-          {showPreview && updatedArticle.title && (
-            <div
-              style={{
-                ...S.card,
-                borderColor: "var(--noir-accent)",
-                borderLeftWidth: 2,
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 9,
-                  letterSpacing: "0.15em",
-                  textTransform: "uppercase",
-                  color: "var(--noir-accent)",
-                  marginBottom: 16,
-                }}
-              >
-                Live Preview
-              </div>
-              <h3
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontWeight: 800,
-                  fontSize: 24,
-                  color: "var(--noir-white)",
-                  margin: "0 0 6px",
-                  letterSpacing: "-0.02em",
-                }}
-              >
+          {/* PREVIEW */}
+          {showPreview && (
+            <div className="p-6 rounded-sm border border-(--noir-accent) bg-(--noir-surface)">
+              <h3 className="font-display text-2xl text-white mb-2">
                 {updatedArticle.title}
               </h3>
-              <p
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 10,
-                  color: "var(--noir-muted)",
-                  marginBottom: 16,
-                  letterSpacing: "0.05em",
-                }}
-              >
+
+              <p className="text-[10px] font-mono text-(--noir-muted) mb-4">
                 /{updatedArticle.slug}
               </p>
+
               {thumbnailPreview && (
                 <img
                   src={thumbnailPreview}
-                  alt="Preview"
-                  style={{
-                    width: "100%",
-                    height: 200,
-                    objectFit: "cover",
-                    borderRadius: 6,
-                    marginBottom: 20,
-                    border: "0.5px solid var(--noir-border)",
-                  }}
+                  className="w-full h-[200px] object-cover rounded mb-4 border border-(--noir-border)"
                 />
               )}
-              {updatedArticle.content_md && (
-                <div className="noir-markdown">
-                  <MarkdownRenderer content={updatedArticle.content_md} />
-                </div>
-              )}
+
+              <MarkdownRenderer content={updatedArticle.content_md ?? ""} />
             </div>
           )}
         </div>
 
-        {/* ── Right column ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {/* Status */}
-          <div style={S.card}>
-            <label style={S.label}>Trạng thái</label>
+        {/* RIGHT */}
+        <div className="flex flex-col gap-4">
+          <div className="p-6 rounded-sm border border-(--noir-border) bg-(--noir-surface)">
+            <label className="block font-mono text-[10px] uppercase text-(--noir-muted) mb-2">
+              Status
+            </label>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {[
                 { value: "draft", icon: <EyeOff size={14} />, label: "Nháp" },
@@ -477,19 +269,13 @@ export default function UpdateArticlePage() {
                 return (
                   <label
                     key={opt.value}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      padding: "10px 14px",
-                      borderRadius: 4,
-                      cursor: "pointer",
-                      border: `0.5px solid ${active ? "var(--noir-accent)" : "var(--noir-border)"}`,
-                      background: active
-                        ? "var(--noir-accent-bg)"
-                        : "transparent",
-                      transition: "all 0.2s",
-                    }}
+                    className={`flex items-center justify-start gap-2.5 px-3.5 py-2.5 rounded-sm border-[0.5px] cursor-pointer transition-all duration-200
+                      ${
+                        active
+                          ? "border-(--noir-accent) bg-(--noir-accent-bg)"
+                          : "border-(--noir-border) bg-transparent"
+                      } 
+                    `}
                   >
                     <input
                       type="radio"
@@ -500,11 +286,9 @@ export default function UpdateArticlePage() {
                       style={{ display: "none" }}
                     />
                     <span
-                      style={{
-                        color: active
-                          ? "var(--noir-accent)"
-                          : "var(--noir-muted)",
-                      }}
+                      className={
+                        active ? "text-(--noir-accent)" : "text-(--noir-muted)"
+                      }
                     >
                       {opt.icon}
                     </span>
@@ -536,193 +320,57 @@ export default function UpdateArticlePage() {
               })}
             </div>
           </div>
-
-          {/* Tags */}
-          <div style={S.card}>
+          <div className="p-6 rounded-sm border border-(--noir-border) bg-(--noir-surface)">
+            <label className="block font-mono text-[10px] uppercase text-(--noir-muted) mb-2">
+              Tags
+            </label>
             <TagSelector
               selectedTags={selectedTags}
               setSelectedTags={setSelectedTags}
             />
           </div>
 
-          {/* Thumbnail */}
-          <div style={S.card}>
-            <label style={S.label}>
-              Thumbnail<span style={S.required}>*</span>
+          <div className="p-6 rounded-sm border border-(--noir-border) bg-(--noir-surface)">
+            <label className="block font-mono text-[10px] uppercase text-(--noir-muted) mb-2">
+              Thumbnail
             </label>
-            {!thumbnailPreview ? (
-              <label
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  aspectRatio: "16/9",
-                  border: "1px dashed var(--noir-border-md)",
-                  borderRadius: 6,
-                  cursor: "pointer",
-                  gap: 8,
-                  transition: "border-color 0.2s",
-                }}
-                onMouseOver={(e) =>
-                  (e.currentTarget.style.borderColor = "var(--noir-accent)")
-                }
-                onMouseOut={(e) =>
-                  (e.currentTarget.style.borderColor = "var(--noir-border-md)")
-                }
-              >
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleThumbnailChange}
-                  className="hidden"
-                />
-                <Upload size={24} style={{ color: "var(--noir-muted)" }} />
-                <span
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 10,
-                    letterSpacing: "0.1em",
-                    color: "var(--noir-muted)",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Upload
-                </span>
-                <span
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 9,
-                    color: "var(--noir-subtle)",
-                  }}
-                >
-                  PNG / JPG / AVIF · Max 5MB
-                </span>
-              </label>
-            ) : (
-              <div style={{ position: "relative" }}>
+
+            {thumbnailPreview ? (
+              <div className="relative">
                 <img
                   src={thumbnailPreview}
-                  alt="Preview"
-                  style={{
-                    width: "100%",
-                    aspectRatio: "16/9",
-                    objectFit: "cover",
-                    borderRadius: 6,
-                    display: "block",
-                  }}
+                  className="w-full aspect-video object-cover rounded"
                 />
-                <button
-                  onClick={removeThumbnail}
-                  style={{
-                    position: "absolute",
-                    top: 8,
-                    right: 8,
-                    background: "#ff4444",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "50%",
-                    width: 26,
-                    height: 26,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                  }}
-                >
-                  <X size={13} />
+                <button className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full">
+                  <X size={12} />
                 </button>
               </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center aspect-video border border-dashed border-(--noir-border) rounded cursor-pointer gap-2">
+                <Upload size={20} />
+                <span className="text-[10px] uppercase font-mono text-(--noir-muted)">
+                  Upload
+                </span>
+                <input type="file" className="hidden" />
+              </label>
             )}
           </div>
 
-          {/* Images */}
-          <div style={S.card}>
-            <label style={S.label}>
-              Ảnh<span style={S.required}>*</span>
+          <div className="p-6 rounded-sm border border-(--noir-border) bg-(--noir-surface)">
+            <label className="block font-mono text-[10px] uppercase text-(--noir-muted) mb-2">
+              Images
             </label>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 10,
-              }}
-            >
-              <label
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  aspectRatio: "1",
-                  border: "1px dashed var(--noir-border-md)",
-                  borderRadius: 6,
-                  cursor: "pointer",
-                  gap: 6,
-                  transition: "border-color 0.2s",
-                }}
-                onMouseOver={(e) =>
-                  (e.currentTarget.style.borderColor = "var(--noir-accent)")
-                }
-                onMouseOut={(e) =>
-                  (e.currentTarget.style.borderColor = "var(--noir-border-md)")
-                }
-              >
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImage}
-                  className="hidden"
-                />
-                <Upload size={20} style={{ color: "var(--noir-muted)" }} />
-                <span
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 9,
-                    letterSpacing: "0.1em",
-                    color: "var(--noir-muted)",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Add
-                </span>
-              </label>
+
+            <div className="grid grid-cols-2 gap-2">
               {previews.map((img, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 4,
-                  }}
-                >
+                <div key={i}>
                   <img
                     src={img.url}
-                    alt={img.name}
-                    style={{
-                      width: "100%",
-                      aspectRatio: "1",
-                      objectFit: "cover",
-                      borderRadius: 6,
-                      border: "0.5px solid var(--noir-border)",
-                    }}
+                    className="w-full aspect-square object-cover rounded border border-(--noir-border)"
                   />
-                  <span
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 8,
-                      color: "var(--noir-muted)",
-                      letterSpacing: "0.04em",
-                      textAlign: "center",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      width: "100%",
-                    }}
-                  >
+                  <p className="text-[8px] text-center text-(--noir-muted) truncate">
                     {img.name}
-                  </span>
+                  </p>
                 </div>
               ))}
             </div>

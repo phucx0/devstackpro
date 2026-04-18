@@ -8,6 +8,7 @@ import MarkdownRenderer from "@/public/components/MarkdownRenderer";
 import TagSelector from "@/public/components/admin/TagSelector";
 import MarkdownTextarea from "@/public/components/MarkdownTextarea";
 import ImageUpload from "@/public/components/admin/ImageUpload";
+import { createArticleAction } from "@/services/author.actions";
 
 /* ─── Shared style tokens ─── */
 const S = {
@@ -308,10 +309,9 @@ export default function CreateArticle() {
     slug: "",
     description: "",
     content_md: "",
-    thumbnail: null,
-    images: null,
+    thumbnail: "",
     status: "draft",
-    tag_ids: [],
+    tags: [],
   });
 
   const toSlug = (text: string) =>
@@ -337,22 +337,29 @@ export default function CreateArticle() {
     });
   };
 
-  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData((prev) => ({ ...prev, thumbnail: file }));
-      setThumbnailPreview(URL.createObjectURL(file));
-    }
-  };
+  // const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     setFormData((prev) => ({ ...prev, thumbnail: file }));
+  //     setThumbnailPreview(URL.createObjectURL(file));
+  //   }
+  // };
 
-  const removeThumbnail = () => {
-    setFormData((prev) => ({ ...prev, thumbnail: null }));
-    setThumbnailPreview("");
-  };
+  // const removeThumbnail = () => {
+  //   setFormData((prev) => ({ ...prev, thumbnail: null }));
+  //   setThumbnailPreview("");
+  // };
 
   /* ─── Grok AI Generation (via server-side API route) ─── */
   const handleAIGenerate = async (userPrompt: string) => {
+    if (!userPrompt.trim()) {
+      alert("Vui lòng nhập chủ đề bài viết");
+      return;
+    }
+
     setIsGenerating(true);
+    setFormData((prev) => ({ ...prev, content_md: "" })); // reset nội dung cũ
+
     try {
       const response = await fetch("/api/ai-generate", {
         method: "POST",
@@ -360,36 +367,69 @@ export default function CreateArticle() {
         body: JSON.stringify({ prompt: userPrompt }),
       });
 
-      const json = await response.json();
-
-      if (!response.ok || !json.success) {
-        throw new Error(json.error ?? "Unknown error");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Không thể tạo bài viết");
       }
 
-      const generated = json.data as {
-        title: string;
-        description: string;
-        content_md: string;
-        thumbnail: string;
-      };
+      // Đọc metadata từ header
+      const metaHeader = response.headers.get("X-Blog-Meta");
+      let meta: any = null;
+      if (metaHeader) {
+        try {
+          meta = JSON.parse(metaHeader);
+        } catch (e) {
+          console.warn("Không parse được meta header");
+        }
+      }
 
-      setFormData((prev) => ({
-        ...prev,
-        title: generated.title ?? prev.title,
-        slug: toSlug(generated.title ?? prev.title),
-        description: generated.description ?? prev.description,
-        content_md: generated.content_md ?? prev.content_md,
-      }));
-    } catch (err) {
+      // Đọc stream nội dung (content_md)
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let content = "";
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          content += chunk;
+
+          // Cập nhật realtime (tùy chọn - cho UX tốt hơn)
+          setFormData((prev) => ({ ...prev, content_md: content }));
+        }
+      }
+
+      // Sau khi stream xong, cập nhật đầy đủ form
+      if (meta) {
+        setFormData((prev) => ({
+          ...prev,
+          title: meta.title ?? prev.title,
+          slug: toSlug(meta.title ?? prev.title),
+          description: meta.description ?? prev.description,
+          content_md: content, // nội dung từ stream
+          // thumbnail: meta.thumbnail ?? prev.thumbnail,   // nếu sau này có
+        }));
+      } else {
+        // fallback nếu không có meta
+        setFormData((prev) => ({
+          ...prev,
+          content_md: content,
+        }));
+      }
+
+      console.log("Generate thành công - Title:", meta?.title);
+    } catch (err: any) {
       console.error("AI Generate error:", err);
-      alert("Có lỗi khi tạo bài viết. Vui lòng thử lại.");
+      alert(err.message || "Có lỗi khi tạo bài viết. Vui lòng thử lại.");
     } finally {
       setIsGenerating(false);
     }
   };
 
   const handleSubmit = async () => {
-    formData.tag_ids = selectedTags.map((t) => t.id);
+    formData.tags = selectedTags.map((t) => t.id);
     if (!formData.title) return alert("Thiếu title");
     if (!formData.description) return alert("Thiếu giới thiệu");
     if (!formData.slug) return alert("Thiếu slug");
@@ -398,11 +438,12 @@ export default function CreateArticle() {
     setFormData((prev) => ({ ...prev, images }));
     setIsSubmitting(true);
     try {
+      const result = await createArticleAction(formData);
       // const result = await articleAPI.createArticle(formData, token);
-      // if (result.success) {
-      //   alert("Tạo bài viết thành công");
-      //   redirect("/admin/articles");
-      // }
+      if (result) {
+        alert("Tạo bài viết thành công");
+        redirect(`/admin/articles/${result.id}`);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -685,7 +726,7 @@ export default function CreateArticle() {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={handleThumbnailChange}
+                    // onChange={handleThumbnailChange}
                     className="hidden"
                   />
                   <Upload size={24} style={{ color: "var(--noir-muted)" }} />
@@ -724,7 +765,7 @@ export default function CreateArticle() {
                     }}
                   />
                   <button
-                    onClick={removeThumbnail}
+                    // onClick={removeThumbnail}
                     style={{
                       position: "absolute",
                       top: 8,

@@ -1,7 +1,7 @@
 import MarkdownRenderer from "@/public/components/MarkdownRenderer";
-import { ArrowLeft, Eye, Clock, Tag } from "lucide-react";
-import { getArticle } from "@/services/articles.service";
+import { ArrowLeft, Eye, Clock } from "lucide-react";
 import NotFound from "@/public/components/NotFound";
+import { getArticle } from "@/services/articles.author.service";
 
 export default async function ArticleDetailPage({
   params,
@@ -9,108 +9,38 @@ export default async function ArticleDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const article = await getArticle({
-    article_id: Number(id),
-  });
-
+  const article = await getArticle(Number(id));
   if (!article) return <NotFound />;
 
   return (
-    <div
-      style={{
-        maxWidth: 820,
-        margin: "0 auto",
-        fontFamily: "var(--font-body)",
-      }}
-    >
+    <div className="max-w-[820px] mx-auto font-body">
       {/* Back button */}
       <a href="/admin/articles">
-        <button
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            marginBottom: 28,
-            fontFamily: "var(--font-mono)",
-            fontSize: 11,
-            fontWeight: 500,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "var(--noir-muted)",
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            padding: 0,
-            transition: "color 0.2s",
-          }}
-          // onMouseOver={(e) =>
-          //   (e.currentTarget.style.color = "var(--noir-accent)")
-          // }
-          // onMouseOut={(e) =>
-          //   (e.currentTarget.style.color = "var(--noir-muted)")
-          // }
-        >
-          <ArrowLeft size={14} /> Back
+        <button className="inline-flex items-center gap-2 mb-7 font-mono text-[11px] font-medium tracking-widest uppercase text-(--noir-muted) bg-transparent border-0 cursor-pointer p-0 transition-colors duration-200">
+          <ArrowLeft size={14} />
+          Back
         </button>
       </a>
 
       {/* Article card */}
-      <div
-        style={{
-          border: "0.5px solid var(--noir-border)",
-          borderRadius: 6,
-          overflow: "hidden",
-          background: "var(--noir-surface)",
-        }}
-      >
+      <div className="border border-(--noir-border) rounded-md overflow-hidden bg-(--noir-surface)">
         {/* Thumbnail */}
         {article.thumbnail && (
-          <div
-            style={{
-              position: "relative",
-              width: "100%",
-              aspectRatio: "16/7",
-              overflow: "hidden",
-            }}
-          >
+          <div className="relative w-full aspect-16/7 overflow-hidden">
             <img
               src={`https://easytrade.site/api/v2${article.thumbnail}`}
               alt="Thumbnail"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                filter: "brightness(0.4) saturate(0.6)",
-              }}
+              className="w-full h-full object-cover brightness-50 saturate-60"
             />
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background:
-                  "linear-gradient(to top, var(--noir-surface) 0%, transparent 60%)",
-              }}
-            />
+            <div className="absolute inset-0 bg-linear-to-t from-(--noir-surface) to-transparent opacity-90" />
           </div>
         )}
 
         {/* Header */}
-        <div
-          style={{
-            padding: "32px 36px 24px",
-            borderBottom: "0.5px solid var(--noir-border)",
-          }}
-        >
+        <div className="px-9 pt-8 pb-6 border-b border-(--noir-border)">
           {/* Tags */}
           {article?.tags && article.tags.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 6,
-                marginBottom: 14,
-              }}
-            >
+            <div className="flex flex-wrap gap-1.5 mb-3">
               {article.tags.map((tag) => (
                 <span key={tag.id} className="noir-tag">
                   {tag.name}
@@ -119,114 +49,47 @@ export default async function ArticleDetailPage({
             </div>
           )}
 
-          <h1
-            style={{
-              fontFamily: "var(--font-display)",
-              fontWeight: 800,
-              fontSize: "clamp(22px, 3.5vw, 34px)",
-              color: "var(--noir-white)",
-              letterSpacing: "-0.02em",
-              lineHeight: 1.2,
-              margin: "0 0 14px",
-            }}
-          >
+          <h1 className="font-display font-extrabold text-[clamp(22px,3.5vw,34px)] text-(--noir-white) tracking-[-0.02em] leading-tight mb-3">
             {article?.title}
           </h1>
 
           {article?.description && (
-            <p
-              style={{
-                fontSize: 14,
-                color: "var(--noir-muted)",
-                lineHeight: 1.7,
-                margin: "0 0 20px",
-                maxWidth: 600,
-              }}
-            >
+            <p className="text-[14px] text-(--noir-muted) leading-relaxed mb-5 max-w-[600px]">
               {article.description}
             </p>
           )}
 
           {/* Meta row */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: 20,
-            }}
-          >
-            <span
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: 10,
-                color: "var(--noir-muted)",
-                letterSpacing: "0.06em",
-              }}
-            >
+          <div className="flex items-center flex-wrap gap-5">
+            <span className="font-mono text-[10px] text-(--noir-muted) tracking-wider">
               /{article?.slug}
             </span>
-            <span
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-                fontFamily: "var(--font-mono)",
-                fontSize: 10,
-                color: "var(--noir-muted)",
-                letterSpacing: "0.06em",
-              }}
-            >
-              <Eye size={11} /> {article?.views ?? 0} views
+
+            <span className="flex items-center gap-1 font-mono text-[10px] text-(--noir-muted) tracking-wider">
+              <Eye size={11} />
+              {article?.views ?? 0} views
             </span>
-            <span
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-                fontFamily: "var(--font-mono)",
-                fontSize: 10,
-                color: "var(--noir-muted)",
-                letterSpacing: "0.06em",
-              }}
-            >
-              <Clock size={11} /> {article?.display_name}
+
+            <span className="flex items-center gap-1 font-mono text-[10px] text-(--noir-muted) tracking-wider">
+              <Clock size={11} />
+              {article?.display_name}
             </span>
-            {/* Status pill */}
+
+            {/* Status */}
             {article?.status && (
               <span
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 9,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  color:
-                    article.status === "published"
-                      ? "var(--noir-accent)"
-                      : "var(--noir-muted)",
-                  background:
-                    article.status === "published"
-                      ? "var(--noir-accent-bg)"
-                      : "rgba(116,116,112,0.1)",
-                  border: `0.5px solid ${article.status === "published" ? "rgba(232,255,0,0.25)" : "var(--noir-border)"}`,
-                  borderRadius: 3,
-                  padding: "3px 10px",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 5,
-                }}
+                className={`font-mono text-[9px] tracking-[0.12em] uppercase inline-flex items-center gap-1 px-2.5 py-[3px] rounded-[3px] border ${
+                  article.status === "published"
+                    ? "text-(--noir-accent) bg-(--noir-accent-bg) border-[rgba(232,255,0,0.25)]"
+                    : "text-(--noir-muted) bg-[rgba(116,116,112,0.1)] border-(--noir-border)"
+                }`}
               >
                 <span
-                  style={{
-                    width: 5,
-                    height: 5,
-                    borderRadius: "50%",
-                    background:
-                      article.status === "published"
-                        ? "var(--noir-accent)"
-                        : "var(--noir-muted)",
-                    display: "inline-block",
-                  }}
+                  className={`w-[5px] h-[5px] rounded-full ${
+                    article.status === "published"
+                      ? "bg-(--noir-accent)"
+                      : "bg-(--noir-muted)"
+                  }`}
                 />
                 {article.status}
               </span>
@@ -235,22 +98,13 @@ export default async function ArticleDetailPage({
         </div>
 
         {/* Content */}
-        <div style={{ padding: "36px" }}>
+        <div className="p-9">
           {article?.content_md ? (
             <div className="noir-markdown">
               <MarkdownRenderer content={article.content_md} />
             </div>
           ) : (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "40px 0",
-                fontFamily: "var(--font-mono)",
-                fontSize: 11,
-                color: "var(--noir-muted)",
-                letterSpacing: "0.1em",
-              }}
-            >
+            <div className="text-center py-10 font-mono text-[11px] text-(--noir-muted) tracking-widest">
               NO CONTENT
             </div>
           )}

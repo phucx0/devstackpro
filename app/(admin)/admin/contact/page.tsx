@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Eye, Trash2, Mail, MessageSquare, X } from "lucide-react";
-import { Message } from "@/public/lib/types";
+import { Contact } from "@/public/lib/types";
 import { useUser } from "@/public/providers/UserProvider";
+import { getAllContact, getContactById } from "@/services/contact.admin.service";
 
 const monoLabel = {
   fontFamily: "var(--font-mono)",
@@ -51,12 +52,12 @@ const Status = ({ status }: { status: string }) => {
 
 export default function AdminContactsPage() {
   const { token, loading } = useUser();
-  const [contacts, setContacts] = useState<Message[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [pageNumber, setPageNumber] = useState(1);
   const [totalContacts, setTotalContacts] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedContact, setSelectedContact] = useState<Message | null>(null);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -66,12 +67,12 @@ export default function AdminContactsPage() {
   const fetchContacts = async () => {
     try {
       setIsLoading(true);
-      // const response = await contactAPI.getContacts(pageNumber, 10, token)
-      // if (response.success) {
-      //     setContacts(response.data)
-      //     setTotalContacts(response.pagination.total)
-      //     setTotalPages(response.pagination.total_pages)
-      // }
+      const result = await getAllContact();
+      if (result) {
+        setContacts(result);
+        // setTotalContacts(response.pagination.total)
+        // setTotalPages(response.pagination.total_pages)
+      }
     } catch (error) {
       console.error("Error fetching contacts:", error);
     } finally {
@@ -81,11 +82,11 @@ export default function AdminContactsPage() {
 
   const handleViewContact = async (id: number) => {
     try {
-      //   const response = await contactAPI.getContactById(id);
-      //   if (response.success) {
-      //     setSelectedContact(response.data);
-      //     setShowModal(true);
-      //   }
+      const result = await getContactById(id);
+      if (result) {
+        setSelectedContact(result);
+        setShowModal(true);
+      }
     } catch (error) {
       console.error("Error fetching contact:", error);
     }
@@ -221,22 +222,27 @@ export default function AdminContactsPage() {
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ background: "var(--noir-card)" }}>
-                {["Tên", "Email", "Nội dung", "Trạng thái", "Ngày gửi", ""].map(
-                  (h, i) => (
-                    <th
-                      key={i}
-                      style={{
-                        ...monoLabel,
-                        padding: "12px 16px",
-                        textAlign: "left",
-                        borderBottom: "0.5px solid var(--noir-border)",
-                        fontWeight: 500,
-                      }}
-                    >
-                      {h}
-                    </th>
-                  ),
-                )}
+                {[
+                  "Tên",
+                  "Email",
+                  "Nội dung",
+                  "Trạng thái",
+                  "Ngày gửi",
+                  "ACTIONS",
+                ].map((h, i) => (
+                  <th
+                    key={i}
+                    style={{
+                      ...monoLabel,
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      borderBottom: "0.5px solid var(--noir-border)",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>

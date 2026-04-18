@@ -83,9 +83,8 @@ export default function SideBar() {
   const { user, logout } = useUser();
   const pathname = usePathname();
 
-  const isSelected = (path: string) => {
-    const fullPath = "/admin" + (path === "/" ? "" : "/" + path);
-    return pathname === fullPath;
+  const isSelected = (module: string) => {
+    return pathname.includes(`/${module}`);
   };
 
   return (
@@ -203,10 +202,10 @@ export default function SideBar() {
             selected={isSelected("tags")}
           />
           <NavButton
-            path="messages"
-            name="Messages"
+            path="contact"
+            name="Contact"
             Icon={<MessageSquare size={14} />}
-            selected={isSelected("messages")}
+            selected={isSelected("contact")}
           />
         </div>
       </div>
