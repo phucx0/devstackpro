@@ -2,7 +2,7 @@ import MarkdownRenderer from "@/public/components/MarkdownRenderer";
 import NotFound from "@/public/components/NotFound";
 import CopyButton from "@/public/components/user/CopyButton";
 import FacebookShareButton from "@/public/components/user/FacebookShareButton";
-import { getArticle } from "@/services/articles.service";
+import { getArticleBySlug } from "@/services/articles.user.service";
 import { ArrowLeft, Clock, User, Eye } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
@@ -15,9 +15,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const finalSlug = Array.isArray(slug) ? slug.join("/") : slug;
-  const article = await getArticle({
-    slug: finalSlug,
-  });
+  const article = await getArticleBySlug(finalSlug);
 
   if (!article) {
     return { title: "Bài viết không tồn tại" };
@@ -61,9 +59,7 @@ export default async function ArticlePage({
 }) {
   const { slug } = await params;
   const finalSlug = Array.isArray(slug) ? slug.join("/") : slug;
-  const article = await getArticle({
-    slug: finalSlug,
-  });
+  const article = await getArticleBySlug(finalSlug);
 
   if (!article) return <NotFound />;
 

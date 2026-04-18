@@ -2,7 +2,6 @@
 import { ArticleWithTags } from "@/public/lib/types";
 import { useState } from "react";
 import ArticleCard from "./ArticleCard";
-import { getArticles } from "@/services/articles.service";
 
 interface Props {
   initialArticles: ArticleWithTags[];
@@ -23,16 +22,15 @@ export default function ArticlesList({
   const limit = 10;
 
   const handleShowMore = async () => {
-    if (loading) return;
-    setLoading(true);
-    const newPage = page + 1;
-    setPage(newPage);
-    const result = await getArticles();
-    if (result) {
-      setArticles((prev) => [...prev, ...result]);
-      // setTotalPages(result.pagination.total_pages)
-    }
-    setLoading(false);
+    // if (loading) return;
+    // setLoading(true);
+    // const newPage = page + 1;
+    // setPage(newPage);
+    // const result = await getArticles();
+    // if (result) {
+    //   setArticles((prev) => [...prev, ...result]);
+    // }
+    // setLoading(false);
   };
 
   return (

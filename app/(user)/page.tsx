@@ -1,7 +1,10 @@
 import ArticlesList from "@/public/components/user/ArticlesList";
 import Featured from "@/public/components/user/Featured";
 import { Metadata } from "next";
-import { getArticles } from "@/services/articles.service";
+import {
+  getArticles,
+  getFeaturedArticles,
+} from "@/services/articles.user.service";
 
 export const metadata: Metadata = {
   title: "Dev Stack Pro",
@@ -11,9 +14,10 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const articles = await getArticles();
+  const featuredArticles = await getFeaturedArticles();
   return (
     <div>
-      <Featured articles={articles.slice(0, 3)} />
+      <Featured articles={featuredArticles.slice(0, 3)} />
       <ArticlesList
         initialArticles={articles}
         initialPage={1}

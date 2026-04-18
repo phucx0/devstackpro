@@ -1,17 +1,21 @@
 import ArticleCard from "@/public/components/user/ArticleCard";
-import { getArticles } from "@/services/articles.service";
+import { getArticles } from "@/services/articles.user.service";
 
 export default async ({ params }: { params: Promise<{ q: string }> }) => {
   const { q } = await params;
-  const articles = await getArticles(q);
+  const decodedQuery = decodeURIComponent(q);
+  const articles = await getArticles(decodedQuery);
 
   return (
     <div className="min-h-screen">
-      <div className="text-2xl text-white font-bold mb-4">
-        Found {articles.length} results for "{q}"
+      <div className="flex items-center my-4 gap-3">
+        <div className="noir-section-line" aria-hidden="true"></div>
+        <div className="text-2xl text-white font-bold">
+          Found {articles.length} results for "{decodedQuery}"
+        </div>
       </div>
       {articles && articles?.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="noir-articles-grid">
           {articles.map((article) => (
             <ArticleCard key={article.id} article={article} />
           ))}
