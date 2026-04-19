@@ -66,11 +66,8 @@ export async function GET() {
     return NextResponse.json({ images });
 }
 
-export async function DELETE(
-    req: NextRequest,
-    { params }: { params: { key: string } }
-) {
-    const key = decodeURIComponent(params.key);
+export async function DELETE(req: NextRequest) {
+    const { key } = await req.json();
 
     const command = new DeleteObjectCommand({
         Bucket: R2_BUCKET,
@@ -78,5 +75,6 @@ export async function DELETE(
     });
 
     await r2Client.send(command);
+
     return NextResponse.json({ success: true });
 }
