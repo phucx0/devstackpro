@@ -14,6 +14,10 @@ import {
   updateArticleAction,
 } from "@/services/author.actions";
 
+import { uploadToR2, useFileUpload } from "@/hooks/useFileUpload";
+import { toast } from "sonner";
+import { Underdog } from "next/font/google";
+
 type PreviewImage = { id?: number; url: string; name: string };
 
 function NoirInput({
@@ -49,16 +53,14 @@ export default function UpdateArticlePage() {
   const { token, loading } = useUser();
 
   const [_loading, setLoading] = useState(true);
-  const [formData, setFormData] = useState<UpdateArticleRequest | null>(null);
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
-  const [thumbnailPreview, setThumbnailPreview] = useState<string>();
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previews, setPreviews] = useState<PreviewImage[]>([]);
 
-  const [originalArticle, setOriginalArticle] = useState<ArticleWithTags>();
-  const [updatedArticle, setUpdatedArticle] = useState<ArticleWithTags>();
+  const [originalArticle, setOriginalArticle] =
+    useState<UpdateArticleRequest>();
+  const [updatedArticle, setUpdatedArticle] = useState<UpdateArticleRequest>();
 
   const isChanged = useMemo(() => {
     if (!originalArticle || !updatedArticle) return false;
@@ -67,9 +69,11 @@ export default function UpdateArticlePage() {
       originalArticle.content_md !== updatedArticle.content_md ||
       originalArticle.slug !== updatedArticle.slug ||
       originalArticle.description !== updatedArticle.description ||
-      originalArticle.status !== updatedArticle.status
+      originalArticle.status !== updatedArticle.status ||
+      originalArticle.thumbnail !== updatedArticle.thumbnail
     );
   }, [originalArticle, updatedArticle]);
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE;
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -96,6 +100,87 @@ export default function UpdateArticlePage() {
     });
   };
 
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const items = e.clipboardData.items;
+
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (file) {
+          handleUpload({ target: { files: [file] } } as any);
+        }
+      }
+    }
+  };
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.warning("Chỉ upload hình ảnh thôi!");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      // 10MB
+      toast.warning("File quá lớn! Tối đa 10MB.");
+      return;
+    }
+
+    try {
+      // Bước 1: Lấy presigned URL
+      const res = await fetch("/api/images/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Không lấy được link upload");
+      }
+
+      const { presignedUrl, fileKey, publicUrl } = await res.json();
+
+      // Bước 2: Upload trực tiếp lên R2 (quan trọng nhất)
+      const uploadRes = await fetch(presignedUrl, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
+
+      if (!uploadRes.ok) {
+        const errorText = await uploadRes.text().catch(() => "");
+        console.error("Upload failed - Status:", uploadRes.status);
+        console.error("Response:", errorText);
+        throw new Error(`Upload thất bại (${uploadRes.status})`);
+      }
+
+      toast.success("Upload thumbnail successfully");
+      setUpdatedArticle((prev) =>
+        prev
+          ? {
+              ...prev,
+              thumbnail: fileKey,
+            }
+          : prev,
+      );
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error("Upload error: ", error.message);
+    } finally {
+      e.target.value = ""; // reset input để upload lại cùng file
+    }
+  };
+
   const handleSubmit = async () => {
     if (!updatedArticle || !isChanged) return;
 
@@ -104,10 +189,10 @@ export default function UpdateArticlePage() {
       const result = await updateArticleAction(updatedArticle);
       if (result) {
         setOriginalArticle(updatedArticle);
-        alert("Cập nhật thành công!");
+        toast.success("Cập nhật thành công!");
       }
     } catch (err: any) {
-      alert(err.message || "Lỗi");
+      toast.error(err.message || "Lỗi");
     } finally {
       setIsSubmitting(false);
     }
@@ -117,23 +202,27 @@ export default function UpdateArticlePage() {
     if (id && token && !loading) {
       (async () => {
         const result = await getArticleAction(Number(id));
-        setOriginalArticle(result);
-        setUpdatedArticle({ ...result });
+
+        const _article: UpdateArticleRequest = {
+          id: result.id,
+          title: result.title,
+          slug: result.slug,
+          content_md: result.content_md || undefined,
+          description: result.description || undefined,
+          status: result.status || "draft",
+          tags: result.tags || [],
+        };
+        setOriginalArticle(_article);
+        setUpdatedArticle({ ..._article });
 
         setSelectedTags(result.tags ?? []);
         setPreviews(
           (result.images ?? []).map((img: any) => ({
             id: img.id,
-            url: `https://easytrade.site/api/v2${img.url}`,
+            url: `${IMAGE_BASE_URL}${img.url}`,
             name: img.name,
           })),
         );
-
-        if (result.thumbnail) {
-          setThumbnailPreview(
-            `https://easytrade.site/api/v2${result.thumbnail}`,
-          );
-        }
 
         setTimeout(() => setLoading(false), 1000);
       })();
@@ -238,9 +327,11 @@ export default function UpdateArticlePage() {
                 /{updatedArticle.slug}
               </p>
 
-              {thumbnailPreview && (
+              {updatedArticle.thumbnail && (
                 <img
-                  src={thumbnailPreview}
+                  src={
+                    process.env.NEXT_PUBLIC_URL_IMAGE + updatedArticle.thumbnail
+                  }
                   className="w-full h-[200px] object-cover rounded mb-4 border border-(--noir-border)"
                 />
               )}
@@ -335,10 +426,12 @@ export default function UpdateArticlePage() {
               Thumbnail
             </label>
 
-            {thumbnailPreview ? (
+            {updatedArticle.thumbnail ? (
               <div className="relative">
                 <img
-                  src={thumbnailPreview}
+                  src={
+                    process.env.NEXT_PUBLIC_URL_IMAGE + updatedArticle.thumbnail
+                  }
                   className="w-full aspect-video object-cover rounded"
                 />
                 <button className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full">
@@ -346,13 +439,18 @@ export default function UpdateArticlePage() {
                 </button>
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center aspect-video border border-dashed border-(--noir-border) rounded cursor-pointer gap-2">
+              <div
+                tabIndex={0}
+                onPaste={handlePaste}
+                onClick={(e) => e.currentTarget.focus()}
+                className="flex flex-col items-center justify-center aspect-video border border-dashed border-(--noir-border) rounded cursor-pointer gap-2"
+              >
                 <Upload size={20} />
                 <span className="text-[10px] uppercase font-mono text-(--noir-muted)">
                   Upload
                 </span>
-                <input type="file" className="hidden" />
-              </label>
+                <input type="file" className="hidden" onChange={handleUpload} />
+              </div>
             )}
           </div>
 

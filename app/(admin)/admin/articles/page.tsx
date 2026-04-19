@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import { Status } from "@/public/components/admin/ArticleStatus";
 import NotFound from "@/public/components/NotFound";
+import { toast } from "sonner";
 
 interface Props {
   searchParams: { page?: string };
@@ -44,7 +45,7 @@ export default async ({ searchParams }: Props) => {
       redirect("/admin/articles");
     } catch (err) {
       console.error(err);
-      alert("Có lỗi xảy ra khi xóa bài viết");
+      toast.error("Có lỗi xảy ra khi xóa bài viết");
     }
   };
 

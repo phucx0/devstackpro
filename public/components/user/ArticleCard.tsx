@@ -33,6 +33,7 @@ export default function ArticleCard({
 
   // Zero-padded index for the card corner
   const num = String(index + 1).padStart(2, "0");
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE;
 
   return (
     <Link href={`/articles/${article.slug}`} className="noir-card">
@@ -40,7 +41,7 @@ export default function ArticleCard({
       <div className="noir-card-thumb-wrap flex items-center justify-center">
         {article.thumbnail != null ? (
           <Image
-            src={`https://easytrade.site/api/v2/${article.thumbnail}`}
+            src={`${IMAGE_BASE_URL}${article.thumbnail}`}
             alt={article.title ?? ""}
             fill
             priority={index < 3}

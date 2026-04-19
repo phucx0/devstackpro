@@ -16,6 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const finalSlug = Array.isArray(slug) ? slug.join("/") : slug;
   const article = await getArticleBySlug(finalSlug);
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE;
 
   if (!article) {
     return { title: "Bài viết không tồn tại" };
@@ -37,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `https://devstackpro.cloud/article/${article.slug}`,
       images: [
         {
-          url: `https://easytrade.site/api/v2${article.thumbnail}`,
+          url: `${IMAGE_BASE_URL}${article.thumbnail}`,
           width: 1200,
           height: 630,
         },
@@ -47,7 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title: article.title + " - Dev Stack Pro",
       description: article.description || article.title,
-      images: [`https://easytrade.site/api/v2${article.thumbnail}`],
+      images: [`${IMAGE_BASE_URL}${article.thumbnail}`],
     },
   };
 }

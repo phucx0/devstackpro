@@ -28,8 +28,6 @@ const ARTICLE_SELECT = `
 
 export const getArticleBySlug = cache(async (slug: string): Promise<ArticleWithTags> => {
     const supabase = await createClient();
-    console.log("get 1");
-
     const { data: article, error } = await supabase
         .from("articles")
         .select(ARTICLE_SELECT)
