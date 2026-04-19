@@ -298,7 +298,6 @@ function AIGenerateModal({
 export default function CreateArticle() {
   const { token } = useUser();
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
-  const [thumbnailPreview, setThumbnailPreview] = useState<string>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [images, setImages] = useState<File[]>([]);
@@ -429,7 +428,7 @@ export default function CreateArticle() {
   };
 
   const handleSubmit = async () => {
-    formData.tags = selectedTags.map((t) => t.id);
+    formData.tags = selectedTags;
     if (!formData.title) return alert("Thiếu title");
     if (!formData.description) return alert("Thiếu giới thiệu");
     if (!formData.slug) return alert("Thiếu slug");
@@ -701,7 +700,7 @@ export default function CreateArticle() {
               <label style={S.label}>
                 Thumbnail<span style={S.required}>*</span>
               </label>
-              {!thumbnailPreview ? (
+              {!formData.thumbnail ? (
                 <label
                   style={{
                     display: "flex",
@@ -754,7 +753,7 @@ export default function CreateArticle() {
               ) : (
                 <div style={{ position: "relative" }} className="group">
                   <img
-                    src={thumbnailPreview}
+                    src={formData.thumbnail}
                     alt="Preview"
                     style={{
                       width: "100%",
@@ -838,9 +837,9 @@ export default function CreateArticle() {
               >
                 /{formData.slug}
               </p>
-              {thumbnailPreview && (
+              {formData.thumbnail && (
                 <img
-                  src={thumbnailPreview}
+                  src={formData.thumbnail}
                   alt="Preview"
                   style={{
                     width: "100%",

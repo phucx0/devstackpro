@@ -11,6 +11,7 @@ export default async function ArticleDetailPage({
   const { id } = await params;
   const article = await getArticle(Number(id));
   if (!article) return <NotFound />;
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE;
 
   return (
     <div className="max-w-[820px] mx-auto font-body">
@@ -28,7 +29,7 @@ export default async function ArticleDetailPage({
         {article.thumbnail && (
           <div className="relative w-full aspect-16/7 overflow-hidden">
             <img
-              src={`https://easytrade.site/api/v2${article.thumbnail}`}
+              src={`${IMAGE_BASE_URL}${article.thumbnail}`}
               alt="Thumbnail"
               className="w-full h-full object-cover brightness-50 saturate-60"
             />

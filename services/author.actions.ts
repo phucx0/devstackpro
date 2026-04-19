@@ -7,13 +7,13 @@ import {
     getArticle,
     getArticles,
 } from "@/services/articles.author.service";
-import { ArticleWithTags, CreateArticleRequest } from "@/public/lib/types";
+import { ArticleWithTags, CreateArticleRequest, UpdateArticleRequest } from "@/public/lib/types";
 
 export async function createArticleAction(params: CreateArticleRequest) {
     return await createArticle(params);
 }
 
-export async function updateArticleAction(article: ArticleWithTags) {
+export async function updateArticleAction(article: UpdateArticleRequest) {
     return await updateArticle({ article });
 }
 

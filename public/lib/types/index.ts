@@ -63,11 +63,13 @@ export interface CreateArticleRequest {
   description?: string;
   content_md?: string;
   thumbnail?: string;
-  status?: "draft" | "published";
-  tags?: Number[];
+  status?: "draft" | "published" | "archived";
+  tags?: Tag[];
 }
 
-export interface UpdateArticleRequest extends Partial<CreateArticleRequest> {}
+export interface UpdateArticleRequest extends Partial<CreateArticleRequest> {
+  id: number;
+}
 
 export interface MessageFormData {
   name: string

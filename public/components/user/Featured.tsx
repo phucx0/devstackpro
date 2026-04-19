@@ -24,6 +24,7 @@ export default function Featured({
   if (!articles || articles.length < 3) return null;
 
   const [main, second, third] = articles;
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE;
 
   const formatDate = (dateStr: string) =>
     new Intl.DateTimeFormat("en-US", {
@@ -47,7 +48,7 @@ export default function Featured({
               <Image
                 src={
                   main.thumbnail
-                    ? `https://easytrade.site/api/v2/${main.thumbnail}`
+                    ? `${IMAGE_BASE_URL}${main.thumbnail}`
                     : "/svg/logo.svg"
                 }
                 alt={main.title}
@@ -105,7 +106,7 @@ export default function Featured({
                   <Image
                     src={
                       article.thumbnail
-                        ? `https://easytrade.site/api/v2/${article.thumbnail}`
+                        ? `${IMAGE_BASE_URL}${article.thumbnail}`
                         : "/svg/logo.svg"
                     }
                     alt={article.title}

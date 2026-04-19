@@ -39,9 +39,9 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
                 <Image
                   src={props.src}
                   alt={props.alt || "image"}
-                  className="object-cover"
+                  className="w-full aspect-video relative my-10 rounded-lg overflow-hidden object-cover"
                   fill
-                  loading="lazy"
+                  loading="eager"
                   quality={90}
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
@@ -60,15 +60,19 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
           h4: ({ node, ...props }) => (
             <h4 className="text-base md:text-lg " {...props} />
           ),
-          p: ({ node, ...props }) => {
-            const children = props.children;
-            if (node?.children?.length === 1) {
-              if ((node.children[0] as any)?.tagName === "img")
-                return <>{children}</>;
-              if ((node.children[0] as any)?.tagName === "code")
-                return <>{children}</>;
+          p: ({ node, children }) => {
+            const first = node?.children?.[0] as any;
+            const isOnlyBlock =
+              node?.children?.length === 1 && first?.type === "element";
+
+            const tag = first?.tagName;
+            if (
+              isOnlyBlock &&
+              (tag === "img" || tag === "div" || tag === "pre")
+            ) {
+              return <>{children}</>;
             }
-            return <p {...props} />;
+            return <p>{children}</p>;
           },
           table: ({ node, ...props }) => (
             <div className="w-full overflow-y-hidden">

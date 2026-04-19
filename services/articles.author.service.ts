@@ -6,6 +6,7 @@ import {
     DashboardMetrics,
     RecentActivity,
     TrafficDataPoint,
+    UpdateArticleRequest,
 } from "@/public/lib/types";
 
 // Helper lấy user hiện tại, throw nếu chưa auth
@@ -122,9 +123,9 @@ export async function getArticles(): Promise<ArticleWithTags[]> {
     return articles.map(mapArticle);
 }
 
-export async function updateArticle(params: { article: ArticleWithTags }) {
+export async function updateArticle(params: { article: UpdateArticleRequest }) {
     const supabase = await createClient();
-    await getAuthUser(supabase); // ✅ check auth
+    await getAuthUser(supabase);
     const { article } = params;
 
     const { data, error } = await supabase
@@ -134,7 +135,7 @@ export async function updateArticle(params: { article: ArticleWithTags }) {
             slug: article.slug,
             description: article.description,
             content_md: article.content_md,
-            // thumbnail: article.thumbnail,
+            thumbnail: article.thumbnail,
             status: article.status,
             updated_at: new Date().toISOString(),
         })
