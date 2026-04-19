@@ -1,5 +1,4 @@
 "use client";
-import { useUser } from "@/public/providers/UserProvider";
 import { signIn } from "@/services/auth.service";
 import { redirect } from "next/navigation";
 import { useState, KeyboardEvent } from "react";
@@ -10,7 +9,6 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { login } = useUser();
 
   const handleSignIn = async () => {
     if (!email.trim() || !password.trim()) {
@@ -25,10 +23,6 @@ export default function SignIn() {
     try {
       const result = await signIn(email, password);
       if (result.user) {
-        login({
-          user: result.user,
-          token: result.token,
-        });
         redirectTo = result.user.role === "admin" ? "/admin" : "/";
       } else {
         setError("Invalid email or password.");

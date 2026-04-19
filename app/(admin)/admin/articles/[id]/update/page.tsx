@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Upload, X, Eye, EyeOff, Save } from "lucide-react";
-import { useUser } from "@/public/providers/UserProvider";
-import { ArticleWithTags, Tag, UpdateArticleRequest } from "@/public/lib/types";
+import { useAuth } from "@/public/providers/UserProvider";
+import { Tag, UpdateArticleRequest } from "@/public/lib/types";
 import { useParams } from "next/navigation";
 import MarkdownRenderer from "@/public/components/MarkdownRenderer";
 import Loading from "@/public/components/Loading";
@@ -47,7 +47,7 @@ function NoirInput({
 
 export default function UpdateArticlePage() {
   const { id } = useParams();
-  const { token, loading } = useUser();
+  const { profile, loading } = useAuth();
 
   const [_loading, setLoading] = useState(true);
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
@@ -196,7 +196,7 @@ export default function UpdateArticlePage() {
   };
 
   useEffect(() => {
-    if (id && token) {
+    if (id) {
       (async () => {
         setLoading(true);
         const result = await getArticleAction(Number(id));
@@ -225,7 +225,7 @@ export default function UpdateArticlePage() {
         setLoading(false);
       })();
     }
-  }, [id, token, loading]);
+  }, [id, loading]);
 
   if (_loading) return <Loading />;
 

@@ -1,5 +1,4 @@
 import { Tag } from "@/public/lib/types";
-import { useUser } from "@/public/providers/UserProvider";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -12,7 +11,6 @@ export default function TagSelector({
   selectedTags,
   setSelectedTags,
 }: TagSelectorProps) {
-  const { token, loading } = useUser();
   const [tags, setTags] = useState<Tag[]>([]);
 
   const toggleTag = (tag: Tag) => {
@@ -34,8 +32,8 @@ export default function TagSelector({
   };
 
   useEffect(() => {
-    if (!loading && token) fetchTags();
-  }, [loading, token]);
+    fetchTags();
+  }, []);
 
   return (
     <div style={{ width: "100%" }}>

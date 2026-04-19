@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { Upload, X, Eye, EyeOff, Save, Sparkles, Loader2 } from "lucide-react";
-import { useUser } from "@/public/providers/UserProvider";
 import { CreateArticleRequest, Tag } from "@/public/lib/types";
 import { redirect } from "next/navigation";
 import MarkdownRenderer from "@/public/components/MarkdownRenderer";
@@ -296,7 +295,6 @@ function AIGenerateModal({
 }
 
 export default function CreateArticle() {
-  const { token } = useUser();
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -433,12 +431,10 @@ export default function CreateArticle() {
     if (!formData.description) return alert("Thiếu giới thiệu");
     if (!formData.slug) return alert("Thiếu slug");
     if (!formData.content_md) return alert("Thiếu nội dung");
-    if (!token) redirect("/auth/sign-in");
     setFormData((prev) => ({ ...prev, images }));
     setIsSubmitting(true);
     try {
       const result = await createArticleAction(formData);
-      // const result = await articleAPI.createArticle(formData, token);
       if (result) {
         alert("Tạo bài viết thành công");
         redirect(`/admin/articles/${result.id}`);

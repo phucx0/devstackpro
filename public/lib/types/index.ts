@@ -28,6 +28,10 @@ export type ArticleUpdate = TablesUpdate<'articles'>
 export type UserInsert    = TablesInsert<'users'>
 export type MessageInsert = TablesInsert<'messages'>
 
+
+// UserPublish
+export interface UserPublish extends Omit<User, "role" | "deleted_at"> {}
+
 // =============================================
 // Derived types (join / business logic)
 // =============================================
