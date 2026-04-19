@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const finalSlug = Array.isArray(slug) ? slug.join("/") : slug;
   const article = await getArticleBySlug(finalSlug);
-  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE;
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
   if (!article) {
     return { title: "Bài viết không tồn tại" };

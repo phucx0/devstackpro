@@ -33,7 +33,7 @@ export default function ArticleCard({
 
   // Zero-padded index for the card corner
   const num = String(index + 1).padStart(2, "0");
-  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE;
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
   return (
     <Link href={`/articles/${article.slug}`} className="noir-card">

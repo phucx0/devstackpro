@@ -24,7 +24,7 @@ export default function Featured({
   if (!articles || articles.length < 3) return null;
 
   const [main, second, third] = articles;
-  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE;
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
   const formatDate = (dateStr: string) =>
     new Intl.DateTimeFormat("en-US", {

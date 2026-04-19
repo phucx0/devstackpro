@@ -11,7 +11,7 @@ export default async function ArticleDetailPage({
   const { id } = await params;
   const article = await getArticle(Number(id));
   if (!article) return <NotFound />;
-  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE;
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
   return (
     <div className="max-w-[820px] mx-auto font-body">

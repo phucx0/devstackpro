@@ -13,10 +13,7 @@ import {
   getArticleAction,
   updateArticleAction,
 } from "@/services/author.actions";
-
-import { uploadToR2, useFileUpload } from "@/hooks/useFileUpload";
 import { toast } from "sonner";
-import { Underdog } from "next/font/google";
 
 type PreviewImage = { id?: number; url: string; name: string };
 
@@ -73,7 +70,7 @@ export default function UpdateArticlePage() {
       originalArticle.thumbnail !== updatedArticle.thumbnail
     );
   }, [originalArticle, updatedArticle]);
-  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE;
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -199,8 +196,9 @@ export default function UpdateArticlePage() {
   };
 
   useEffect(() => {
-    if (id && token && !loading) {
+    if (id && token) {
       (async () => {
+        setLoading(true);
         const result = await getArticleAction(Number(id));
 
         const _article: UpdateArticleRequest = {
@@ -224,7 +222,7 @@ export default function UpdateArticlePage() {
           })),
         );
 
-        setTimeout(() => setLoading(false), 1000);
+        setLoading(false);
       })();
     }
   }, [id, token, loading]);
