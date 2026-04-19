@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
+        hostname: "images.devstackpro.cloud",
+        pathname: "/*",
+      },
+      {
+        protocol: "https",
         hostname: "easytrade.site",
         pathname: "/api/v2/**",
       },
