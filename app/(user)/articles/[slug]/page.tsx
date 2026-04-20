@@ -1,9 +1,10 @@
 import MarkdownRenderer from "@/public/components/MarkdownRenderer";
 import NotFound from "@/public/components/NotFound";
-import CopyButton from "@/public/components/user/CopyButton";
-import FacebookShareButton from "@/public/components/user/FacebookShareButton";
-import { getArticleBySlug } from "@/services/articles.user.service";
-import { ArrowLeft, Clock, User, Eye } from "lucide-react";
+import {
+  getArticleBySlug,
+  increaseView,
+} from "@/services/articles.user.service";
+import { ArrowLeft } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
 import AuthorShareCard from "./AuthorShareCard";
@@ -61,10 +62,12 @@ export default async function ArticlePage({
 }) {
   const { slug } = await params;
   const finalSlug = Array.isArray(slug) ? slug.join("/") : slug;
+  const {} = await Promise;
   const article = await getArticleBySlug(finalSlug);
   const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
   if (!article) return <NotFound />;
+  void increaseView(article.id);
 
   function formatArticleTime(dateString: string) {
     const date = new Date(dateString);

@@ -1,7 +1,8 @@
 // Chỉ dùng server createClient → hỗ trợ SSR/SEO tốt
-import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { ArticleWithTags } from "@/public/lib/types";
+import { cache } from "react";
 
 
 export const revalidate = 60;
@@ -28,24 +29,34 @@ const ARTICLE_SELECT = `
     article_tags (tag:tags (id, name))
 `;
 
-export const getArticleBySlug = cache(async (slug: string): Promise<ArticleWithTags> => {
-    const supabase = await createClient();
-    const { data: article, error } = await supabase
-        .from("articles")
-        .select(ARTICLE_SELECT)
-        .eq("status", "published")
-        .eq("slug", slug)
-        .maybeSingle();
+export const getArticleBySlug = unstable_cache(
+    async (slug: string): Promise<ArticleWithTags | null> => {
+        const supabase = await createClient();
+        const { data: article, error } = await supabase
+            .from("articles")
+            .select(ARTICLE_SELECT)
+            .eq("status", "published")
+            .eq("slug", slug)
+            .maybeSingle();
 
-    if (error) throw error;
+        if (error) throw error;
+        if (!article) return null;
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        await supabase.rpc("increase_article_view", { article_id: article.id });
+        return mapArticle(article);
+    },
+    ["article-by-slug"],
+    {
+        revalidate: 60, // cache 60s
     }
+);
 
-    return mapArticle(article);
-});
+export async function increaseView(articleId: number) {
+    const supabase = await createClient();
+
+    await supabase.rpc("increase_article_view", {
+        article_id: articleId,
+    });
+}
 
 // Lấy danh sách `article` theo `username` 
 export const getArticlesByUsername = cache(async (username: string): Promise<ArticleWithTags[]> => {
