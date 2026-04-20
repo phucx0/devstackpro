@@ -35,7 +35,7 @@ export const getArticleBySlug = cache(async (slug: string): Promise<ArticleWithT
         .select(ARTICLE_SELECT)
         .eq("status", "published")
         .eq("slug", slug)
-        .single();
+        .maybeSingle();
 
     if (error) throw error;
 
