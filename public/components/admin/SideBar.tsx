@@ -1,5 +1,5 @@
 "use client";
-import { useAuth } from "@/public/providers/UserProvider";
+import { useAuth } from "@/public/providers/AuthProvider";
 import {
   LayoutDashboard,
   LogOut,

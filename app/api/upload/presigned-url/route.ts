@@ -18,10 +18,10 @@ export async function POST(request: NextRequest) {
         
         // Validate file type
         if (!R2_CONFIG.allowedMimeTypes.includes(fileType)) {
-        return NextResponse.json(
-            { error: 'Invalid file type' },
-            { status: 400 }
-        );
+            return NextResponse.json(
+                { error: 'Invalid file type' },
+                { status: 400 }
+            );
         }
         
         // Validate file size
@@ -33,10 +33,8 @@ export async function POST(request: NextRequest) {
         }
         
         // Generate unique file key
-        const timestamp = `${Date.now()}-${nanoid(8)}`;
-        const fileExtension = fileName.split('.').pop();
-        const fileKey = `${documentType}/${fileName}_${timestamp}.${fileExtension}`;
-        
+        const fileKey = `${Date.now()}-${nanoid(8)}-${fileName}`;
+
         // Create presigned URL for PUT operation
         const command = new PutObjectCommand({
             Bucket: R2_CONFIG.bucketName,
@@ -57,9 +55,7 @@ export async function POST(request: NextRequest) {
         
         return NextResponse.json({
             presignedUrl,
-            fileKey,
-            filePath: fileKey,
-            expiresAt: Date.now() + R2_CONFIG.presignedUrlExpiry * 1000,
+            fileKey
         });
         
     } catch (error) {

@@ -1,5 +1,5 @@
 "use client";
-import { useAuth } from "@/public/providers/UserProvider";
+import { useAuth } from "@/public/providers/AuthProvider";
 import { Bell, ChevronDown, Settings, User, LogOut } from "lucide-react";
 import { useState, useRef, useEffect, ReactNode } from "react";
 import { createPortal } from "react-dom";

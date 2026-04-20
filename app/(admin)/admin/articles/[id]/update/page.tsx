@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Upload, X, Eye, EyeOff, Save } from "lucide-react";
-import { useAuth } from "@/public/providers/UserProvider";
+import { Eye, EyeOff, Save } from "lucide-react";
+import { useAuth } from "@/public/providers/AuthProvider";
 import { Tag, UpdateArticleRequest } from "@/public/lib/types";
 import { useParams } from "next/navigation";
 import MarkdownRenderer from "@/public/components/MarkdownRenderer";
@@ -14,6 +14,8 @@ import {
   updateArticleAction,
 } from "@/services/author.actions";
 import { toast } from "sonner";
+import ImageUpload from "./ImageUpload";
+import { useFileUpload } from "@/hooks/useFileUpload";
 
 type PreviewImage = { id?: number; url: string; name: string };
 
@@ -53,11 +55,10 @@ export default function UpdateArticlePage() {
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const [previews, setPreviews] = useState<PreviewImage[]>([]);
-
   const [originalArticle, setOriginalArticle] =
     useState<UpdateArticleRequest>();
   const [updatedArticle, setUpdatedArticle] = useState<UpdateArticleRequest>();
+  const { uploadFile } = useFileUpload();
 
   const isChanged = useMemo(() => {
     if (!originalArticle || !updatedArticle) return false;
@@ -96,23 +97,19 @@ export default function UpdateArticlePage() {
       return next;
     });
   };
-
-  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const items = e.clipboardData.items;
-
-    for (const item of items) {
-      if (item.type.startsWith("image/")) {
-        const file = item.getAsFile();
-        if (file) {
-          handleUpload({ target: { files: [file] } } as any);
-        }
-      }
-    }
+  const handleRemoveThumbnail = () => {
+    setUpdatedArticle((prev) =>
+      prev
+        ? {
+            ...prev,
+            thumbnail: undefined,
+          }
+        : prev,
+    );
   };
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  // Upload Image to R2
+  const handleUpload = async (file: File) => {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
@@ -127,54 +124,23 @@ export default function UpdateArticlePage() {
     }
 
     try {
-      // Bước 1: Lấy presigned URL
-      const res = await fetch("/api/images/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileName: file.name,
-          fileType: file.type,
-          fileSize: file.size,
-        }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || "Không lấy được link upload");
+      const { fileKey, success, error } = await uploadFile(file, "image");
+      if (success) {
+        toast.success("Upload thumbnail successfully");
+        setUpdatedArticle((prev) =>
+          prev
+            ? {
+                ...prev,
+                thumbnail: fileKey,
+              }
+            : prev,
+        );
+        return;
       }
-
-      const { presignedUrl, fileKey, publicUrl } = await res.json();
-
-      // Bước 2: Upload trực tiếp lên R2 (quan trọng nhất)
-      const uploadRes = await fetch(presignedUrl, {
-        method: "PUT",
-        body: file,
-        headers: {
-          "Content-Type": file.type,
-        },
-      });
-
-      if (!uploadRes.ok) {
-        const errorText = await uploadRes.text().catch(() => "");
-        console.error("Upload failed - Status:", uploadRes.status);
-        console.error("Response:", errorText);
-        throw new Error(`Upload thất bại (${uploadRes.status})`);
-      }
-
-      toast.success("Upload thumbnail successfully");
-      setUpdatedArticle((prev) =>
-        prev
-          ? {
-              ...prev,
-              thumbnail: fileKey,
-            }
-          : prev,
-      );
+      toast.error("Upload thumbnail failed");
     } catch (error: any) {
       console.error("Upload error:", error);
       toast.error("Upload error: ", error.message);
-    } finally {
-      e.target.value = ""; // reset input để upload lại cùng file
     }
   };
 
@@ -200,7 +166,6 @@ export default function UpdateArticlePage() {
       (async () => {
         setLoading(true);
         const result = await getArticleAction(Number(id));
-
         const _article: UpdateArticleRequest = {
           id: result.id,
           title: result.title,
@@ -209,19 +174,12 @@ export default function UpdateArticlePage() {
           description: result.description || undefined,
           status: result.status || "draft",
           tags: result.tags || [],
+          thumbnail: result.thumbnail || undefined,
         };
+
         setOriginalArticle(_article);
         setUpdatedArticle({ ..._article });
-
         setSelectedTags(result.tags ?? []);
-        setPreviews(
-          (result.images ?? []).map((img: any) => ({
-            id: img.id,
-            url: `${IMAGE_BASE_URL}${img.url}`,
-            name: img.name,
-          })),
-        );
-
         setLoading(false);
       })();
     }
@@ -327,9 +285,7 @@ export default function UpdateArticlePage() {
 
               {updatedArticle.thumbnail && (
                 <img
-                  src={
-                    process.env.NEXT_PUBLIC_URL_IMAGE + updatedArticle.thumbnail
-                  }
+                  src={IMAGE_BASE_URL + updatedArticle.thumbnail}
                   className="w-full h-[200px] object-cover rounded mb-4 border border-(--noir-border)"
                 />
               )}
@@ -419,58 +375,13 @@ export default function UpdateArticlePage() {
             />
           </div>
 
-          <div className="p-6 rounded-sm border border-(--noir-border) bg-(--noir-surface)">
-            <label className="block font-mono text-[10px] uppercase text-(--noir-muted) mb-2">
-              Thumbnail
-            </label>
-
-            {updatedArticle.thumbnail ? (
-              <div className="relative">
-                <img
-                  src={
-                    process.env.NEXT_PUBLIC_URL_IMAGE + updatedArticle.thumbnail
-                  }
-                  className="w-full aspect-video object-cover rounded"
-                />
-                <button className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full">
-                  <X size={12} />
-                </button>
-              </div>
-            ) : (
-              <div
-                tabIndex={0}
-                onPaste={handlePaste}
-                onClick={(e) => e.currentTarget.focus()}
-                className="flex flex-col items-center justify-center aspect-video border border-dashed border-(--noir-border) rounded cursor-pointer gap-2"
-              >
-                <Upload size={20} />
-                <span className="text-[10px] uppercase font-mono text-(--noir-muted)">
-                  Upload
-                </span>
-                <input type="file" className="hidden" onChange={handleUpload} />
-              </div>
-            )}
-          </div>
-
-          <div className="p-6 rounded-sm border border-(--noir-border) bg-(--noir-surface)">
-            <label className="block font-mono text-[10px] uppercase text-(--noir-muted) mb-2">
-              Images
-            </label>
-
-            <div className="grid grid-cols-2 gap-2">
-              {previews.map((img, i) => (
-                <div key={i}>
-                  <img
-                    src={img.url}
-                    className="w-full aspect-square object-cover rounded border border-(--noir-border)"
-                  />
-                  <p className="text-[8px] text-center text-(--noir-muted) truncate">
-                    {img.name}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Upload Thumbnail Image */}
+          <ImageUpload
+            label="Thumbnail"
+            thumbnailUrl={updatedArticle.thumbnail || null}
+            onChange={handleUpload}
+            onRemove={handleRemoveThumbnail}
+          />
         </div>
       </main>
     </div>

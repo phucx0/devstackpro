@@ -1,7 +1,7 @@
 "use client";
 import Loading from "@/public/components/Loading";
 import { Tag } from "@/public/lib/types";
-import { useAuth } from "@/public/providers/UserProvider";
+import { useAuth } from "@/public/providers/AuthProvider";
 import { Newspaper, Trash2, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 

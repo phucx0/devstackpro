@@ -1,8 +1,10 @@
-// articles.service.ts
 // Chỉ dùng server createClient → hỗ trợ SSR/SEO tốt
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { ArticleWithTags } from "@/public/lib/types";
+
+
+export const revalidate = 60;
 
 // Helper tái sử dụng để map raw data → ArticleWithTags
 function mapArticle(a: any): ArticleWithTags {
@@ -45,6 +47,22 @@ export const getArticleBySlug = cache(async (slug: string): Promise<ArticleWithT
     return mapArticle(article);
 });
 
+// Lấy danh sách `article` theo `username` 
+export const getArticlesByUsername = cache(async (username: string): Promise<ArticleWithTags[]> => {
+    const supabase = await createClient();
+    let query = supabase
+        .from("articles")
+        .select(ARTICLE_SELECT)
+        .eq("status", "published")
+        .eq("user.username", username);
+
+    const { data: articles, error } = await query
+        .order("created_at", { ascending: false })
+        .limit(15);
+
+    if (error) throw error;
+    return articles.map(mapArticle);
+});
 
 export const getArticles = cache(async (keyword?: string): Promise<ArticleWithTags[]> => {
     const supabase = await createClient();

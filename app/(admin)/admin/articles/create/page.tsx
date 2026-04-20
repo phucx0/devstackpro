@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 import MarkdownRenderer from "@/public/components/MarkdownRenderer";
 import TagSelector from "@/public/components/admin/TagSelector";
 import MarkdownTextarea from "@/public/components/MarkdownTextarea";
-import ImageUpload from "@/public/components/admin/ImageUpload";
 import { createArticleAction } from "@/services/author.actions";
 
 /* ─── Shared style tokens ─── */
@@ -334,19 +333,6 @@ export default function CreateArticle() {
     });
   };
 
-  // const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (file) {
-  //     setFormData((prev) => ({ ...prev, thumbnail: file }));
-  //     setThumbnailPreview(URL.createObjectURL(file));
-  //   }
-  // };
-
-  // const removeThumbnail = () => {
-  //   setFormData((prev) => ({ ...prev, thumbnail: null }));
-  //   setThumbnailPreview("");
-  // };
-
   /* ─── Grok AI Generation (via server-side API route) ─── */
   const handleAIGenerate = async (userPrompt: string) => {
     if (!userPrompt.trim()) {
@@ -415,8 +401,6 @@ export default function CreateArticle() {
           content_md: content,
         }));
       }
-
-      console.log("Generate thành công - Title:", meta?.title);
     } catch (err: any) {
       console.error("AI Generate error:", err);
       alert(err.message || "Có lỗi khi tạo bài viết. Vui lòng thử lại.");
@@ -785,7 +769,7 @@ export default function CreateArticle() {
 
             {/* Images */}
             <div style={S.card}>
-              <ImageUpload images={images} setImages={setImages} />
+              {/* <ImageUpload images={images} setImages={setImages} /> */}
             </div>
           </div>
 

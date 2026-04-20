@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Eye, Trash2, Mail, MessageSquare, X } from "lucide-react";
 import { Contact } from "@/public/lib/types";
-import { useAuth } from "@/public/providers/UserProvider";
+import { useAuth } from "@/public/providers/AuthProvider";
 import {
   getAllContact,
   getContactById,
@@ -97,7 +97,6 @@ export default function AdminContactsPage() {
 
   const handleDeleteContact = async (id: number) => {
     if (confirm("Bạn có chắc muốn xóa tin nhắn này?")) {
-      console.log("Delete contact:", id);
     }
   };
 

@@ -34,9 +34,9 @@ export default function ArticlesList({
   };
 
   return (
-    <div className="noir-articles-section">
+    <div>
       {/* Section Header */}
-      <div className="noir-section-bar">
+      <div className="flex items-center justify-between my-4">
         <div className="noir-section-bar-left">
           <div className="noir-section-line" aria-hidden="true" />
           <span className="noir-section-title">Latest Articles</span>
