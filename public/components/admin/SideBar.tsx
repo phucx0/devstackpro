@@ -43,7 +43,6 @@ const NavButton = ({ path, name, Icon, selected }: NavButtonProps) => {
 };
 
 export default function SideBar() {
-  const { user, profile, logout } = useAuth();
   const pathname = usePathname();
 
   const isSelected = (module: string) => pathname.includes(`/${module}`);
