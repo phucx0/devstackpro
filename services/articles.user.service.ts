@@ -1,6 +1,7 @@
 // Chỉ dùng server createClient → hỗ trợ SSR/SEO tốt
 import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createPublishClient } from "@/lib/supabase/client";
 import { ArticleWithTags } from "@/public/lib/types";
 import { cache } from "react";
 
@@ -29,30 +30,37 @@ const ARTICLE_SELECT = `
     article_tags (tag:tags (id, name))
 `;
 
-export const getArticleBySlug = unstable_cache(
-    async (slug: string): Promise<ArticleWithTags | null> => {
-        const supabase = await createClient();
-        const { data: article, error } = await supabase
-            .from("articles")
-            .select(ARTICLE_SELECT)
-            .eq("status", "published")
-            .eq("slug", slug)
-            .maybeSingle();
+export async function getArticleBySlug(slug: string) {
+    return getCachedArticleBySlug( slug); 
+}
 
-        if (error) throw error;
-        if (!article) return null;
+export async function getCachedArticleBySlug(slug: string) {
+    const cached = unstable_cache(
+        async (): Promise<ArticleWithTags | null> => {
+            const supabase = await createPublishClient();
+            const { data: article, error } = await supabase
+                .from("articles")
+                .select(ARTICLE_SELECT)
+                .eq("status", "published")
+                .eq("slug", slug)
+                .maybeSingle();
 
-        return mapArticle(article);
-    },
-    ["article-by-slug"],
-    {
-        revalidate: 60, // cache 60s
-    }
-);
+            if (error) throw error;
+            if (!article) return null;
+
+            return mapArticle(article);
+        },
+        ["article-by-slug", slug],   
+        {
+            revalidate: 60,
+            tags: [`article-${slug}`], 
+        }
+    )(); 
+    return cached;
+}
 
 export async function increaseView(articleId: number) {
     const supabase = await createClient();
-
     await supabase.rpc("increase_article_view", {
         article_id: articleId,
     });

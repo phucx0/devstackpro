@@ -62,7 +62,6 @@ export default async function ArticlePage({
 }) {
   const { slug } = await params;
   const finalSlug = Array.isArray(slug) ? slug.join("/") : slug;
-  const {} = await Promise;
   const article = await getArticleBySlug(finalSlug);
   const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 

@@ -13,14 +13,10 @@ export default async function AuthorPage({ params }: Props) {
 
   if (!username || username.trim() === "") return <NotFound />;
 
-  const [user, myData] = await Promise.all([
-    // Thông tin của username
-    getUserByUsername(username),
-    // Thông tin của user hiện tại
-    getUser(),
-  ]);
-
+  const user = await getUserByUsername(username);
   if (!user) return <NotFound />;
+  const myData = await getUser();
+
   const isOwner = user.id === myData?.id;
 
   const articles = await getArticlesByUsername(username);
