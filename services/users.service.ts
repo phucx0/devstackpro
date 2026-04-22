@@ -12,7 +12,7 @@ export const getUser = cache( async(): Promise<UserPublish | null> => {
         .from("users")
         .select("*")
         .eq("id", String(user?.id))
-        .single();
+        .maybeSingle();
 
     if (error) {
         console.error("getUser error:", error);
@@ -32,7 +32,7 @@ export async function getUserByUsername(username: string): Promise<UserPublish |
         .from("users")
         .select("*")
         .eq("username", username)
-        .single();
+        .maybeSingle();
 
     if (error) {
         console.error("getUser error:", error);

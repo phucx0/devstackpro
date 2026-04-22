@@ -69,13 +69,23 @@ export async function increaseView(articleId: number) {
 // Lấy danh sách `article` theo `username` 
 export const getArticlesByUsername = cache(async (username: string): Promise<ArticleWithTags[]> => {
     const supabase = await createClient();
-    let query = supabase
+    
+    // Lấy id theo username  
+    const { data: user, error: userError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("username", username)
+        .maybeSingle();
+
+    if (userError) throw userError;
+    if (!user) return [];
+
+    // Query articles theo user_id
+    const { data: articles, error } = await supabase
         .from("articles")
         .select(ARTICLE_SELECT)
+        .eq("user_id", user.id)
         .eq("status", "published")
-        .eq("user.username", username);
-
-    const { data: articles, error } = await query
         .order("created_at", { ascending: false })
         .limit(15);
 

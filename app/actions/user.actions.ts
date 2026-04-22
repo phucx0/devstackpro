@@ -31,6 +31,7 @@ export async function updateInfo( params : UpdateInfoUser): Promise<boolean> {
         .from("users")
         .update({ 
             display_name: params.display_name,
+            bio: params.bio,
             updated_at: new Date().toISOString(),
         })
         .eq("id", user.id)
