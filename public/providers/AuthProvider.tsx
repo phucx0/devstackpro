@@ -37,22 +37,26 @@ export function AuthProvider({
       setLoading(false);
       return;
     }
+    console.log("Loading Profile");
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        const user = session?.user;
-
-        if (!user) {
+        if (_event === "SIGNED_OUT") {
           setProfile(null);
           return;
         }
 
-        const { data } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", user.id)
-          .maybeSingle();
+        if (_event === "SIGNED_IN" || _event === "TOKEN_REFRESHED" || _event === "USER_UPDATED") {
+          const user = session?.user;
+          if (!user) return;
 
-        setProfile(data ?? null);
+          const { data } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", user.id)
+            .maybeSingle();
+
+          setProfile(data ?? null);
+        }
       },
     );
 

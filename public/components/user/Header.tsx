@@ -128,36 +128,6 @@ export default function Header() {
                     <User size={18} className="text-(--noir-muted)" />
                   )}
                 </button>
-                {/* <button
-                  className="w-40 flex items-center gap-3 px-3 py-2.5 border border-(--noir-border-md) rounded-md bg-transparent transition-all duration-200 cursor-pointer outline-none"
-                  onClick={() => setDropdownOpen((v) => !v)}
-                  aria-expanded={dropdownOpen}
-                  aria-haspopup="menu"
-                >
-                  {profile.avatar_url ? (
-                    <img
-                      src={IMAGE_BASE_URL + profile.avatar_url}
-                      alt={profile.display_name || "User"}
-                      className="w-10 h-10 rounded-full overflow-hidden"
-                    />
-                  ) : (
-                    <User size={18} className="text-(--noir-muted)" />
-                  )}
-
-                  <div className="flex-1 text-left min-w-0">
-                    <span className="text-[13px] text-(--noir-white) font-medium truncate block">
-                      {profile.display_name ?? profile.email}
-                    </span>
-                  </div>
-
-                  <ChevronDown
-                    size={16}
-                    className={`text-(--noir-muted) transition-transform duration-300 group-hover:text-(--noir-white) ${
-                      dropdownOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </button> */}
-
                 {dropdownOpen && (
                   <div className="absolute right-0 top-full w-40 bg-(--noir-card) border border-(--noir-border-md) rounded-md p-1.5 z-50 animate-in fade-in-0 zoom-in-95 duration-200">
                     {/* Menu Items */}
@@ -165,7 +135,7 @@ export default function Header() {
                       <button
                         className="flex items-center gap-3 w-full px-4 py-2.5 text-[13px] text-(--noir-white) cursor-pointer"
                         onClick={() => {
-                          router.push(profile.username || "/");
+                          router.push(`/${profile.username}`);
                           setDropdownOpen(false);
                         }}
                       >

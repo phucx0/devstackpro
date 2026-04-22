@@ -1,6 +1,7 @@
 "use client";
+import { useAuth } from "@/public/providers/AuthProvider";
 import { signIn } from "@/services/auth.service";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState, KeyboardEvent } from "react";
 
 export default function SignIn() {
@@ -9,6 +10,8 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
+  const {setProfile } = useAuth()
 
   const handleSignIn = async () => {
     if (!email.trim() || !password.trim()) {
@@ -18,12 +21,12 @@ export default function SignIn() {
     setLoading(true);
     setError("");
 
-    let redirectTo = "";
-
     try {
       const result = await signIn(email, password);
       if (result.user) {
-        redirectTo = result.user.role === "admin" ? "/admin" : "/";
+        setProfile(result.user);
+        router.push("/");
+        router.refresh();
       } else {
         setError("Invalid email or password.");
       }
@@ -32,8 +35,6 @@ export default function SignIn() {
     } finally {
       setLoading(false);
     }
-
-    if (redirectTo) redirect(redirectTo); // gọi ngoài try/catch
   };
 
   const onKey = (e: KeyboardEvent<HTMLInputElement>) => {
