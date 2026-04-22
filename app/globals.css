@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Syne:wght@400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@700;800;900&display=swap');
 @import "tailwindcss";
 
 /* ============================================
@@ -25,7 +26,7 @@
   --noir-accent-bg: rgba(232, 255, 0, 0.06);
 
   /* Typography Scale */
-  --font-display:  'Syne', sans-serif;
+  --font-display:  'Urbanist', sans-serif;
   --font-body:     'Space Grotesk', sans-serif;
   --font-mono:     'IBM Plex Mono', monospace;
 
@@ -340,7 +341,7 @@ body {
 .noir-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 24px;
+  /* padding: 0 24px; */
 }
 
 @media (max-width: 768px) {
@@ -783,14 +784,14 @@ body {
 }
 
 .noir-card-author-dot {
-  width: 20px;
-  height: 20px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: var(--noir-border-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 8px;
+  font-size: 14px;
   color: var(--noir-muted);
 }
 
@@ -1073,7 +1074,7 @@ body {
 .noir-article-title {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(26px, 4vw, 48px);
+  font-size: clamp(22px, 3vw, 36px);
   color: var(--noir-white);
   line-height: 1.15;
   letter-spacing: -0.02em;
@@ -1242,24 +1243,19 @@ body {
   text-underline-offset: 3px;
 }
 
-.noir-markdown code {
+/* .noir-markdown code {
   font-family: var(--font-mono);
   font-size: 13px;
-  background: var(--noir-card);
+  background: var(--noir-accent-bg);
   border: 0.5px solid var(--noir-border);
   padding: 2px 6px;
   border-radius: 3px;
   color: var(--noir-accent);
-}
+} */
 
 /* .noir-markdown pre {
-  background: var(--noir-surface);
-  border: 0.5px solid var(--noir-border);
-  border-left: 2px solid var(--noir-accent);
-  border-radius: 6px;
-  padding: 20px;
+  background: var(--noir-accent-bg);
   overflow-x: auto;
-  margin: 1.5em 0;
 } */
 
 .noir-markdown pre code {

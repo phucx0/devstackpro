@@ -16,7 +16,6 @@ export const R2_CONFIG = {
 export async function POST(req: NextRequest) {
     try {
         const { fileName, fileType, fileSize } = await req.json();
-        console.log("FILE TYPE SIGN:", fileType);
 
         if (!fileType.startsWith("image/")) {
             return NextResponse.json({ error: "Chỉ chấp nhận hình ảnh" }, { status: 400 });
@@ -37,44 +36,10 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({
             presignedUrl,
-            fileKey,
-            publicUrl: getPublicUrl(fileKey),
+            fileKey
         });
     } catch (error) {
         console.error(error);
-        return NextResponse.json({ error: "Lỗi server" }, { status: 500 });
+        return NextResponse.json({ error: "Failed to generate upload URL" }, { status: 500 });
     }
-}
-
-export async function GET() {
-    const command = new ListObjectsV2Command({
-        Bucket: R2_BUCKET,
-        Prefix: "images/",   // chỉ lấy thư mục images
-    });
-
-    const response = await r2Client.send(command);
-    
-    const images = response.Contents?.map(item => ({
-        key: item.Key,
-        url: R2_PUBLIC_URL 
-        ? `${R2_PUBLIC_URL}/${item.Key}` 
-        : `https://${R2_BUCKET}.${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${item.Key}`,
-        lastModified: item.LastModified,
-        size: item.Size,
-    }));
-
-    return NextResponse.json({ images });
-}
-
-export async function DELETE(req: NextRequest) {
-    const { key } = await req.json();
-
-    const command = new DeleteObjectCommand({
-        Bucket: R2_BUCKET,
-        Key: key,
-    });
-
-    await r2Client.send(command);
-
-    return NextResponse.json({ success: true });
 }

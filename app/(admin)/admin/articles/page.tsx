@@ -21,15 +21,7 @@ interface Props {
 }
 
 export default async ({ searchParams }: Props) => {
-  // const { token, loading } = useUser();
-  // const [articles, setArticles] = useState<ArticleWithTags[]>();
-  // const [pageNumber, setPageNumber] = useState<number>(1);
-  // const [totalPages, setTotalPages] = useState(1);
-  // const [totalArticles, setTotalArticles] = useState(0);
-  // const [isLoading, setIsLoading] = useState(false);
-
   const articles = await getArticles();
-
   const pageNumber = 1;
   const totalPages = 1;
   const totalArticles = 1;

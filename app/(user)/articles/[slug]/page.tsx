@@ -1,11 +1,13 @@
 import MarkdownRenderer from "@/public/components/MarkdownRenderer";
 import NotFound from "@/public/components/NotFound";
-import CopyButton from "@/public/components/user/CopyButton";
-import FacebookShareButton from "@/public/components/user/FacebookShareButton";
-import { getArticleBySlug } from "@/services/articles.user.service";
-import { ArrowLeft, Clock, User, Eye } from "lucide-react";
+import {
+  getArticleBySlug,
+  increaseView,
+} from "@/services/articles.user.service";
 import { Metadata } from "next";
 import Link from "next/link";
+import AuthorShareCard from "./AuthorShareCard";
+import BackButton from "./BackButton";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -29,13 +31,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       article.title ||
       "Master modern web and mobile development with expert guides on CSS, Flutter, Next.js, and UI design principles",
     alternates: {
-      canonical: `https://devstackpro.cloud/article/${article.slug}`,
+      canonical: `https://devstackpro.cloud/articles/${article.slug}`,
     },
     openGraph: {
       title: article.title + " - Dev Stack Pro",
       description: article.description || article.title,
       type: "article",
-      url: `https://devstackpro.cloud/article/${article.slug}`,
+      url: `https://devstackpro.cloud/articles/${article.slug}`,
       images: [
         {
           url: `${IMAGE_BASE_URL}${article.thumbnail}`,
@@ -61,8 +63,7 @@ export default async function ArticlePage({
   const { slug } = await params;
   const finalSlug = Array.isArray(slug) ? slug.join("/") : slug;
   const article = await getArticleBySlug(finalSlug);
-
-  if (!article) return <NotFound />;
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
   function formatArticleTime(dateString: string) {
     const date = new Date(dateString);
@@ -85,18 +86,14 @@ export default async function ArticlePage({
     }).format(date);
   }
 
+  if (!article) return <NotFound />;
+  void increaseView(article.id);
+
   return (
-    <div className="noir-main">
+    <div className="pt-10">
       {/* ── Back nav ── */}
-      <div className="noir-container" style={{ paddingTop: "24px" }}>
-        <Link
-          href="/"
-          className="noir-read-btn-ghost"
-          style={{ display: "inline-flex", width: "fit-content" }}
-        >
-          <ArrowLeft size={13} />
-          Back to Home
-        </Link>
+      <div className="noir-container">
+        <BackButton fallbackHref="/" label="Back" />
       </div>
 
       {/* ── Article layout ── */}
@@ -114,77 +111,56 @@ export default async function ArticlePage({
         >
           {/* ── Main content ── */}
           <article>
-            {/* Category / tags top */}
-            {article.tags?.length > 0 && (
-              <div
-                style={{
-                  display: "flex",
-                  gap: "8px",
-                  flexWrap: "wrap",
-                  marginBottom: "16px",
-                }}
-              >
-                {article.tags.slice(0, 3).map((tag: any, i: number) => (
-                  <Link
-                    key={i}
-                    href={`/articles/search/${tag.name}`}
-                    className="noir-tag"
-                  >
-                    {tag.name}
-                  </Link>
-                ))}
+            {article.thumbnail && (
+              <div className="relative w-full aspect-16/7 overflow-hidden">
+                <img
+                  src={`${IMAGE_BASE_URL}${article.thumbnail}`}
+                  alt="Thumbnail"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-linear-to-t from-(--noir-black) to-transparent opacity-100" />
               </div>
             )}
+            {/* Header Article */}
+            <div className={`w-full mb-10`}>
+              <div className="flex flex-col justify-end">
+                {article.tags?.length > 0 && (
+                  <div className="flex gap-2 flex-wrap mb-4">
+                    {article.tags.slice(0, 3).map((tag: any, i: number) => (
+                      <Link
+                        key={i}
+                        href={`/articles/search/${tag.name}`}
+                        className="noir-tag"
+                      >
+                        {tag.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+                <h1 className="noir-article-title static p-0 max-w-none">
+                  {article.title}
+                </h1>
 
-            {/* Title */}
-            <h1
-              className="noir-article-title"
-              style={{ position: "static", padding: 0, maxWidth: "none" }}
-            >
-              {article.title}
-            </h1>
+                {/* <div className="noir-article-meta-row mt-5 mb-7">
+                  <span className="noir-article-meta-item">
+                    <User size={12} />
+                    {article.display_name}
+                  </span>
+                  <span className="accent-dot" />
+                  <span className="noir-article-meta-item">
+                    <Clock size={12} />
+                    {formatArticleTime(article.created_at ?? "")}
+                  </span>
+                </div> */}
 
-            {/* Meta row */}
-            <div
-              className="noir-article-meta-row"
-              style={{ marginTop: "20px", marginBottom: "28px" }}
-            >
-              <span className="noir-article-meta-item">
-                <User size={12} />
-                {article.display_name}
-              </span>
-              <span className="accent-dot" />
-              <span className="noir-article-meta-item">
-                <Clock size={12} />
-                {formatArticleTime(article.created_at ?? "")}
-              </span>
+                {article.description && (
+                  <p className="text-base text-(--noir-muted) leading-7 border-l-2 border-(--noir-accent) pl-4 mb-8 italic">
+                    {article.description}
+                  </p>
+                )}
+                <div className="h-px bg-(--noir-border)" />
+              </div>
             </div>
-
-            {/* Description */}
-            {article.description && (
-              <p
-                style={{
-                  fontSize: "16px",
-                  color: "var(--noir-muted)",
-                  lineHeight: "1.75",
-                  borderLeft: "2px solid var(--noir-accent)",
-                  paddingLeft: "16px",
-                  marginBottom: "32px",
-                  fontStyle: "italic",
-                }}
-              >
-                {article.description}
-              </p>
-            )}
-
-            {/* Divider */}
-            <div
-              style={{
-                height: "0.5px",
-                background: "var(--noir-border)",
-                marginBottom: "36px",
-              }}
-            />
 
             {/* Markdown content */}
             <div className="noir-markdown">
@@ -193,110 +169,19 @@ export default async function ArticlePage({
           </article>
 
           {/* ── Sidebar ── */}
-          <aside
-            style={{
-              position: "sticky",
-              top: "calc(var(--header-h) + 24px)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "24px",
-            }}
-            className="sidebar-hide-mobile"
-          >
-            {/* Author card */}
-            <div
-              style={{
-                background: "var(--noir-surface)",
-                border: "0.5px solid var(--noir-border)",
-                borderRadius: "8px",
-                padding: "20px",
-              }}
-            >
-              <p className="category-label" style={{ marginBottom: "14px" }}>
-                Author
-              </p>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "12px" }}
-              >
-                <div
-                  className="noir-card-author-dot"
-                  style={{
-                    width: "36px",
-                    height: "36px",
-                    fontSize: "14px",
-                    flexShrink: 0,
-                  }}
-                >
-                  {article.display_name?.[0]?.toUpperCase()}
-                </div>
-                <div>
-                  <p
-                    style={{
-                      color: "var(--noir-white)",
-                      fontWeight: 600,
-                      fontSize: "14px",
-                    }}
-                  >
-                    {article.display_name}
-                  </p>
-                  <p
-                    style={{
-                      color: "var(--noir-muted)",
-                      fontSize: "12px",
-                      fontFamily: "var(--font-mono)",
-                      marginTop: "2px",
-                    }}
-                  >
-                    {formatArticleTime(article.created_at ?? "")}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* All tags */}
-            {article.tags?.length > 0 && (
-              <div
-                style={{
-                  background: "var(--noir-surface)",
-                  border: "0.5px solid var(--noir-border)",
-                  borderRadius: "8px",
-                  padding: "20px",
-                }}
-              >
-                <p className="category-label" style={{ marginBottom: "14px" }}>
-                  Topics
-                </p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                  {article.tags.map((tag: any, i: number) => (
-                    <Link
-                      key={i}
-                      href={`/articles/search/${tag.name}`}
-                      className="noir-tag"
-                    >
-                      {tag.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Share card */}
-            <div
-              style={{
-                background: "var(--noir-surface)",
-                border: "0.5px solid var(--noir-border)",
-                borderRadius: "8px",
-                padding: "20px",
-              }}
-            >
-              <p className="category-label" style={{ marginBottom: "14px" }}>
-                Share Article
-              </p>
-              <div style={{ display: "flex", gap: "8px" }}>
-                <FacebookShareButton slug={finalSlug} />
-                <CopyButton />
-              </div>
-            </div>
+          <aside className="sidebar-hide-mobile sticky top-[calc(var(--header-h)+24px)] flex flex-col gap-6">
+            <AuthorShareCard
+              displayName={article.display_name}
+              avatarUrl={article.avatar_url || undefined}
+              username={article.username}
+              createdAt={article.created_at ?? ""}
+              readTime={Math.ceil(
+                (article.content_md?.split(" ").length ?? 0) / 200,
+              )}
+              views={article.views || 0}
+              tags={article.tags}
+              slug={finalSlug}
+            />
           </aside>
         </div>
       </div>

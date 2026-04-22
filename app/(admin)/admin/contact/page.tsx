@@ -2,8 +2,11 @@
 import { useState, useEffect } from "react";
 import { Eye, Trash2, Mail, MessageSquare, X } from "lucide-react";
 import { Contact } from "@/public/lib/types";
-import { useUser } from "@/public/providers/UserProvider";
-import { getAllContact, getContactById } from "@/services/contact.admin.service";
+import { useAuth } from "@/public/providers/AuthProvider";
+import {
+  getAllContact,
+  getContactById,
+} from "@/services/contact.admin.service";
 
 const monoLabel = {
   fontFamily: "var(--font-mono)",
@@ -51,7 +54,7 @@ const Status = ({ status }: { status: string }) => {
 };
 
 export default function AdminContactsPage() {
-  const { token, loading } = useUser();
+  const { loading } = useAuth();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [pageNumber, setPageNumber] = useState(1);
   const [totalContacts, setTotalContacts] = useState(0);
@@ -61,8 +64,8 @@ export default function AdminContactsPage() {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    if (!loading && token) fetchContacts();
-  }, [pageNumber, loading, token]);
+    if (!loading) fetchContacts();
+  }, [pageNumber, loading]);
 
   const fetchContacts = async () => {
     try {
@@ -94,7 +97,6 @@ export default function AdminContactsPage() {
 
   const handleDeleteContact = async (id: number) => {
     if (confirm("Bạn có chắc muốn xóa tin nhắn này?")) {
-      console.log("Delete contact:", id);
     }
   };
 

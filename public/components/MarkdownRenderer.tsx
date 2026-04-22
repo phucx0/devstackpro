@@ -3,9 +3,10 @@ import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "@/public/css/markdown.css";
-import React from "react";
+import React, { useState } from "react";
 import rehypeHighlight from "rehype-highlight";
-const MarkdownRenderer = ({ content }: { content: string }) => {
+
+export default function MarkdownRenderer({ content }: { content: string }) {
   return (
     <div className="markdown-body">
       <ReactMarkdown
@@ -120,21 +121,27 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
             // ```
             if (isBlock) {
               return (
-                <div className="group relative my-4 rounded-xl overflow-hidden border border-neutral-700 bg-[#0d1117]">
-                  {/* Header */}
-                  <div className="flex items-center justify-between px-4 py-2 text-xs text-neutral-400 bg-[#161b22] border-b border-neutral-700">
-                    <span className="font-mono">{language || "code"}</span>
+                // <div className="group relative my-4 rounded-xl overflow-hidden border border-neutral-700 bg-[#0d1117]">
+                //   {/* Header */}
+                //   <div className="flex items-center justify-between px-4 py-2 text-xs text-neutral-400 bg-[#161b22] border-b border-neutral-700">
+                //     <span className="font-mono">{language || "code"}</span>
 
-                    <div className="opacity-0 group-hover:opacity-100 transition">
-                      <CopyButton text={String(children)} />
-                    </div>
-                  </div>
+                //     <CopyButton text={String(children)} />
+                //   </div>
 
-                  {/* Code */}
-                  <pre className="overflow-x-auto p-4 text-sm leading-relaxed">
-                    <code {...props}>{children}</code>
-                  </pre>
-                </div>
+                //   {/* Code */}
+                //   <pre className="bg-(--noir-accent-bg) p-4">
+                //     <code className="text-sm font-(--font-mono)" {...props}>
+                //       {children}
+                //     </code>
+                //   </pre>
+                // </div>
+
+                <NoirCodeBlock
+                  language={language || "code"}
+                  children={children}
+                  props={props}
+                />
               );
             }
             // sử dụng code bình thường
@@ -154,7 +161,7 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
       </ReactMarkdown>
     </div>
   );
-};
+}
 
 // Component Copy Button
 const CopyButton = ({ text }: { text: string }) => {
@@ -169,7 +176,7 @@ const CopyButton = ({ text }: { text: string }) => {
   return (
     <button
       onClick={handleCopy}
-      className="hover:text-white transition-colors"
+      className="hover:text-white transition-colors cursor-pointer"
       title="Copy code"
     >
       {copied ? "✓ Copied" : "Copy"}
@@ -177,4 +184,44 @@ const CopyButton = ({ text }: { text: string }) => {
   );
 };
 
-export default MarkdownRenderer;
+export function NoirCodeBlock({ language, children, ...props }: any) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(String(children));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  return (
+    <div className="relative my-4 rounded-xl overflow-hidden border border-(--noir-border) bg-(--noir-black) font-(--font-mono)">
+      {/* Header */}
+      <div className="flex items-center justify-between px-3.5 py-2.5 bg-(--noir-surface) border-b border-(--noir-border)">
+        <div className="flex items-center gap-2.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-(--noir-accent)" />
+          <span className="text-[12px] text-(--noir-muted) tracking-widest">
+            {(language ?? "code").toUpperCase()}
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleCopy}
+            className="cursor-pointer text-[10px] text-(--noir-muted) border border-(--noir-border-md) px-2.5 py-0.5 rounded tracking-wider hover:border-(--noir-accent) hover:text-(--noir-accent) transition-colors"
+          >
+            {copied ? "COPIED" : "COPY"}
+          </button>
+        </div>
+      </div>
+
+      {/* Code */}
+      <pre className="p-4 overflow-x-auto bg-(--noir-card) m-0">
+        <code
+          className="text-[13px] leading-[22px] text-(--noir-white)"
+          {...props}
+        >
+          {children}
+        </code>
+      </pre>
+    </div>
+  );
+}

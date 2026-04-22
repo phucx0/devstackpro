@@ -1,8 +1,12 @@
-// articles.service.ts
 // Chỉ dùng server createClient → hỗ trợ SSR/SEO tốt
-import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createPublishClient } from "@/lib/supabase/client";
 import { ArticleWithTags } from "@/public/lib/types";
+import { cache } from "react";
+
+
+export const revalidate = 60;
 
 // Helper tái sử dụng để map raw data → ArticleWithTags
 function mapArticle(a: any): ArticleWithTags {
@@ -26,25 +30,68 @@ const ARTICLE_SELECT = `
     article_tags (tag:tags (id, name))
 `;
 
-export const getArticleBySlug = cache(async (slug: string): Promise<ArticleWithTags> => {
+export async function getArticleBySlug(slug: string) {
+    return getCachedArticleBySlug( slug); 
+}
+
+export async function getCachedArticleBySlug(slug: string) {
+    const cached = unstable_cache(
+        async (): Promise<ArticleWithTags | null> => {
+            const supabase = await createPublishClient();
+            const { data: article, error } = await supabase
+                .from("articles")
+                .select(ARTICLE_SELECT)
+                .eq("status", "published")
+                .eq("slug", slug)
+                .maybeSingle();
+
+            if (error) throw error;
+            if (!article) return null;
+
+            return mapArticle(article);
+        },
+        ["article-by-slug", slug],   
+        {
+            revalidate: 60,
+            tags: [`article-${slug}`], 
+        }
+    )(); 
+    return cached;
+}
+
+export async function increaseView(articleId: number) {
     const supabase = await createClient();
-    const { data: article, error } = await supabase
+    await supabase.rpc("increase_article_view", {
+        article_id: articleId,
+    });
+}
+
+// Lấy danh sách `article` theo `username` 
+export const getArticlesByUsername = cache(async (username: string): Promise<ArticleWithTags[]> => {
+    const supabase = await createClient();
+    
+    // Lấy id theo username  
+    const { data: user, error: userError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("username", username)
+        .maybeSingle();
+
+    if (userError) throw userError;
+    if (!user) return [];
+
+    // Query articles theo user_id
+    const { data: articles, error } = await supabase
         .from("articles")
         .select(ARTICLE_SELECT)
+        .eq("user_id", user.id)
         .eq("status", "published")
-        .eq("slug", slug)
-        .single();
+        .order("created_at", { ascending: false })
+        .limit(15);
 
     if (error) throw error;
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        await supabase.rpc("increase_article_view", { article_id: article.id });
-    }
-
-    return mapArticle(article);
+    return articles.map(mapArticle);
 });
-
 
 export const getArticles = cache(async (keyword?: string): Promise<ArticleWithTags[]> => {
     const supabase = await createClient();

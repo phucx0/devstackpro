@@ -17,20 +17,20 @@ export default function ArticleCard({
     const diffMs = now.getTime() - date.getTime();
     const diffMinutes = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMinutes / 60);
-
+    
     if (diffHours < 24) {
       if (diffMinutes < 1) return "Just now";
       if (diffMinutes < 60) return `${diffMinutes}m ago`;
       return `${diffHours}h ago`;
     }
-
+    
     return new Intl.DateTimeFormat("en-US", {
       month: "short",
       day: "2-digit",
       year: "numeric",
     }).format(date);
   }
-
+  
   // Zero-padded index for the card corner
   const num = String(index + 1).padStart(2, "0");
   const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
@@ -86,9 +86,19 @@ export default function ArticleCard({
 
         <div className="noir-card-footer">
           <div className="noir-card-author">
-            <div className="noir-card-author-dot">
-              <UserRound size={10} />
-            </div>
+            {article.avatar_url ? (
+              <Image
+                height={40}
+                width={40}
+                className="rounded-full overflow-hidden border border-(--noir-border)"
+                src={IMAGE_BASE_URL + article.avatar_url}
+                alt={article.username}
+              />
+            ) : (
+              <div className="noir-card-author-dot">
+                <UserRound size={10} />
+              </div>
+            )}
             <span>{article.display_name}</span>
           </div>
           <span className="noir-card-author">

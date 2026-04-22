@@ -31,12 +31,23 @@ export async function signUp(
     display_name: string,
     email: string
     ) {
+    const avatars = [
+        "man-3d-13078581.webp",
+        "man-3d-13078591.webp",
+        "man-3d-13078601.png",
+        "man-3d-13078612.webp"
+    ]
+
+    const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
+
     const supabase = await createClient()
     const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-            data: { username, display_name }
+            data: { username, display_name,
+                avatar_url: randomAvatar
+            }
         }
     })
     if (error) throw error

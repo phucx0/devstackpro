@@ -1,7 +1,7 @@
 "use client";
 import Loading from "@/public/components/Loading";
 import { Tag } from "@/public/lib/types";
-import { useUser } from "@/public/providers/UserProvider";
+import { useAuth } from "@/public/providers/AuthProvider";
 import { Newspaper, Trash2, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -14,17 +14,13 @@ const monoLabel = {
 } as const;
 
 export default function TagsPage() {
-  const { token, loading } = useUser();
+  const { loading } = useAuth();
   const [tags, setTags] = useState<Tag[]>([]);
   const [isLoadingTags, setIsLoadingTags] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newTagName, setNewTagName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (!loading && token) fetchTags();
-  }, [loading, token]);
 
   const fetchTags = async () => {
     setIsLoadingTags(true);
@@ -72,6 +68,10 @@ export default function TagsPage() {
       alert(err.message || "Đã có lỗi xảy ra");
     }
   };
+
+  useEffect(() => {
+    if (!loading) fetchTags();
+  }, [loading]);
 
   if (loading || isLoadingTags) return <Loading />;
 
