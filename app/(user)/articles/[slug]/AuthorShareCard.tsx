@@ -1,11 +1,12 @@
 "use client";
-import { Clock, Eye, Copy, Mail, Facebook, Linkedin } from "lucide-react";
+import { Copy, Mail, Facebook, Linkedin } from "lucide-react";
 import { toast } from "sonner";
 
 type Props = {
   displayName: string;
   username: string;
   createdAt: string;
+  avatarUrl?: string;
   readTime: number;
   views?: number;
   tags: { name: string }[];
@@ -61,6 +62,7 @@ export default function AuthorShareCard({
   displayName,
   username,
   createdAt,
+  avatarUrl,
   readTime,
   views,
   tags,
@@ -71,6 +73,7 @@ export default function AuthorShareCard({
     month: "short",
     day: "2-digit",
   }).format(new Date(createdAt));
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
   function handleCopy() {
     toast.success("Copied link");
@@ -82,9 +85,19 @@ export default function AuthorShareCard({
       {/* Author row */}
       <div className="p-5 pb-0">
         <div className="flex items-center gap-3 mb-3">
-          <div className="noir-card-author-dot shrink-0">
-            {displayName?.[0]?.toUpperCase()}
-          </div>
+          {avatarUrl ? (
+            <img
+              height={40}
+              width={40}
+              className="rounded-full overflow-hidden border border-(--noir-border)"
+              src={IMAGE_BASE_URL + avatarUrl}
+              alt={username}
+            />
+          ) : (
+            <div className="noir-card-author-dot shrink-0">
+              {displayName?.[0]?.toUpperCase()}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <a
               className="text-(--noir-white) font-semibold text-md truncate hover:text-(--noir-accent)"

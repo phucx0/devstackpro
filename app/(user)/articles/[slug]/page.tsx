@@ -4,10 +4,10 @@ import {
   getArticleBySlug,
   increaseView,
 } from "@/services/articles.user.service";
-import { ArrowLeft } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
 import AuthorShareCard from "./AuthorShareCard";
+import BackButton from "./BackButton";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -65,9 +65,6 @@ export default async function ArticlePage({
   const article = await getArticleBySlug(finalSlug);
   const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
-  if (!article) return <NotFound />;
-  void increaseView(article.id);
-
   function formatArticleTime(dateString: string) {
     const date = new Date(dateString);
     const now = new Date();
@@ -89,18 +86,14 @@ export default async function ArticlePage({
     }).format(date);
   }
 
+  if (!article) return <NotFound />;
+  void increaseView(article.id);
+
   return (
     <div className="pt-10">
       {/* ── Back nav ── */}
       <div className="noir-container">
-        <Link
-          href="/"
-          className="noir-read-btn-ghost"
-          style={{ display: "inline-flex", width: "fit-content" }}
-        >
-          <ArrowLeft size={13} />
-          Back to Home
-        </Link>
+        <BackButton fallbackHref="/" label="Back" />
       </div>
 
       {/* ── Article layout ── */}
@@ -179,6 +172,7 @@ export default async function ArticlePage({
           <aside className="sidebar-hide-mobile sticky top-[calc(var(--header-h)+24px)] flex flex-col gap-6">
             <AuthorShareCard
               displayName={article.display_name}
+              avatarUrl={article.avatar_url || undefined}
               username={article.username}
               createdAt={article.created_at ?? ""}
               readTime={Math.ceil(
