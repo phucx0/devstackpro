@@ -2,6 +2,7 @@
 import { ArticleWithTags } from "@/public/lib/types";
 import { useState } from "react";
 import ArticleCard from "./ArticleCard";
+import { useAuth } from "@/public/providers/AuthProvider";
 
 interface Props {
   initialArticles: ArticleWithTags[];
@@ -18,7 +19,7 @@ export default function ArticlesList({
   const [page, setPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [loading, setLoading] = useState(false);
-
+  const { profile } = useAuth();
   const limit = 10;
 
   const handleShowMore = async () => {
@@ -56,9 +57,16 @@ export default function ArticlesList({
       {/* Grid */}
       {articles && articles.length > 0 ? (
         <>
-          <div className="noir-articles-grid">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {articles.map((article, i) => (
-              <ArticleCard key={article.id} article={article} index={i} />
+              <ArticleCard
+                key={article.id}
+                article={article}
+                index={i}
+                isOwner={
+                  (profile && article.id === Number(profile.id)) || false
+                }
+              />
             ))}
           </div>
 
