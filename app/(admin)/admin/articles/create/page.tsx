@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import MarkdownRenderer from "@/public/components/MarkdownRenderer";
 import TagSelector from "@/public/components/admin/TagSelector";
 import MarkdownTextarea from "@/public/components/MarkdownTextarea";
-import { createArticleAction } from "@/services/author.actions";
+import { createArticleAction } from "@/app/actions/author.actions";
 
 /* ─── Shared style tokens ─── */
 const S = {
@@ -421,7 +421,7 @@ export default function CreateArticle() {
       const result = await createArticleAction(formData);
       if (result) {
         alert("Tạo bài viết thành công");
-        redirect(`/admin/articles/${result.id}`);
+        // redirect(`/admin/articles/${result.id}`);
       }
     } catch (err) {
       console.error(err);

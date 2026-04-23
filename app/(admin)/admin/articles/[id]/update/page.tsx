@@ -12,7 +12,7 @@ import MarkdownTextarea from "@/public/components/MarkdownTextarea";
 import {
   getArticleAction,
   updateArticleAction,
-} from "@/services/author.actions";
+} from "@/app/actions/author.actions";
 import { toast } from "sonner";
 import ImageUpload from "./ImageUpload";
 import { useFileUpload } from "@/hooks/useFileUpload";

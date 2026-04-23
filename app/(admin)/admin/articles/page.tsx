@@ -1,7 +1,7 @@
 import Loading from "@/public/components/Loading";
 import { getArticles } from "@/services/articles.author.service";
 import { redirect } from "next/navigation";
-import { deleteArticleAction } from "@/services/author.actions";
+import { deleteArticleAction } from "@/app/actions/author.actions";
 import {
   Eye,
   Newspaper,
