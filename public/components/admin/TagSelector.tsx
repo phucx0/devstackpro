@@ -3,17 +3,17 @@ import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface TagSelectorProps {
-  selectedTags: Tag[];
-  setSelectedTags: (tags: Tag[]) => void;
+  selectedTags: Pick<Tag, "id" | "name">[];
+  setSelectedTags: (tags: Pick<Tag, "id" | "name">[]) => void;
 }
 
 export default function TagSelector({
   selectedTags,
   setSelectedTags,
 }: TagSelectorProps) {
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [tags, setTags] = useState<Pick<Tag, "id" | "name">[]>([]);
 
-  const toggleTag = (tag: Tag) => {
+  const toggleTag = (tag: Pick<Tag, "id" | "name">) => {
     if (selectedTags.some((t) => t.id === tag.id)) {
       setSelectedTags(selectedTags.filter((t) => t.id !== tag.id));
     } else {

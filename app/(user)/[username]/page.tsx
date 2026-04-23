@@ -1,7 +1,7 @@
 import NotFound from "@/public/components/NotFound";
 import AuthorClient from "@/public/components/user/AuthorClient";
-import { getArticlesByUsername } from "@/services/articles.user.service";
-import { getUser, getUserByUsername } from "@/services/users.service";
+import { getArticlesByUsername } from "@/server/articles/articles.user.service";
+import { getUser, getUserByUsername } from "@/server/users/users.service";
 import { Metadata } from "next";
 
 type Params = {

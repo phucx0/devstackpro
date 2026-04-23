@@ -6,11 +6,11 @@ import { redirect } from "next/navigation";
 import MarkdownRenderer from "@/public/components/MarkdownRenderer";
 import TagSelector from "@/public/components/admin/TagSelector";
 import MarkdownTextarea from "@/public/components/MarkdownTextarea";
-import { createArticleAction } from "@/app/actions/author.actions";
-import ImageUpload from "@/app/(admin)/admin/articles/[id]/update/ImageUpload";
+import { createArticleAction } from "@/server/articles/author.actions";
 import { toast } from "sonner";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useAuth } from "@/public/providers/AuthProvider";
+import ImageUpload from "./ImageUpload";
 
 /* ─── NoirInput ─── */
 function NoirInput({

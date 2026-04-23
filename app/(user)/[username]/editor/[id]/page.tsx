@@ -12,12 +12,10 @@ import MarkdownTextarea from "@/public/components/MarkdownTextarea";
 import {
   getArticleAction,
   updateArticleAction,
-} from "@/app/actions/author.actions";
+} from "@/server/articles/author.actions";
 import { toast } from "sonner";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import ImageUpload from "@/public/components/user/ImageUpload";
-
-type PreviewImage = { id?: number; url: string; name: string };
 
 function NoirInput({
   label,
@@ -52,7 +50,9 @@ export default function UpdateArticlePage() {
   const { profile, loading } = useAuth();
 
   const [_loading, setLoading] = useState(true);
-  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<Pick<Tag, "id" | "name">[]>(
+    [],
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [originalArticle, setOriginalArticle] =
@@ -180,7 +180,7 @@ export default function UpdateArticlePage() {
 
           setOriginalArticle(_article);
           setUpdatedArticle({ ..._article });
-          setSelectedTags(result.tags ?? []);
+          setSelectedTags(result.tags || null);
         }
         setLoading(false);
       })();

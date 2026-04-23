@@ -3,7 +3,7 @@ import NotFound from "@/public/components/NotFound";
 import {
   getArticleBySlug,
   increaseView,
-} from "@/services/articles.user.service";
+} from "@/server/articles/articles.user.service";
 import { Metadata } from "next";
 import Link from "next/link";
 import BackButton from "./BackButton";

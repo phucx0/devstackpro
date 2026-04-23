@@ -4,7 +4,7 @@ import { AuthProvider } from "@/public/providers/AuthProvider";
 import Script from "next/script";
 import { Metadata } from "next";
 import { Toaster } from "sonner";
-import { getUser } from "@/services/users.service";
+import { getUser } from "@/server/users/users.service";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

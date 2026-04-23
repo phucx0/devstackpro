@@ -11,8 +11,6 @@ function mapArticle(a: any): ArticleWithTags {
     return {
         ...a,
         username: a.user?.username ?? "",
-        display_name: a.user?.display_name ?? "",
-        avatar_url: a.user?.avatar_url ?? "",
         tags: a.article_tags?.map((x: any) => ({
             created_at: "",
             id: x.tag.id,
@@ -26,7 +24,7 @@ export const getArticles = async (): Promise<ArticleWithTags[]> => {
         .from("articles")
         .select(`
             *,
-            user:users (id, username, display_name, avatar_url),
+            user:users (username),
             article_tags (tag:tags (id, name))
         `)
         .eq("status", "published")

@@ -2,7 +2,7 @@ import NotFound from "@/public/components/NotFound";
 import Header from "@/public/components/user/Header";
 import LeftSideBar from "@/public/components/user/LeftSideBar";
 import RightSidebar from "@/public/components/user/RightSideBar";
-import { getUserByUsername } from "@/services/users.service";
+import { getUserByUsername } from "@/server/users/users.service";
 
 export default async function UserLayout({
   children,

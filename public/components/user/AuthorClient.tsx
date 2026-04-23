@@ -1,11 +1,11 @@
 "use client";
 import ArticleCard from "@/public/components/user/ArticleCard";
-import { ArticleWithTags, UserPublish } from "@/public/lib/types";
+import { ArticlePublish } from "@/public/lib/types";
 import { useState } from "react";
 import CreateArticle from "./CreateArticle";
 
 interface Props {
-  articles: ArticleWithTags[];
+  articles: ArticlePublish[];
   isOwner: boolean;
 }
 

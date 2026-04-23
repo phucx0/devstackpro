@@ -6,7 +6,7 @@ import { Upload, X, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { toast } from "sonner";
-import { updateAvatar, updateInfo } from "@/app/actions/user.actions";
+import { updateAvatar, updateInfo } from "@/server/users/user.actions";
 import { UserPublish } from "@/public/lib/types";
 
 export default function EditProfileModal({

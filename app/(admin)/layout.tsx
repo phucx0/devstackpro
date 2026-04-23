@@ -1,7 +1,7 @@
 import AdminHeader from "@/public/components/admin/Header";
 import SideBar from "@/public/components/admin/SideBar";
 import NotFound from "@/public/components/NotFound";
-import { getUser } from "@/services/users.service";
+import { getUser } from "@/server/users/users.service";
 import { Toaster } from "sonner";
 
 export default async function AdminLayout({

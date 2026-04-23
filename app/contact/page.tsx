@@ -10,7 +10,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { ContactFormData } from "@/public/lib/types";
-import { sendContact } from "@/services/contact.user.service";
+import { sendContact } from "@/server/contacts/contact.user.service";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState<ContactFormData>({

@@ -6,8 +6,8 @@ import {
     getDashboardData,
     getArticle,
     getArticles,
-} from "@/services/articles.author.service";
-import { ArticleWithTags, CreateArticleRequest, UpdateArticleRequest } from "@/public/lib/types";
+} from "@/server/articles/articles.author.service";
+import { CreateArticleRequest, UpdateArticleRequest } from "@/public/lib/types";
 
 export async function createArticleAction(params: CreateArticleRequest) {
     return await createArticle(params);

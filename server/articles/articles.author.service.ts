@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import {
-    ArticleWithTags,
+    ArticlePublish,
     CreateArticleRequest,
     DashboardData,
     DashboardMetrics,
@@ -9,6 +9,11 @@ import {
     UpdateArticleRequest,
 } from "@/public/lib/types";
 
+// ==================================
+// Service này sử dụng cho user đã đăng nhập 
+// ==================================
+
+
 // Helper lấy user hiện tại, throw nếu chưa auth
 async function getAuthUser(supabase: Awaited<ReturnType<typeof createClient>>) {
     const { data: { user }, error } = await supabase.auth.getUser();
@@ -16,26 +21,30 @@ async function getAuthUser(supabase: Awaited<ReturnType<typeof createClient>>) {
     return user;
 }
 
-// Helper tái sử dụng để map raw data → ArticleWithTags
-function mapArticle(a: any): ArticleWithTags {
+// Helper tái sử dụng để map raw data → ArticlePublish
+function mapArticle(a: any): ArticlePublish {
     return {
         ...a,
-        username: a.user?.username ?? "",
-        user_id: String(a.user?.id),
-        display_name: a.user?.display_name ?? "",
-        avatar_url: a.user?.avatar_url ?? "",
+        user: {
+            id:           a.user?.id           ?? "",
+            username:     a.user?.username     ?? "",
+            display_name: a.user?.display_name ?? "",
+            avatar_url:   a.user?.avatar_url   ?? "",
+            role:         a.user?.role         ?? "user",
+        },
         tags: a.article_tags?.map((x: any) => ({
-            created_at: "",
-            id: x.tag.id,
+            id:   x.tag.id,
             name: x.tag.name,
         })) ?? [],
+        likes_count: a.likes_count?.[0]?.count ?? 0,
     };
 }
 
 const ARTICLE_SELECT = `
     *,
-    user:users (id, username, display_name, avatar_url),
-    article_tags (tag:tags (id, name))
+    user:users!articles_user_id_fkey (id, username, display_name, avatar_url),
+    article_tags (tag:tags (id, name)),
+    likes_count:article_likes (count)
 `;
 
 
@@ -83,7 +92,7 @@ export async function createArticle(params: CreateArticleRequest): Promise<boole
     return true
 }
 
-export async function getArticle(article_id: number): Promise<ArticleWithTags> {
+export async function getArticle(article_id: number): Promise<ArticlePublish> {
     const supabase = await createClient();
 
     let query = supabase
@@ -105,7 +114,7 @@ export async function getArticle(article_id: number): Promise<ArticleWithTags> {
     return mapArticle(article);
 }
 
-export async function getArticles(): Promise<ArticleWithTags[]> {
+export async function getArticles(): Promise<ArticlePublish[]> {
     const supabase = await createClient();
     const user = await getAuthUser(supabase);
 

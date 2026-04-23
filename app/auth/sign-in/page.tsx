@@ -1,6 +1,6 @@
 "use client";
 import { useAuth } from "@/public/providers/AuthProvider";
-import { signIn } from "@/services/auth.service";
+import { signIn } from "@/server/users/auth.service";
 import { useRouter } from "next/navigation";
 import { useState, KeyboardEvent } from "react";
 
@@ -11,7 +11,7 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-  const {setProfile } = useAuth()
+  const { setProfile } = useAuth();
 
   const handleSignIn = async () => {
     if (!email.trim() || !password.trim()) {

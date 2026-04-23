@@ -1,5 +1,5 @@
 import ArticleCard from "@/public/components/user/ArticleCard";
-import { getArticles } from "@/services/articles.user.service";
+import { getArticles } from "@/server/articles/articles.user.service";
 
 export default async ({ params }: { params: Promise<{ q: string }> }) => {
   const { q } = await params;

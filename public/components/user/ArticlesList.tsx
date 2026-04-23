@@ -1,11 +1,11 @@
 "use client";
-import { ArticleWithTags } from "@/public/lib/types";
+import { ArticlePublish } from "@/public/lib/types";
 import { useState } from "react";
 import ArticleCard from "./ArticleCard";
 import { useAuth } from "@/public/providers/AuthProvider";
 
 interface Props {
-  initialArticles: ArticleWithTags[];
+  initialArticles: ArticlePublish[];
   initialPage: number;
   initialTotalPages: number;
 }
@@ -15,7 +15,7 @@ export default function ArticlesList({
   initialPage,
   initialTotalPages,
 }: Props) {
-  const [articles, setArticles] = useState<ArticleWithTags[]>(initialArticles);
+  const [articles, setArticles] = useState<ArticlePublish[]>(initialArticles);
   const [page, setPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [loading, setLoading] = useState(false);

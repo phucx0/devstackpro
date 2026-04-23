@@ -4,7 +4,7 @@ import { Metadata } from "next";
 import {
   getArticles,
   getFeaturedArticles,
-} from "@/services/articles.user.service";
+} from "@/server/articles/articles.user.service";
 
 export const metadata: Metadata = {
   title: "Dev Stack Pro",

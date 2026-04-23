@@ -10,12 +10,13 @@ import {
   Flag,
 } from "lucide-react";
 
-import { ArticleWithTags, UserPublish } from "@/public/lib/types";
+import { ArticlePublish } from "@/public/lib/types";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DeleteArticleDialog from "./DeletetArticleDialog";
-import { deleteArticleAction } from "@/app/actions/author.actions";
+import { deleteArticleAction } from "@/server/articles/author.actions";
+import { ToggleLikeArticleAction } from "@/server/article-likes/article-likes.action";
 
 /* ─── Dropdown menu ─── */
 function ArticleMenu({
@@ -26,7 +27,7 @@ function ArticleMenu({
 }: {
   isOwner: boolean;
   onClose: () => void;
-  article: ArticleWithTags;
+  article: ArticlePublish;
   onDelete: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -41,7 +42,7 @@ function ArticleMenu({
   }, [onClose]);
 
   const handleEdit = () => {
-    router.push(`/${article.username}/editor/${article.id}`);
+    router.push(`/${article.user.username}/editor/${article.id}`);
   };
 
   const ownerItems = [
@@ -120,15 +121,15 @@ export default function ArticleCard({
   isOwner,
   index,
 }: {
-  article: ArticleWithTags;
+  article: ArticlePublish;
   isOwner: boolean;
   index: number;
 }) {
   const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE ?? "";
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(article.is_liked);
   const [reposted, setReposted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [likes, setLikes] = useState(Math.floor(Math.random() * 120 + 5));
+  const [likes, setLikes] = useState(article.likes_count);
   const [reposts, setReposts] = useState(Math.floor(Math.random() * 40 + 1));
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -138,8 +139,8 @@ export default function ArticleCard({
   const thumbColor = ThumbColors[index % ThumbColors.length];
   const redirectUrl =
     article.status === "published"
-      ? `${article.username}/articles/${article.slug}`
-      : `${article.username}/editor/${article.id}`;
+      ? `${article.user.username}/articles/${article.slug}`
+      : `${article.user.username}/editor/${article.id}`;
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -147,6 +148,14 @@ export default function ArticleCard({
     setIsDeleting(false);
     setShowDeleteDialog(false);
     router.refresh();
+  };
+
+  const handleLike = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const result = await ToggleLikeArticleAction(article.id);
+    setLiked(result.liked);
+    setLikes((n) => (result.liked ? n + 1 : n - 1));
   };
 
   return (
@@ -266,11 +275,7 @@ export default function ArticleCard({
           >
             {/* Like */}
             <button
-              onClick={(e) => {
-                e.preventDefault();
-                setLiked((v) => !v);
-                setLikes((n) => (liked ? n - 1 : n + 1));
-              }}
+              onClick={handleLike}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md
                 border-none font-mono text-xs cursor-pointer transition-colors duration-150
                 ${
@@ -280,6 +285,7 @@ export default function ArticleCard({
                 }`}
             >
               <Heart size={14} />
+              {likes}
             </button>
 
             {/* Comment */}

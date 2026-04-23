@@ -1,7 +1,10 @@
 import { createClient } from "@/lib/supabase/client";
 import { Contact, ContactFormData } from "@/public/lib/types";
 
-// Sử dụng ở (user)
+// ==================================
+// Service này sử dụng cho các user 
+// ==================================
+
 export async function sendContact(params : ContactFormData) {
     const supabase = await createClient();
     const { message, name, email } = params;

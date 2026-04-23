@@ -1,34 +1,52 @@
-// Chỉ dùng server createClient → hỗ trợ SSR/SEO tốt
 import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createPublishClient } from "@/lib/supabase/client";
-import { ArticleWithTags } from "@/public/lib/types";
+import { ArticlePublish } from "@/public/lib/types";
 import { cache } from "react";
+import { getUser } from "../users/users.service";
+// ==================================
+// Service này sử dụng cho các user 
+// ==================================
 
 
 export const revalidate = 60;
 
-// Helper tái sử dụng để map raw data → ArticleWithTags
-function mapArticle(a: any): ArticleWithTags {
+// Helper tái sử dụng để map raw data → ArticlePublish
+function mapArticle(a: any, currentUserId?: string): ArticlePublish {
     return {
         ...a,
-        username: a.user?.username ?? "",
-        user_id: String(a.user?.id),
-        display_name: a.user?.display_name ?? "",
-        avatar_url: a.user?.avatar_url ?? "",
+        user: {
+            id:           a.user?.id           ?? "",
+            username:     a.user?.username     ?? "",
+            display_name: a.user?.display_name ?? "",
+            avatar_url:   a.user?.avatar_url   ?? "",
+            role:         a.user?.role         ?? "user",
+        },
         tags: a.article_tags?.map((x: any) => ({
-            created_at: "",
-            id: x.tag.id,
+            id:   x.tag.id,
             name: x.tag.name,
         })) ?? [],
+        likes_count: Number(a.likes_count?.[0]?.count ?? 0),
+        is_liked: currentUserId
+            ? !!(a.is_liked?.some((like: any) => like.user_id === currentUserId))
+            : false,
     };
 }
 
 const ARTICLE_SELECT = `
     *,
-    user:users (id, username, display_name, avatar_url),
-    article_tags (tag:tags (id, name))
+    user:users!articles_user_id_fkey (id, username, display_name, avatar_url),
+    article_tags (tag:tags (id, name)),
+    likes_count:article_likes (count)
 `;
+
+// Helper build select string
+function buildSelect(userId?: string) {
+    const isLikedSelect = userId
+        ? `, is_liked:article_likes(user_id)`
+        : "";
+    return `${ARTICLE_SELECT}${isLikedSelect}`;
+}
 
 export async function getArticleBySlug(slug: string) {
     return getCachedArticleBySlug( slug); 
@@ -36,7 +54,7 @@ export async function getArticleBySlug(slug: string) {
 
 export async function getCachedArticleBySlug(slug: string) {
     const cached = unstable_cache(
-        async (): Promise<ArticleWithTags | null> => {
+        async (): Promise<ArticlePublish | null> => {
             const supabase = await createPublishClient();
             const { data: article, error } = await supabase
                 .from("articles")
@@ -67,7 +85,7 @@ export async function increaseView(articleId: number) {
 }
 
 // Lấy danh sách `article` theo `username` 
-export const getArticlesByUsername = cache(async (username: string, viewerId?: string): Promise<ArticleWithTags[]> => {
+export const getArticlesByUsername = cache(async (username: string, viewerId?: string): Promise<ArticlePublish[]> => {
     const supabase = await createClient();
     
     // Lấy id theo username  
@@ -83,7 +101,7 @@ export const getArticlesByUsername = cache(async (username: string, viewerId?: s
     // Query articles theo user_id
     let query = supabase
         .from("articles")
-        .select(ARTICLE_SELECT)
+        .select(buildSelect(viewerId))
         .eq("user_id", user.id)
         .is("deleted_at", null)
         .order("created_at", { ascending: false })
@@ -98,14 +116,16 @@ export const getArticlesByUsername = cache(async (username: string, viewerId?: s
     const { data: articles, error } = await query;
 
     if (error) throw error;
-    return articles.map(mapArticle);
+    return articles.map((a) => mapArticle(a));
 });
 
-export const getArticles = cache(async (keyword?: string): Promise<ArticleWithTags[]> => {
+export const getArticles = cache(async (keyword?: string): Promise<ArticlePublish[]> => {
     const supabase = await createClient();
+    const authUser =  await getUser();
+    
     let query = supabase
         .from("articles")
-        .select(ARTICLE_SELECT)
+        .select(buildSelect(authUser?.id))
         .eq("status", "published")
         .is("deleted_at", null);
 
@@ -116,11 +136,11 @@ export const getArticles = cache(async (keyword?: string): Promise<ArticleWithTa
         .limit(15);
 
     if (error) throw error;
-    return articles.map(mapArticle);
+    return articles.map((a) => mapArticle(a, authUser?.id));
 });
 
 
-export const getFeaturedArticles = cache(async () : Promise<ArticleWithTags[]> => {
+export const getFeaturedArticles = cache(async () : Promise<ArticlePublish[]> => {
     const supabase = await createClient();
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 30);
@@ -135,5 +155,5 @@ export const getFeaturedArticles = cache(async () : Promise<ArticleWithTags[]> =
         .limit(3);
 
     if (error) throw error;
-    return articles.map(mapArticle);
+    return articles.map((a) => mapArticle(a));
 })
