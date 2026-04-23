@@ -1,6 +1,42 @@
 import { ArticleWithTags } from '@/public/lib/types';
-import { getArticles } from '@/services/articles.user.service';
 import { MetadataRoute } from 'next'
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+function mapArticle(a: any): ArticleWithTags {
+    return {
+        ...a,
+        username: a.user?.username ?? "",
+        display_name: a.user?.display_name ?? "",
+        avatar_url: a.user?.avatar_url ?? "",
+        tags: a.article_tags?.map((x: any) => ({
+            created_at: "",
+            id: x.tag.id,
+            name: x.tag.name,
+        })) ?? [],
+    };
+}
+
+export const getArticles = async (): Promise<ArticleWithTags[]> => {
+    const { data: articles, error } = await supabase
+        .from("articles")
+        .select(`
+            *,
+            user:users (id, username, display_name, avatar_url),
+            article_tags (tag:tags (id, name))
+        `)
+        .eq("status", "published")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false })
+        .limit(15);
+
+    if (error) throw error;
+    return articles.map(mapArticle);
+};
 
 // Buộc route này luôn render động
 export const revalidate = 3600;
