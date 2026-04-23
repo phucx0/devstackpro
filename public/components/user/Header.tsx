@@ -16,7 +16,7 @@ export default function Header() {
 
   const handleSearch = () => {
     if (!query.trim()) return;
-    router.push(`/articles/search/${query.trim()}`);
+    router.push(`/search/${query.trim()}`);
     setQuery("");
   };
 

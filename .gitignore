@@ -13,6 +13,8 @@
 # log
 /logs
 
+/docs
+
 # testing
 /coverage
 

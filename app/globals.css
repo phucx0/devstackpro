@@ -668,9 +668,9 @@ body {
 
 .noir-articles-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1px;
-  background: var(--noir-border);
+  background: var(--noir-black);
   border: 0.5px solid var(--noir-border);
 }
 

@@ -6,7 +6,6 @@ import {
 } from "@/services/articles.user.service";
 import { Metadata } from "next";
 import Link from "next/link";
-import AuthorShareCard from "./AuthorShareCard";
 import BackButton from "./BackButton";
 
 type Props = {
@@ -101,14 +100,7 @@ export default async function ArticlePage({
         className="noir-container"
         style={{ paddingTop: "40px", paddingBottom: "80px" }}
       >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1fr) 280px",
-            gap: "48px",
-            alignItems: "start",
-          }}
-        >
+        <div>
           {/* ── Main content ── */}
           <article>
             {article.thumbnail && (
@@ -141,18 +133,6 @@ export default async function ArticlePage({
                   {article.title}
                 </h1>
 
-                {/* <div className="noir-article-meta-row mt-5 mb-7">
-                  <span className="noir-article-meta-item">
-                    <User size={12} />
-                    {article.display_name}
-                  </span>
-                  <span className="accent-dot" />
-                  <span className="noir-article-meta-item">
-                    <Clock size={12} />
-                    {formatArticleTime(article.created_at ?? "")}
-                  </span>
-                </div> */}
-
                 {article.description && (
                   <p className="text-base text-(--noir-muted) leading-7 border-l-2 border-(--noir-accent) pl-4 mb-8 italic">
                     {article.description}
@@ -167,22 +147,6 @@ export default async function ArticlePage({
               <MarkdownRenderer content={article.content_md ?? ""} />
             </div>
           </article>
-
-          {/* ── Sidebar ── */}
-          <aside className="sidebar-hide-mobile sticky top-[calc(var(--header-h)+24px)] flex flex-col gap-6">
-            <AuthorShareCard
-              displayName={article.display_name}
-              avatarUrl={article.avatar_url || undefined}
-              username={article.username}
-              createdAt={article.created_at ?? ""}
-              readTime={Math.ceil(
-                (article.content_md?.split(" ").length ?? 0) / 200,
-              )}
-              views={article.views || 0}
-              tags={article.tags}
-              slug={finalSlug}
-            />
-          </aside>
         </div>
       </div>
 

@@ -40,7 +40,7 @@ export default function Featured({
         <div className="noir-featured-grid">
           {/* Main Featured Article */}
           <Link
-            href={`/articles/${main.slug}`}
+            href={`/${main.username}/articles/${main.slug}`}
             className="noir-featured-main"
             style={{ textDecoration: "none" }}
           >
@@ -98,7 +98,7 @@ export default function Featured({
             {[second, third].map((article, i) => (
               <Link
                 key={article.id}
-                href={`/articles/${article.slug}`}
+                href={`/${article.username}/articles/${article.slug}`}
                 className="noir-featured-item"
                 style={{ textDecoration: "none" }}
               >

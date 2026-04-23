@@ -67,7 +67,7 @@ export async function increaseView(articleId: number) {
 }
 
 // Lấy danh sách `article` theo `username` 
-export const getArticlesByUsername = cache(async (username: string): Promise<ArticleWithTags[]> => {
+export const getArticlesByUsername = cache(async (username: string, viewerId?: string): Promise<ArticleWithTags[]> => {
     const supabase = await createClient();
     
     // Lấy id theo username  
@@ -81,13 +81,21 @@ export const getArticlesByUsername = cache(async (username: string): Promise<Art
     if (!user) return [];
 
     // Query articles theo user_id
-    const { data: articles, error } = await supabase
+    let query = supabase
         .from("articles")
         .select(ARTICLE_SELECT)
         .eq("user_id", user.id)
-        .eq("status", "published")
+        .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(15);
+
+    // Chỉ lấy bài viết `publish` nếu không phải chính chủ 
+    const isOwner = viewerId && viewerId === user.id;
+    if(!isOwner) {
+        query = query.eq("status", "published");
+    }
+
+    const { data: articles, error } = await query;
 
     if (error) throw error;
     return articles.map(mapArticle);
@@ -98,7 +106,8 @@ export const getArticles = cache(async (keyword?: string): Promise<ArticleWithTa
     let query = supabase
         .from("articles")
         .select(ARTICLE_SELECT)
-        .eq("status", "published");
+        .eq("status", "published")
+        .is("deleted_at", null);
 
     if (keyword) query = query.ilike("title", `%${keyword}%`);
 
@@ -120,7 +129,8 @@ export const getFeaturedArticles = cache(async () : Promise<ArticleWithTags[]> =
         .from("articles")
         .select(ARTICLE_SELECT)
         .eq("status", "published")
-        // .gte("created_at", oneWeekAgo.toISOString()) // trong 7 ngày
+        .is("deleted_at", null)
+        //.gte("created_at", oneWeekAgo.toISOString()) // trong 7 ngày
         .order("views", { ascending: false }) // sort theo view
         .limit(3);
 

@@ -65,7 +65,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="noir-main">
+    <div className="h-screen">
       <div
         className="noir-container"
         style={{ paddingTop: "56px", paddingBottom: "80px" }}

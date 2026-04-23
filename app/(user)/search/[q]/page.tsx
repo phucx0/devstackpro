@@ -16,8 +16,13 @@ export default async ({ params }: { params: Promise<{ q: string }> }) => {
       </div>
       {articles && articles?.length > 0 ? (
         <div className="noir-articles-grid">
-          {articles.map((article) => (
-            <ArticleCard key={article.id} article={article} />
+          {articles.map((article, i) => (
+            <ArticleCard
+              index={i}
+              key={article.id}
+              article={article}
+              isOwner={false}
+            />
           ))}
         </div>
       ) : (

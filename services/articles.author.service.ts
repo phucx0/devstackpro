@@ -40,7 +40,7 @@ const ARTICLE_SELECT = `
 
 
 // Create article 
-export async function createArticle(params: CreateArticleRequest): Promise<ArticleWithTags> {
+export async function createArticle(params: CreateArticleRequest): Promise<boolean> {
     const supabase = await createClient();
     const user = await getAuthUser(supabase);
 
@@ -55,13 +55,11 @@ export async function createArticle(params: CreateArticleRequest): Promise<Artic
             slug,
             description,
             content_md,
-            // thumbnail,
+            thumbnail,
             status,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
         })
-        .select()
-        .single()
 
     if (error) {
         console.error("Supabase Create Error:", error);
@@ -82,7 +80,7 @@ export async function createArticle(params: CreateArticleRequest): Promise<Artic
     //     if (tagError) throw tagError;
     // }
 
-    return mapArticle(article)
+    return true
 }
 
 export async function getArticle(article_id: number): Promise<ArticleWithTags> {
@@ -154,8 +152,19 @@ export async function updateArticle(params: { article: UpdateArticleRequest }) {
 
 export async function deleteArticleById(id: number) {
     const supabase = await createClient();
-    await getAuthUser(supabase); // ✅ check auth
+    const user = await getAuthUser(supabase);
 
+    // Verify ownership
+    const { data: article, error: fetchError } = await supabase
+        .from("articles")
+        .select("id")
+        .eq("id", id)
+        .eq("user_id", user.id)
+        .single();
+
+    if (fetchError || !article) throw new Error("Unauthorized or not found");
+
+    // Soft delete
     const { error } = await supabase
         .from("articles")
         .update({ deleted_at: new Date().toISOString() })

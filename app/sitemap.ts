@@ -3,15 +3,15 @@ import { getArticles } from '@/services/articles.user.service';
 import { MetadataRoute } from 'next'
 
 // Buộc route này luôn render động
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://www.devstackpro.cloud'
+    const now = new Date()
 
     const staticPages: MetadataRoute.Sitemap = [
-        { url: baseUrl, lastModified: new Date(), changeFrequency: 'yearly', priority: 1 },
-        { url: `${baseUrl}/articles`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
-        { url: `${baseUrl}/contact`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
+        { url: baseUrl, lastModified: now, changeFrequency: 'yearly', priority: 1 },
+        { url: `${baseUrl}/contact`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
     ]
 
     try {
@@ -21,8 +21,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }
 
         const postPages: MetadataRoute.Sitemap = articles.map((article: ArticleWithTags) => ({
-            url: `${baseUrl}/articles/${article.slug}`,
-            lastModified: article.updated_at ? new Date(article.updated_at) : new Date(),
+            url: `${baseUrl}/${article.username}/articles/${article.slug}`,
+            lastModified: article.updated_at ? new Date(article.updated_at) : now,
             changeFrequency: 'weekly' as const,
             priority: 0.7,
         }))

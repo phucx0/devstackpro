@@ -15,7 +15,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DeleteArticleDialog from "./DeletetArticleDialog";
-import { deleteArticleAction } from "@/services/author.actions";
+import { deleteArticleAction } from "@/app/actions/author.actions";
 
 /* ─── Dropdown menu ─── */
 function ArticleMenu({

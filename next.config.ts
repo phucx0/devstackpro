@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         hostname: "images.devstackpro.cloud",
         pathname: "/*",
       },
+      {
+        protocol: "https",
+        hostname: "easytrade.site",
+        pathname: "/api/v2/uploads/**",
+      },
     ],
   },
   experimental: {
