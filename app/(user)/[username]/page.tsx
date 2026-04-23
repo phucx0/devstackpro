@@ -4,16 +4,17 @@ import { getArticlesByUsername } from "@/services/articles.user.service";
 import { getUser, getUserByUsername } from "@/services/users.service";
 import { Metadata } from "next";
 
-type Props = {
-  params: Promise<{ username?: string }>;
+type Params = {
+  username: string;
 };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { username: string };
-}): Promise<Metadata> {
-  const user = await getUserByUsername(params.username);
+type Props = {
+  params: Promise<Params>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { username } = await params;
+  const user = await getUserByUsername(username);
   const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
   if (!user) {
