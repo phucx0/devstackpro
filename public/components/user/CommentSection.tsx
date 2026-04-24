@@ -9,6 +9,7 @@ import {
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { CommentItem } from "./CommentItem";
+import Link from "next/link";
 
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
@@ -78,40 +79,50 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
       </div>
 
       {/* New comment box */}
-      <div className="flex gap-3">
-        <div className="shrink-0">
-          <div className="relative h-8 w-8 rounded-full overflow-hidden border border-(--noir-border)">
-            <Image
-              src={IMAGE_BASE_URL + profile?.avatar_url}
-              alt="you"
-              className="object-cover"
-              fill
+      {profile ? (
+        <div className="flex gap-3">
+          <div className="shrink-0">
+            <div className="relative h-8 w-8 rounded-full overflow-hidden border border-(--noir-border)">
+              <Image
+                src={IMAGE_BASE_URL + profile?.avatar_url}
+                alt="you"
+                className="object-cover"
+                fill
+              />
+            </div>
+          </div>
+          <div className="flex-1">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey))
+                  handleSubmit();
+              }}
+              disabled={!articleId}
+              placeholder="What are your thoughts?"
+              rows={3}
+              className="w-full resize-none rounded-lg border border-(--noir-border) bg-white/[0.03] px-3 py-2.5 text-sm text-(--noir-white) placeholder:text-(--noir-muted) outline-none focus:border-white/20 transition-colors"
             />
+            <div className="flex justify-end mt-2">
+              <button
+                onClick={handleSubmit}
+                disabled={!newComment.trim()}
+                className="text-sm px-4 py-1.5 rounded-lg bg-(--noir-accent) text-black font-semibold disabled:opacity-40 hover:brightness-110 transition-all"
+              >
+                Comment
+              </button>
+            </div>
           </div>
         </div>
-        <div className="flex-1">
-          <textarea
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
-            }}
-            disabled={!articleId}
-            placeholder="What are your thoughts?"
-            rows={3}
-            className="w-full resize-none rounded-lg border border-(--noir-border) bg-white/[0.03] px-3 py-2.5 text-sm text-(--noir-white) placeholder:text-(--noir-muted) outline-none focus:border-white/20 transition-colors"
-          />
-          <div className="flex justify-end mt-2">
-            <button
-              onClick={handleSubmit}
-              disabled={!newComment.trim()}
-              className="text-sm px-4 py-1.5 rounded-lg bg-(--noir-accent) text-black font-semibold disabled:opacity-40 hover:brightness-110 transition-all"
-            >
-              Comment
-            </button>
-          </div>
-        </div>
-      </div>
+      ) : (
+        <Link
+          href={"/auth/sign-in"}
+          className="text-center font-bold text-[14px] text-(--noir-black) py-4 rounded bg-(--noir-accent)"
+        >
+          Sign in to join the conversation
+        </Link>
+      )}
 
       <div className="h-px bg-(--noir-border)" />
 

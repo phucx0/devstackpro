@@ -2,6 +2,7 @@
 import { UserPublish } from "@/public/lib/types";
 import { useAuth } from "@/public/providers/AuthProvider";
 import { Edit } from "lucide-react";
+import { toast } from "sonner";
 
 interface Props {
   user: UserPublish;
@@ -23,31 +24,10 @@ export default function LeftSideBar({ user }: Props) {
       .toUpperCase();
 
   return (
-    <aside
-      className="
-        w-60 shrink-0
-        sticky top-(--header-h) self-start
-        flex flex-col gap-6
-        p-7
-        h-[calc(100vh-var(--header-h))]
-        border-r border-(--noir-border)
-        "
-    >
+    <aside className="w-60 h-[calc(100vh-var(--header-h))] sticky shrink-0 top-(--header-h) self-start flex flex-col gap-6 p-4 border-r border-(--noir-border)">
       {/* Avatar + identity */}
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        <div
-          style={{
-            width: "64px",
-            height: "64px",
-            borderRadius: "50%",
-            overflow: "hidden",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            border: "1px solid var(--noir-border-md)",
-            flexShrink: 0,
-          }}
-        >
+        <div className="w-20 h-20 rounded-full overflow-hidden border border-(--noir-border) shrink-0 mx-auto">
           {avatarSrc ? (
             <img
               src={avatarSrc}
@@ -107,14 +87,10 @@ export default function LeftSideBar({ user }: Props) {
       <div style={{ height: "1px", background: "var(--noir-border)" }} />
 
       {/* Stats */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      {/* <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {[
-          // {
-          //   label: "Bài viết",
-          //   value: articleLength,
-          // },
-          { label: "Người theo dõi", value: 0 },
-          { label: "Đang theo dõi", value: 0 },
+          { label: "Follower", value: 0 },
+          { label: "Following", value: 0 },
         ].map(({ label, value }) => (
           <div
             key={label}
@@ -142,21 +118,26 @@ export default function LeftSideBar({ user }: Props) {
             </span>
           </div>
         ))}
-      </div>
+      </div> */}
 
-      <div style={{ height: "1px", background: "var(--noir-border)" }} />
-
-      <div style={{ flex: 1 }} />
+      {/* <div style={{ height: "1px", background: "var(--noir-border)" }} />
+      <div style={{ flex: 1 }} /> */}
 
       {/* CTA */}
       {isOwner ? (
-        <button className="w-full text-[12px] text-(--noir-black) bg-(--noir-accent) px-4 py-2 rounded flex items-center justify-center gap-2 cursor-pointer">
+        <button
+          onClick={() => toast.error("We’re working on this feature")}
+          className="w-full text-[12px] text-(--noir-black) bg-(--noir-accent) px-4 py-2 rounded flex items-center justify-center gap-2 cursor-pointer"
+        >
           <Edit size={14} />
           Edit profile
         </button>
       ) : (
-        <button className="w-full text-[12px] text-(--noir-black) bg-(--noir-accent) px-4 py-2 rounded flex items-center justify-center gap-2 cursor-pointer">
-          Theo dõi
+        <button
+          onClick={() => toast.error("We’re working on this feature")}
+          className="w-full text-[12px] text-(--noir-black) bg-(--noir-accent) px-4 py-2 rounded flex items-center justify-center gap-2 cursor-pointer"
+        >
+          Follow
         </button>
       )}
     </aside>

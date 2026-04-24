@@ -19,10 +19,12 @@ export default async function UserLayout({
   return (
     <>
       <Header />
-      <div className="flex items-start justify-between w-full">
-        <LeftSideBar user={user} />
+      <div className="flex flex-row items-start justify-between w-full">
+        <div className="hidden md:block">
+          <LeftSideBar user={user} />
+        </div>
         {children}
-        <RightSidebar />
+        {/* <RightSidebar /> */}
       </div>
     </>
   );

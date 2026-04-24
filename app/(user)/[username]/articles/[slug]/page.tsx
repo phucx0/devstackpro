@@ -90,17 +90,14 @@ export default async function ArticlePage({
   void increaseView(article.id);
 
   return (
-    <div className="pt-10">
+    <div className="pt-4 md:pt-10 w-full">
       {/* ── Back nav ── */}
       <div className="noir-container">
         <BackButton fallbackHref="/" label="Back" />
       </div>
 
       {/* ── Article layout ── */}
-      <main
-        className="noir-container"
-        style={{ paddingTop: "40px", paddingBottom: "80px" }}
-      >
+      <main className="p-4">
         {/* ── Main content ── */}
         <article>
           {article.thumbnail && (
