@@ -24,7 +24,7 @@ export const getArticles = async (): Promise<ArticleWithTags[]> => {
         .from("articles")
         .select(`
             *,
-            user:users (username),
+            user:users!articles_user_id_fkey (username),
             article_tags (tag:tags (id, name))
         `)
         .eq("status", "published")
