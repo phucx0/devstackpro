@@ -292,6 +292,42 @@ export type Database = {
         }
         Relationships: []
       }
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: number
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: number
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           created_at: string | null
@@ -398,6 +434,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_reply_count: { Args: { comment_id: number }; Returns: number }
       increase_article_view: {
         Args: { article_id: number }
         Returns: undefined

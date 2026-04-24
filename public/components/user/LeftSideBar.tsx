@@ -3,17 +3,24 @@ import { UserPublish } from "@/public/lib/types";
 import { useAuth } from "@/public/providers/AuthProvider";
 import { Edit } from "lucide-react";
 import { toast } from "sonner";
+import FollowButton from "./FollowButton";
+import { useEffect, useState } from "react";
+import {
+  getFollowerCountAction,
+  getFollowingCountAction,
+} from "@/server/follows/follows.action";
+import { useFollowStats } from "@/hooks/useFollow";
 
 interface Props {
   user: UserPublish;
 }
 export default function LeftSideBar({ user }: Props) {
+  const { followerCount, followingCount, loading } = useFollowStats(user.id);
   const avatarSrc = user.avatar_url
     ? (process.env.NEXT_PUBLIC_URL_IMAGE ?? "") + user.avatar_url
     : null;
   const { profile } = useAuth();
   const isOwner = profile && profile.id === user.id;
-
   const initials =
     user.display_name ??
     ""
@@ -87,13 +94,10 @@ export default function LeftSideBar({ user }: Props) {
       <div style={{ height: "1px", background: "var(--noir-border)" }} />
 
       {/* Stats */}
-      {/* <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {[
-          { label: "Follower", value: 0 },
-          { label: "Following", value: 0 },
-        ].map(({ label, value }) => (
+
+      {!loading && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           <div
-            key={label}
             style={{
               display: "flex",
               justifyContent: "space-between",
@@ -101,7 +105,7 @@ export default function LeftSideBar({ user }: Props) {
             }}
           >
             <span style={{ fontSize: "12px", color: "var(--noir-muted)" }}>
-              {label}
+              Following
             </span>
             <span
               style={
@@ -114,14 +118,38 @@ export default function LeftSideBar({ user }: Props) {
                 } as any
               }
             >
-              {value.toLocaleString()}
+              {followingCount}
             </span>
           </div>
-        ))}
-      </div> */}
 
-      {/* <div style={{ height: "1px", background: "var(--noir-border)" }} />
-      <div style={{ flex: 1 }} /> */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span style={{ fontSize: "12px", color: "var(--noir-muted)" }}>
+              Follower
+            </span>
+            <span
+              style={
+                {
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  color: "var(--noir-white)",
+                  fontFamily: "var(--font-mono)",
+                  tabularNums: true,
+                } as any
+              }
+            >
+              {followerCount}
+            </span>
+          </div>
+        </div>
+      )}
+
+      <div style={{ flex: 1 }} />
 
       {/* CTA */}
       {isOwner ? (
@@ -133,12 +161,7 @@ export default function LeftSideBar({ user }: Props) {
           Edit profile
         </button>
       ) : (
-        <button
-          onClick={() => toast.error("We’re working on this feature")}
-          className="w-full text-[12px] text-(--noir-black) bg-(--noir-accent) px-4 py-2 rounded flex items-center justify-center gap-2 cursor-pointer"
-        >
-          Follow
-        </button>
+        <FollowButton userId={user.id} />
       )}
     </aside>
   );
