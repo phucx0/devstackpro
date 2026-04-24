@@ -24,7 +24,7 @@ export default function LeftSideBar({ user }: Props) {
       .toUpperCase();
 
   return (
-    <aside className="w-60 h-[calc(100vh-var(--header-h))] sticky shrink-0 top-(--header-h) self-start flex flex-col gap-6 p-4 border-r border-(--noir-border)">
+    <aside className=" w-60 top-(--header-h) sticky shrink-0 self-start hidden md:flex flex-col h-[calc(100vh-var(--header-h))] gap-6 p-4 border-r border-(--noir-border)">
       {/* Avatar + identity */}
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         <div className="w-20 h-20 rounded-full overflow-hidden border border-(--noir-border) shrink-0 mx-auto">

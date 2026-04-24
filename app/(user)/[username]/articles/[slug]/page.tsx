@@ -90,9 +90,9 @@ export default async function ArticlePage({
   void increaseView(article.id);
 
   return (
-    <div className="pt-4 md:pt-10 w-full">
+    <div className="pt-4 w-full">
       {/* ── Back nav ── */}
-      <div className="noir-container">
+      <div className="ml-4">
         <BackButton fallbackHref="/" label="Back" />
       </div>
 

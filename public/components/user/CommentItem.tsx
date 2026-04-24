@@ -140,23 +140,24 @@ export function CommentItem({
           </p>
 
           {/* Actions */}
-          <div className="flex items-center gap-1 mt-2 flex-wrap">
-            <button
-              onClick={() => setReplying((p) => !p)}
-              className="flex items-center gap-1.5 text-xs text-(--noir-muted) hover:text-(--noir-white) transition-colors px-2 py-1 rounded hover:bg-white/5"
-            >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 16 16"
-                fill="currentColor"
+          {profile && (
+            <div className="flex items-center gap-1 mt-2 flex-wrap">
+              <button
+                onClick={() => setReplying((p) => !p)}
+                className="flex items-center gap-1.5 text-xs text-(--noir-muted) hover:text-(--noir-white) transition-colors px-2 py-1 rounded hover:bg-white/5"
               >
-                <path d="M14 2H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h3v3l4-3h5a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z" />
-              </svg>
-              Reply
-            </button>
-          </div>
-
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                >
+                  <path d="M14 2H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h3v3l4-3h5a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z" />
+                </svg>
+                Reply
+              </button>
+            </div>
+          )}
           {/* Reply editor */}
           {replying && (
             <ReplyEditor
