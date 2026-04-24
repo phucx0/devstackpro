@@ -80,20 +80,6 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "fk_article_likes_article"
-            columns: ["article_id"]
-            isOneToOne: false
-            referencedRelation: "articles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_article_likes_user"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       article_tags: {
@@ -175,6 +161,94 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "articles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comment_likes: {
+        Row: {
+          comment_id: number
+          created_at: string
+          id: number
+          user_id: string
+        }
+        Insert: {
+          comment_id: number
+          created_at?: string
+          id?: number
+          user_id: string
+        }
+        Update: {
+          comment_id?: number
+          created_at?: string
+          id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comment_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comments: {
+        Row: {
+          article_id: number
+          content: string
+          created_at: string
+          deleted_at: string | null
+          id: number
+          parent_id: number | null
+          user_id: string
+        }
+        Insert: {
+          article_id: number
+          content: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: number
+          parent_id?: number | null
+          user_id: string
+        }
+        Update: {
+          article_id?: number
+          content?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: number
+          parent_id?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"

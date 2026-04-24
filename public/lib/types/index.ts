@@ -20,6 +20,8 @@ export type ArticleTag   = Tables<'article_tags'>
 export type Message      = Tables<'messages'>
 export type Contact      = Tables<'contact_requests'>
 export type ArticleLike  = Tables<'article_likes'>
+type Comment  = Tables<'comments'>
+export type CommentLike  = Tables<'comment_likes'>
 
 // =============================================
 // Insert / Update helpers
@@ -29,6 +31,20 @@ export type ArticleUpdate = TablesUpdate<'articles'>
 export type UserInsert    = TablesInsert<'users'>
 export type MessageInsert = TablesInsert<'messages'>
 
+
+// CommentPublish
+export type CommentUser = {
+    id: string;
+    username: string;
+    display_name: string;
+    avatar_url: string;
+}
+
+export interface CommentPublish extends Omit<Comment, "deleted_at"> {
+  reply_count: number;
+  replies: CommentPublish[];
+  user: CommentUser
+}
 
 // UserPublish
 export interface UserPublish extends Omit<User, "role" | "deleted_at"> {}

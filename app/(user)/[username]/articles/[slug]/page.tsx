@@ -7,6 +7,7 @@ import {
 import { Metadata } from "next";
 import Link from "next/link";
 import BackButton from "./BackButton";
+import CommentSection from "@/public/components/user/CommentSection";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -96,59 +97,58 @@ export default async function ArticlePage({
       </div>
 
       {/* ── Article layout ── */}
-      <div
+      <main
         className="noir-container"
         style={{ paddingTop: "40px", paddingBottom: "80px" }}
       >
-        <div>
-          {/* ── Main content ── */}
-          <article>
-            {article.thumbnail && (
-              <div className="relative w-full aspect-16/7 overflow-hidden">
-                <img
-                  src={`${IMAGE_BASE_URL}${article.thumbnail}`}
-                  alt="Thumbnail"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-(--noir-black) to-transparent opacity-100" />
-              </div>
-            )}
-            {/* Header Article */}
-            <div className={`w-full mb-10`}>
-              <div className="flex flex-col justify-end">
-                {article.tags?.length > 0 && (
-                  <div className="flex gap-2 flex-wrap mb-4">
-                    {article.tags.slice(0, 3).map((tag: any, i: number) => (
-                      <Link
-                        key={i}
-                        href={`/articles/search/${tag.name}`}
-                        className="noir-tag"
-                      >
-                        {tag.name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-                <h1 className="noir-article-title static p-0 max-w-none">
-                  {article.title}
-                </h1>
-
-                {article.description && (
-                  <p className="text-base text-(--noir-muted) leading-7 border-l-2 border-(--noir-accent) pl-4 mb-8 italic">
-                    {article.description}
-                  </p>
-                )}
-                <div className="h-px bg-(--noir-border)" />
-              </div>
+        {/* ── Main content ── */}
+        <article>
+          {article.thumbnail && (
+            <div className="relative w-full aspect-16/7 overflow-hidden">
+              <img
+                src={`${IMAGE_BASE_URL}${article.thumbnail}`}
+                alt="Thumbnail"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-linear-to-t from-(--noir-black) to-transparent opacity-100" />
             </div>
+          )}
+          {/* Header Article */}
+          <div className={`w-full mb-10`}>
+            <div className="flex flex-col justify-end">
+              {article.tags?.length > 0 && (
+                <div className="flex gap-2 flex-wrap mb-4">
+                  {article.tags.slice(0, 3).map((tag: any, i: number) => (
+                    <Link
+                      key={i}
+                      href={`/articles/search/${tag.name}`}
+                      className="noir-tag"
+                    >
+                      {tag.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+              <h1 className="noir-article-title static p-0 max-w-none">
+                {article.title}
+              </h1>
 
-            {/* Markdown content */}
-            <div className="noir-markdown">
-              <MarkdownRenderer content={article.content_md ?? ""} />
+              {article.description && (
+                <p className="text-base text-(--noir-muted) leading-7 border-l-2 border-(--noir-accent) pl-4 mb-8 italic">
+                  {article.description}
+                </p>
+              )}
+              <div className="h-px bg-(--noir-border)" />
             </div>
-          </article>
-        </div>
-      </div>
+          </div>
+
+          {/* Markdown content */}
+          <div className="noir-markdown">
+            <MarkdownRenderer content={article.content_md ?? ""} />
+          </div>
+        </article>
+        <CommentSection articleId={article.id} />
+      </main>
 
       {/* ── Responsive: hide sidebar on mobile ── */}
       <style>{`
