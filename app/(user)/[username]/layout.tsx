@@ -1,7 +1,8 @@
 import NotFound from "@/public/components/NotFound";
+import EditProfileModal from "@/public/components/user/EditProfileModal";
 import Header from "@/public/components/user/Header";
 import LeftSideBar from "@/public/components/user/LeftSideBar";
-import RightSidebar from "@/public/components/user/RightSideBar";
+import { ModalProvider } from "@/public/providers/ModalProvider";
 import { getUserByUsername } from "@/server/users/users.service";
 
 export default async function UserLayout({
@@ -17,13 +18,14 @@ export default async function UserLayout({
   if (!user) return <NotFound />;
 
   return (
-    <>
+    <ModalProvider>
       <Header />
       <div className="flex items-start justify-between w-full">
         <LeftSideBar user={user} />
         {children}
         {/* <RightSidebar /> */}
       </div>
-    </>
+      <EditProfileModal/>
+    </ModalProvider>
   );
 }

@@ -1,21 +1,18 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { Upload, X, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { toast } from "sonner";
 import { updateAvatar, updateInfo } from "@/server/users/user.actions";
-import { UserPublish } from "@/public/lib/types";
+import { useAuth } from "@/public/providers/AuthProvider";
+import { useModal } from "@/public/providers/ModalProvider";
 
-export default function EditProfileModal({
-  profile,
-  onClose,
-}: {
-  profile: UserPublish;
-  onClose: () => void;
-}) {
+export default function EditProfileModal() {
+  const { profile } = useAuth();
+  if (!profile) return null;
+
   const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
   const router = useRouter();
   const { uploadFile } = useFileUpload();
@@ -24,6 +21,7 @@ export default function EditProfileModal({
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const { open, setOpen } = useModal();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -46,7 +44,7 @@ export default function EditProfileModal({
       });
 
       router.refresh(); // ← Quan trọng: cập nhật dữ liệu mà không reload trang
-      onClose();
+      setOpen(false);
     } catch (err: any) {
       console.error(err);
       alert("Lưu thông tin thất bại: " + (err.message || "Vui lòng thử lại"));
@@ -80,10 +78,12 @@ export default function EditProfileModal({
     }
   };
 
+  if (!open) return null;
+
   return (
     <div
       className="fixed inset-0 bg-black/80 backdrop-blur-xl z-100 flex items-center justify-center p-4"
-      onClick={onClose}
+      onClick={() => setOpen(false)}
     >
       <div
         className="bg-(--noir-card) w-[70%] rounded-md border-2 border-(--noir-border-md) overflow-hidden"
@@ -95,7 +95,7 @@ export default function EditProfileModal({
             Chỉnh sửa hồ sơ
           </p>
           <button
-            onClick={onClose}
+            onClick={() => setOpen(false)}
             className="text-(--noir-muted) hover:text-white transition-colors p-1"
           >
             <X size={26} />
@@ -184,7 +184,7 @@ export default function EditProfileModal({
         {/* Action Buttons */}
         <div className="px-6 py-6 border-t border-(--noir-border) flex gap-3">
           <button
-            onClick={onClose}
+            onClick={() => setOpen(false)}
             className="flex-1 py-4 rounded-2xl border border-(--noir-border-md) hover:bg-(--noir-surface) transition-colors font-medium"
           >
             Hủy

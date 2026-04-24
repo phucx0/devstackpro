@@ -2,20 +2,17 @@
 import { UserPublish } from "@/public/lib/types";
 import { useAuth } from "@/public/providers/AuthProvider";
 import { Edit } from "lucide-react";
-import { toast } from "sonner";
 import FollowButton from "./FollowButton";
-import { useEffect, useState } from "react";
-import {
-  getFollowerCountAction,
-  getFollowingCountAction,
-} from "@/server/follows/follows.action";
 import { useFollowStats } from "@/hooks/useFollow";
+import { useModal } from "@/public/providers/ModalProvider";
 
 interface Props {
   user: UserPublish;
 }
 export default function LeftSideBar({ user }: Props) {
   const { followerCount, followingCount, loading } = useFollowStats(user.id);
+  const { setOpen } = useModal();
+
   const avatarSrc = user.avatar_url
     ? (process.env.NEXT_PUBLIC_URL_IMAGE ?? "") + user.avatar_url
     : null;
@@ -154,7 +151,7 @@ export default function LeftSideBar({ user }: Props) {
       {/* CTA */}
       {isOwner ? (
         <button
-          onClick={() => toast.error("We’re working on this feature")}
+          onClick={() => setOpen(true)}
           className="w-full text-[12px] text-(--noir-black) bg-(--noir-accent) px-4 py-2 rounded flex items-center justify-center gap-2 cursor-pointer"
         >
           <Edit size={14} />
