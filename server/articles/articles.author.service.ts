@@ -132,7 +132,7 @@ export async function getArticles(): Promise<ArticlePublish[]> {
 
 export async function updateArticle(params: { article: UpdateArticleRequest }) {
     const supabase = await createClient();
-    await getAuthUser(supabase);
+    const user = await getAuthUser(supabase);
     const { article } = params;
 
     const { data, error } = await supabase
@@ -147,6 +147,7 @@ export async function updateArticle(params: { article: UpdateArticleRequest }) {
             updated_at: new Date().toISOString(),
         })
         .eq("id", article.id)
+        .eq("user_id", user.id)
         .select()
         .single();
 

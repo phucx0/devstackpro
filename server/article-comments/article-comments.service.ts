@@ -126,6 +126,7 @@ export async function deleteComment(commentId: string) {
         .from("comments")
         .update({ deleted_at: new Date().toISOString() })
         .eq("id", commentId)
+        .eq("user_id", user.id)
         .select();
 
     if(error) throw error;
