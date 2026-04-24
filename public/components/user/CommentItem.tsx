@@ -106,7 +106,7 @@ export function CommentItem({
           {/* Header */}
           <div className="flex items-center gap-2 flex-wrap">
             <Link
-              href=""
+              href={`/${comment.user.username}`}
               className="text-sm font-semibold text-(--noir-white) hover:text-(--noir-accent) transition-colors"
             >
               {comment.user.display_name}
