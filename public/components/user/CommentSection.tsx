@@ -80,63 +80,71 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
 
       {/* New comment box */}
       {profile ? (
-        <div className="flex gap-3">
-          <div className="shrink-0">
-            <div className="relative h-8 w-8 rounded-full overflow-hidden border border-(--noir-border)">
-              <Image
-                src={IMAGE_BASE_URL + profile?.avatar_url}
-                alt="you"
-                className="object-cover"
-                fill
-              />
+        <div>
+          <div className="flex gap-3">
+            <div className="shrink-0">
+              <div className="relative h-8 w-8 rounded-full overflow-hidden border border-(--noir-border)">
+                <Image
+                  src={IMAGE_BASE_URL + profile?.avatar_url}
+                  alt="you"
+                  className="object-cover"
+                  fill
+                />
+              </div>
             </div>
-          </div>
-          <div className="flex-1">
-            <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey))
-                  handleSubmit();
-              }}
-              disabled={!articleId}
-              placeholder="What are your thoughts?"
-              rows={3}
-              className="w-full resize-none rounded-lg border border-(--noir-border) bg-white/[0.03] px-3 py-2.5 text-sm text-(--noir-white) placeholder:text-(--noir-muted) outline-none focus:border-white/20 transition-colors"
-            />
-            <div className="flex justify-end mt-2">
-              <button
-                onClick={handleSubmit}
-                disabled={!newComment.trim()}
-                className="text-sm px-4 py-1.5 rounded-lg bg-(--noir-accent) text-black font-semibold disabled:opacity-40 hover:brightness-110 transition-all"
-              >
-                Comment
-              </button>
+            <div className="flex-1">
+              <textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey))
+                    handleSubmit();
+                }}
+                disabled={!articleId}
+                placeholder="What are your thoughts?"
+                rows={3}
+                className="w-full resize-none rounded-lg border border-(--noir-border) bg-white/[0.03] px-3 py-2.5 text-sm text-(--noir-white) placeholder:text-(--noir-muted) outline-none focus:border-white/20 transition-colors"
+              />
+              <div className="flex justify-end mt-2">
+                <button
+                  onClick={handleSubmit}
+                  disabled={!newComment.trim()}
+                  className="text-sm px-4 py-1.5 rounded-lg bg-(--noir-accent) text-black font-semibold disabled:opacity-40 hover:brightness-110 transition-all"
+                >
+                  Comment
+                </button>
+              </div>
             </div>
           </div>
         </div>
       ) : (
-        <Link
-          href={"/auth/sign-in"}
-          className="text-center font-bold text-[14px] text-(--noir-black) py-4 rounded bg-(--noir-accent)"
-        >
-          Sign in to join the conversation
-        </Link>
+        <div className="flex flex-col gap-4">
+          {comments.length === 0 && (
+            <div className="text-center my-4">
+              Be the first to start the conversation
+            </div>
+          )}
+          <Link
+            href={"/auth/sign-in"}
+            className="text-center font-bold text-[14px] text-(--noir-black) py-4 rounded bg-(--noir-accent)"
+          >
+            Sign in to join the conversation
+          </Link>
+        </div>
       )}
 
-      <div className="h-px bg-(--noir-border)" />
-
-      {/* Comment list */}
-      <div className="flex flex-col gap-5">
-        {comments.map((c) => (
-          <CommentItem
-            key={c.id}
-            comment={c}
-            onReply={() => {}}
-            onDelete={handleDelete}
-          />
-        ))}
-      </div>
+      {comments.length > 0 && (
+        <div className="flex flex-col gap-5">
+          {comments.map((c) => (
+            <CommentItem
+              key={c.id}
+              comment={c}
+              onReply={() => {}}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

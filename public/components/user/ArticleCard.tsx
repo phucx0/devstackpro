@@ -235,7 +235,7 @@ export default function ArticleCard({
           )}
 
           {/* Tag badge */}
-          {article.tags && (
+          {/* {article.tags && (
             <span
               className="absolute top-3 left-3
                 bg-black/65 backdrop-blur-lg border border-(--noir-border)
@@ -244,7 +244,7 @@ export default function ArticleCard({
             >
               tags
             </span>
-          )}
+          )} */}
         </div>
 
         {/* Body */}

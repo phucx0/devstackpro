@@ -3,7 +3,7 @@ import {
   isFollowingAction,
   toggleFollowAction,
 } from "@/server/follows/follows.action";
-import { Circle, CircleCheck } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -15,7 +15,6 @@ export default function FollowButton({ userId }: Props) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-
   // load initial follow state
   useEffect(() => {
     const fetchFollow = async () => {
@@ -34,7 +33,6 @@ export default function FollowButton({ userId }: Props) {
 
   const handleClick = async () => {
     if (loading) return;
-
     setLoading(true);
 
     // optimistic UI (mượt hơn)
