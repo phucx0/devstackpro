@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { Upload, X, Eye, EyeOff, Save, Sparkles, Loader2 } from "lucide-react";
 import { CreateArticleRequest, Tag } from "@/public/lib/types";
-import { redirect } from "next/navigation";
 import MarkdownRenderer from "@/public/components/MarkdownRenderer";
 import TagSelector from "@/public/components/admin/TagSelector";
 import MarkdownTextarea from "@/public/components/MarkdownTextarea";
@@ -10,7 +9,8 @@ import { createArticleAction } from "@/server/articles/author.actions";
 import { toast } from "sonner";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useAuth } from "@/public/providers/AuthProvider";
-import ImageUpload from "./ImageUpload";
+import { useRouter } from "next/navigation";
+import ImageUpload from "@/public/components/user/ImageUpload";
 
 /* ─── NoirInput ─── */
 function NoirInput({
@@ -172,6 +172,7 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
   const { uploadFile } = useFileUpload();
   const [isGenerating, setIsGenerating] = useState(false);
   const { profile } = useAuth();
+  const router = useRouter();
   const [formData, setFormData] = useState<CreateArticleRequest>({
     title: "",
     slug: "",
@@ -311,10 +312,12 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
     try {
       const result = await createArticleAction(submitData);
       if (result) {
-        redirect(`/${profile?.username}`);
+        router.refresh();
+        router.push(`/${profile?.username}`);
       }
     } catch (err) {
-      console.error(err);
+      // console.error(err);
+      toast.error("Something error");
     } finally {
       setIsSubmitting(false);
     }
@@ -324,7 +327,7 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
     "bg-(--noir-surface) border border-(--noir-border) rounded-md p-6";
 
   return (
-    <>
+    <div className="w-full px-4">
       {/* <AIGenerateModal
         open={showAIModal}
         onClose={() => setShowAIModal(false)}
@@ -367,7 +370,7 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
             <button
               onClick={() => setShowPreview((p) => !p)}
               className={`inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.1em] uppercase
-                bg-transparent px-3 py-1.5 rounded border transition-all duration-200 cursor-pointer
+                bg-transparent px-4 py-[7px] rounded border transition-all duration-200 cursor-pointer
                 ${
                   showPreview
                     ? "text-(--noir-accent) border-(--noir-accent)"
@@ -382,7 +385,7 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
             <button
               onClick={() => handleSubmit("draft")}
               disabled={isSubmitting}
-              className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase text-(--noir-accent) border border-(--noir-accent) bg-transparent px-3 py-1.5 rounded transition-colors duration-200 enabled:cursor-pointer 
+              className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase text-(--noir-accent) border border-(--noir-accent) bg-transparent px-4 py-[7px] rounded transition-colors duration-200 enabled:cursor-pointer 
                 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-(--noir-accent) hover:text-(--noir-black)"
             >
               <Save size={11} />
@@ -395,7 +398,7 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
               disabled={isSubmitting}
               className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.1em] uppercase
                 text-(--noir-black) bg-(--noir-accent) border-none
-                px-3.5 py-1.5 rounded transition-opacity duration-200
+                px-4 py-[7px] rounded transition-opacity duration-200
                 enabled:cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
@@ -543,6 +546,6 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
           />
         </div>
       </div>
-    </>
+    </div>
   );
 }

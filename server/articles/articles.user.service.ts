@@ -81,40 +81,73 @@ export async function increaseView(articleId: number) {
     });
 }
 
-// Lấy danh sách `article` theo `username` 
-export const getArticlesByUsername = cache(async (username: string, viewerId?: string): Promise<ArticlePublish[]> => {
+// Export — xử lý owner + is_liked
+export async function getArticlesByUsername(username: string, viewerId?: string) {
     const supabase = await createClient();
-    
-    // Lấy id theo username  
-    const { data: user, error: userError } = await supabase
+
+    // Lấy user để check owner
+    const { data: user } = await supabase
         .from("users")
         .select("id")
         .eq("username", username)
         .maybeSingle();
 
-    if (userError) throw userError;
     if (!user) return [];
 
-    // Query articles theo user_id
-    let query = supabase
-        .from("articles")
-        .select(buildSelect(viewerId))
-        .eq("user_id", user.id)
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false })
-        .limit(15);
-
-    // Chỉ lấy bài viết `publish` nếu không phải chính chủ 
     const isOwner = viewerId && viewerId === user.id;
-    if(!isOwner) {
-        query = query.eq("status", "published");
+
+    // Owner: fetch trực tiếp, không cache (có cả draft)
+    if (isOwner) {
+        const { data: articles, error } = await supabase
+            .from("articles")
+            .select(ARTICLE_SELECT)
+            .eq("user_id", user.id)
+            .is("deleted_at", null)
+            .order("created_at", { ascending: false })
+            .limit(15);
+
+        if (error) throw error;
+
+        const likedSet = await getLikedSet(articles.map(a => a.id), viewerId);
+        return articles.map(a => ({ ...mapArticle(a), is_liked: likedSet.has(a.id) }));
     }
 
-    const { data: articles, error } = await query;
+    // Visitor: dùng cache
+    const articles = await getCachedArticlesByUsername(username, user.id);
+    if (!viewerId) return articles;
 
-    if (error) throw error;
-    return articles.map((a) => mapArticle(a));
-});
+    const likedSet = await getLikedSet(articles.map(a => a.id), viewerId);
+    return articles.map(a => ({ ...a, is_liked: likedSet.has(a.id) }));
+}
+
+const getCachedArticlesByUsername = unstable_cache(
+    async (username: string, userId: string) => {
+        const supabase = await createPublishClient();
+
+        const { data: user, error: userError } = await supabase
+            .from("users")
+            .select("id")
+            .eq("username", username)
+            .maybeSingle();
+
+        if (userError) throw userError;
+        if (!user) return [];
+
+        const { data: articles, error } = await supabase
+            .from("articles")
+            .select(ARTICLE_SELECT) // không có is_liked
+            .eq("user_id", user.id)
+            .eq("status", "published")
+            .is("deleted_at", null)
+            .order("created_at", { ascending: false })
+            .limit(15);
+
+        if (error) throw error;
+        return articles.map(a => mapArticle(a));
+    },
+    ["articles-by-username"],
+    { revalidate: 60, tags: ["articles"] } // revalidateTag("articles") khi tạo/xóa/sửa
+);
 
 // Hàm export dùng trong Server Component con
 export async function getArticles(): Promise<ArticlePublish[]> {
