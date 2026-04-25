@@ -113,7 +113,7 @@ export async function getArticlesByUsername(username: string, viewerId?: string)
     }
 
     // Visitor: dùng cache
-    const articles = await getCachedArticlesByUsername(username, user.id);
+    const articles = await getCachedArticlesByUsername(user.id);
     if (!viewerId) return articles;
 
     const likedSet = await getLikedSet(articles.map(a => a.id), viewerId);
@@ -121,22 +121,12 @@ export async function getArticlesByUsername(username: string, viewerId?: string)
 }
 
 const getCachedArticlesByUsername = unstable_cache(
-    async (username: string, userId: string) => {
+    async (userId: string) => {
         const supabase = await createPublishClient();
-
-        const { data: user, error: userError } = await supabase
-            .from("users")
-            .select("id")
-            .eq("username", username)
-            .maybeSingle();
-
-        if (userError) throw userError;
-        if (!user) return [];
-
         const { data: articles, error } = await supabase
             .from("articles")
             .select(ARTICLE_SELECT) // không có is_liked
-            .eq("user_id", user.id)
+            .eq("user_id", userId)
             .eq("status", "published")
             .is("deleted_at", null)
             .order("created_at", { ascending: false })
@@ -198,20 +188,24 @@ async function getLikedSet(articleIds: number[], userId: string): Promise<Set<nu
 
 
 
-export const getFeaturedArticles = cache(async () : Promise<ArticlePublish[]> => {
-    const supabase = await createClient();
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 30);
+const getCachedFeaturedArticles = unstable_cache(
+    async () => {
+        const supabase = createPublishClient();
+        const { data: articles, error } = await supabase
+            .from("articles")
+            .select(ARTICLE_SELECT)
+            .eq("status", "published")
+            .is("deleted_at", null)
+            .order("views", { ascending: false })
+            .limit(3);
 
-    const { data: articles, error } = await supabase
-        .from("articles")
-        .select(ARTICLE_SELECT)
-        .eq("status", "published")
-        .is("deleted_at", null)
-        //.gte("created_at", oneWeekAgo.toISOString()) // trong 7 ngày
-        .order("views", { ascending: false }) // sort theo view
-        .limit(3);
+        if (error) throw error;
+        return articles.map(a => mapArticle(a));
+    },
+    ["featured-articles"],
+    { revalidate: 300, tags: ["articles"] } // revalidate 5 phút
+);
 
-    if (error) throw error;
-    return articles.map((a) => mapArticle(a));
-})
+export async function getFeaturedArticles(): Promise<ArticlePublish[]> {
+    return getCachedFeaturedArticles();
+}

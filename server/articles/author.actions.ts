@@ -1,4 +1,6 @@
+// author.actions.ts
 "use server"
+import { revalidateTag } from "next/cache";
 import {
     createArticle,
     updateArticle,
@@ -10,15 +12,31 @@ import {
 import { CreateArticleRequest, UpdateArticleRequest } from "@/public/lib/types";
 
 export async function createArticleAction(params: CreateArticleRequest) {
-    return await createArticle(params);
+    const result = await createArticle(params);
+    
+    revalidateTag("articles", "default");              // home list
+    revalidateTag("articles-by-username", "default"); // profile list
+    
+    return result;
 }
 
 export async function updateArticleAction(article: UpdateArticleRequest) {
-    return await updateArticle({ article });
+    const result = await updateArticle({ article });
+
+    revalidateTag("articles", "default");
+    revalidateTag("articles-by-username", "default");
+    revalidateTag("article-slug", "default");
+
+    return result;
 }
 
 export async function deleteArticleAction(id: number) {
-    return await deleteArticleById(id);
+    const result = await deleteArticleById(id);
+
+    revalidateTag("articles", "default");
+    revalidateTag("articles-by-username", "default");
+
+    return result;
 }
 
 export async function getDashboardDataAction() {
