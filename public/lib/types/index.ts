@@ -19,6 +19,9 @@ export type ArticleImage = Tables<'article_images'>
 export type ArticleTag   = Tables<'article_tags'>
 export type Message      = Tables<'messages'>
 export type Contact      = Tables<'contact_requests'>
+export type ArticleLike  = Tables<'article_likes'>
+type Comment  = Tables<'comments'>
+export type CommentLike  = Tables<'comment_likes'>
 
 // =============================================
 // Insert / Update helpers
@@ -28,6 +31,20 @@ export type ArticleUpdate = TablesUpdate<'articles'>
 export type UserInsert    = TablesInsert<'users'>
 export type MessageInsert = TablesInsert<'messages'>
 
+
+// CommentPublish
+export type CommentUser = {
+    id: string;
+    username: string;
+    display_name: string;
+    avatar_url: string;
+}
+
+export interface CommentPublish extends Omit<Comment, "deleted_at"> {
+  reply_count: number;
+  replies: CommentPublish[];
+  user: CommentUser
+}
 
 // UserPublish
 export interface UserPublish extends Omit<User, "role" | "deleted_at"> {}
@@ -48,6 +65,14 @@ export type ArticleWithAuthor = Article & {
 export type ArticleWithTags = ArticleWithAuthor & {
   tags: Tag[]
 }
+
+export type ArticlePublish = Omit<Article, "role" | "deleted_at" | "content_html"> & {
+  user: Omit<User, "deleted_at" | "updated_at" | "created_at" | "email">;
+  tags: Pick<Tag, "id" | "name">[];
+  likes_count: number,
+  is_liked: boolean
+}
+
 
 // =============================================
 // Request types (Form / API payload)
@@ -71,7 +96,7 @@ export interface CreateArticleRequest {
   content_md?: string;
   thumbnail?: string;
   status?: "draft" | "published" | "archived";
-  tags?: Tag[];
+  tags?: Pick<Tag, "id" | "name">[];
 }
 
 export interface UpdateArticleRequest extends Partial<CreateArticleRequest> {

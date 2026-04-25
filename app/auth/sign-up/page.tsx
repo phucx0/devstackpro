@@ -1,5 +1,5 @@
 "use client";
-import { signUp } from "@/services/auth.service";
+import { signUp } from "@/server/users/auth.service";
 import { redirect } from "next/navigation";
 import { useCallback, useState } from "react";
 

@@ -134,7 +134,7 @@ export default function MarkdownTextarea({
         value={content ?? ""}
         onChange={(e) => onChange(e.target.value)}
         className="w-full min-h-96 border border-(--noir-border) outline-none rounded-lg px-3.5 py-2.5 text-white placeholder-gray-400font-mono text-sm "
-        placeholder="Nội dung văn bản"
+        placeholder="Write someting..."
       />
     </div>
   );

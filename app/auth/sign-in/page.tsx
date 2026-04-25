@@ -1,6 +1,6 @@
 "use client";
 import { useAuth } from "@/public/providers/AuthProvider";
-import { signIn } from "@/services/auth.service";
+import { signIn } from "@/server/users/auth.service";
 import { useRouter } from "next/navigation";
 import { useState, KeyboardEvent } from "react";
 
@@ -11,7 +11,7 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-  const {setProfile } = useAuth()
+  const { setProfile } = useAuth();
 
   const handleSignIn = async () => {
     if (!email.trim() || !password.trim()) {
@@ -251,7 +251,7 @@ export default function SignIn() {
           </button>
 
           {/* Divider */}
-          <div
+          {/* <div
             style={{
               display: "flex",
               alignItems: "center",
@@ -283,10 +283,11 @@ export default function SignIn() {
                 background: "var(--noir-border)",
               }}
             />
-          </div>
+          </div> */}
 
           {/* Google */}
-          <button
+          {/* <button
+            onClick={handleSignInWithGoogle}
             className="noir-read-btn-ghost"
             style={{
               width: "100%",
@@ -315,7 +316,7 @@ export default function SignIn() {
               />
             </svg>
             Continue with Google
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

@@ -17,7 +17,7 @@
 
   /* Text */  
   --noir-white:     #f4f4f0;
-  --noir-muted:     #747470;
+  --noir-muted:     #868686;
   --noir-subtle:    #333330;
 
   /* Accent — Neon Yellow */
@@ -135,7 +135,7 @@ body {
 .noir-header-inner {
   /* max-width: 1280px; */
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 16px;
   height: 100%;
   display: flex;
   align-items: center;
@@ -317,7 +317,7 @@ body {
   display: block;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 22px;
+  font-size: 20px;
   color: var(--noir-white);
   text-decoration: none;
   padding: 14px 0;
@@ -668,9 +668,9 @@ body {
 
 .noir-articles-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1px;
-  background: var(--noir-border);
+  background: var(--noir-black);
   border: 0.5px solid var(--noir-border);
 }
 

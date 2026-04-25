@@ -1,5 +1,5 @@
 "use client";
-import { ArticleWithTags } from "@/public/lib/types";
+import { ArticlePublish } from "@/public/lib/types";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -16,11 +16,7 @@ const TICKER_ITEMS = [
   "Open Source",
 ];
 
-export default function Featured({
-  articles,
-}: {
-  articles: ArticleWithTags[];
-}) {
+export default function Featured({ articles }: { articles: ArticlePublish[] }) {
   if (!articles || articles.length < 3) return null;
 
   const [main, second, third] = articles;
@@ -40,7 +36,7 @@ export default function Featured({
         <div className="noir-featured-grid">
           {/* Main Featured Article */}
           <Link
-            href={`/articles/${main.slug}`}
+            href={`/${main.user.username}/articles/${main.slug}`}
             className="noir-featured-main"
             style={{ textDecoration: "none" }}
           >
@@ -98,7 +94,7 @@ export default function Featured({
             {[second, third].map((article, i) => (
               <Link
                 key={article.id}
-                href={`/articles/${article.slug}`}
+                href={`/${article.user.username}/articles/${article.slug}`}
                 className="noir-featured-item"
                 style={{ textDecoration: "none" }}
               >

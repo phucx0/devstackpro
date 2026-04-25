@@ -13,6 +13,9 @@
 # log
 /logs
 
+/docs
+/supabase
+
 # testing
 /coverage
 

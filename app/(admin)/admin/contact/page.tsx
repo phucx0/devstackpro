@@ -6,7 +6,7 @@ import { useAuth } from "@/public/providers/AuthProvider";
 import {
   getAllContact,
   getContactById,
-} from "@/services/contact.admin.service";
+} from "@/server/contacts/contact.admin.service";
 
 const monoLabel = {
   fontFamily: "var(--font-mono)",

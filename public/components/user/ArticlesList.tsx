@@ -1,10 +1,11 @@
 "use client";
-import { ArticleWithTags } from "@/public/lib/types";
+import { ArticlePublish } from "@/public/lib/types";
 import { useState } from "react";
 import ArticleCard from "./ArticleCard";
+import { useAuth } from "@/public/providers/AuthProvider";
 
 interface Props {
-  initialArticles: ArticleWithTags[];
+  initialArticles: ArticlePublish[];
   initialPage: number;
   initialTotalPages: number;
 }
@@ -14,11 +15,11 @@ export default function ArticlesList({
   initialPage,
   initialTotalPages,
 }: Props) {
-  const [articles, setArticles] = useState<ArticleWithTags[]>(initialArticles);
+  const [articles, setArticles] = useState<ArticlePublish[]>(initialArticles);
   const [page, setPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [loading, setLoading] = useState(false);
-
+  const { profile } = useAuth();
   const limit = 10;
 
   const handleShowMore = async () => {
@@ -35,30 +36,19 @@ export default function ArticlesList({
 
   return (
     <div>
-      {/* Section Header */}
-      <div className="flex items-center justify-between my-4">
-        <div className="noir-section-bar-left">
-          <div className="noir-section-line" aria-hidden="true" />
-          <span className="noir-section-title">Latest Articles</span>
-        </div>
-        <span
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: "11px",
-            color: "var(--noir-muted)",
-            letterSpacing: "0.06em",
-          }}
-        >
-          {articles.length} articles
-        </span>
-      </div>
-
       {/* Grid */}
       {articles && articles.length > 0 ? (
         <>
-          <div className="noir-articles-grid">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {articles.map((article, i) => (
-              <ArticleCard key={article.id} article={article} index={i} />
+              <ArticleCard
+                key={article.id}
+                article={article}
+                index={i}
+                isOwner={
+                  (profile && article.id === Number(profile.id)) || false
+                }
+              />
             ))}
           </div>
 
