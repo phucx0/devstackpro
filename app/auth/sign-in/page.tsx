@@ -251,7 +251,7 @@ export default function SignIn() {
           </button>
 
           {/* Divider */}
-          <div
+          {/* <div
             style={{
               display: "flex",
               alignItems: "center",
@@ -283,10 +283,11 @@ export default function SignIn() {
                 background: "var(--noir-border)",
               }}
             />
-          </div>
+          </div> */}
 
           {/* Google */}
-          <button
+          {/* <button
+            onClick={handleSignInWithGoogle}
             className="noir-read-btn-ghost"
             style={{
               width: "100%",
@@ -315,7 +316,7 @@ export default function SignIn() {
               />
             </svg>
             Continue with Google
-          </button>
+          </button> */}
         </div>
       </div>
     </div>
