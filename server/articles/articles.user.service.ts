@@ -50,30 +50,29 @@ export async function getArticleBySlug(slug: string) {
     return getCachedArticleBySlug( slug); 
 }
 
-export async function getCachedArticleBySlug(slug: string) {
-    const cached = unstable_cache(
-        async (): Promise<ArticlePublish | null> => {
-            const supabase = await createPublishClient();
-            const { data: article, error } = await supabase
-                .from("articles")
-                .select(ARTICLE_SELECT)
-                .eq("status", "published")
-                .eq("slug", slug)
-                .maybeSingle();
+const getCachedArticleBySlug = unstable_cache(
+    async (slug: string): Promise<ArticlePublish | null> => {
+        const supabase = await createPublishClient();
+        const { data: article, error } = await supabase
+            .from("articles")
+            .select(`
+                *,
+                user:users!articles_user_id_fkey (id, username, display_name, avatar_url),
+                article_tags (tag:tags (id, name)),
+                likes_count:article_likes (count)
+            `)
+            .eq("status", "published")
+            .eq("slug", slug)
+            .maybeSingle();
 
-            if (error) throw error;
-            if (!article) return null;
+        if (error) throw error;
+        if (!article) return null;
 
-            return mapArticle(article);
-        },
-        ["article-by-slug", slug],   
-        {
-            revalidate: 60,
-            tags: [`article-${slug}`], 
-        }
-    )(); 
-    return cached;
-}
+        return mapArticle(article);
+    },
+    ["article-by-slug"],         // key cố định
+    { revalidate: 3600, tags: ["article-slug"] }
+);
 
 export async function increaseView(articleId: number) {
     const supabase = await createClient();
@@ -117,40 +116,53 @@ export const getArticlesByUsername = cache(async (username: string, viewerId?: s
     return articles.map((a) => mapArticle(a));
 });
 
-export const getArticles = cache(async (): Promise<ArticlePublish[]> => {
+// Hàm export dùng trong Server Component con
+export async function getArticles(): Promise<ArticlePublish[]> {
+    const articles = await getCachedArticles();
+    const authUser = await getUser();
+
+    if (!authUser) return articles;
+
+    const likedSet = await getLikedSet(articles.map(a => a.id), authUser.id);
+    return articles.map(a => ({ ...a, is_liked: likedSet.has(a.id) }));
+}
+
+// Cache across requests, revalidate theo tag
+const getCachedArticles = unstable_cache(
+    async () => {
+        const supabase = await createPublishClient(); // public client, không cần auth
+        const { data: articles, error } = await supabase
+            .from("articles")
+            .select(`
+                *,
+                user:users!articles_user_id_fkey (id, username, display_name, avatar_url),
+                article_tags (tag:tags (id, name)),
+                likes_count:article_likes (count)
+            `)
+            .eq("status", "published")
+            .is("deleted_at", null)
+            .order("created_at", { ascending: false })
+            .limit(15);
+
+        if (error) throw error;
+        return articles.map(a => mapArticle(a)); // không có is_liked
+    },
+    ["articles-list"],
+    { revalidate: 60, tags: ["articles"] }
+);
+
+
+async function getLikedSet(articleIds: number[], userId: string): Promise<Set<number>> {
     const supabase = await createClient();
-    const authUser =  await getUser();
-    
-    // Query 1: articles + likes_count, không có is_liked
-    const { data: articles, error } = await supabase
-        .from("articles")
-        .select(`
-            *,
-            user:users!articles_user_id_fkey (id, username, display_name, avatar_url),
-            article_tags (tag:tags (id, name)),
-            likes_count:article_likes (count)
-        `)
-        .eq("status", "published")
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false })
-        .limit(15);
+    const { data } = await supabase
+        .from("article_likes")
+        .select("article_id")
+        .eq("user_id", userId)
+        .in("article_id", articleIds);
 
-    if (error) throw error;
+    return new Set(data?.map(r => r.article_id));
+}
 
-    // Query 2: chỉ chạy nếu có user, tối đa 15 rows
-    let likedSet = new Set<number>();
-    if (authUser) {
-        const { data: likedRows } = await supabase
-            .from("article_likes")
-            .select("article_id")
-            .eq("user_id", authUser.id)
-            .in("article_id", articles.map(a => a.id));
-
-        likedSet = new Set(likedRows?.map(r => r.article_id));
-    }
-
-    return articles.map((a) => mapArticle(a, likedSet));
-});
 
 
 export const getFeaturedArticles = cache(async () : Promise<ArticlePublish[]> => {

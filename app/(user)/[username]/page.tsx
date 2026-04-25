@@ -1,8 +1,10 @@
-import NotFound from "@/public/components/NotFound";
 import AuthorClient from "@/public/components/user/AuthorClient";
+import AuthorProfileSkeleton from "@/public/components/user/AuthorProfileSkeleton";
 import { getArticlesByUsername } from "@/server/articles/articles.user.service";
 import { getUser, getUserByUsername } from "@/server/users/users.service";
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 type Params = {
   username: string;
@@ -57,16 +59,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function AuthorPage({ params }: Props) {
+export default async function ProfilePage({ params }: Props) {
   const { username } = await params;
+  if (!username || username.trim() === "") return notFound();
 
-  if (!username || username.trim() === "") return <NotFound />;
+  return (
+    <Suspense fallback={<AuthorProfileSkeleton />}>
+      <ProfileArticlesSection username={username} />
+    </Suspense>
+  );
+}
 
+export async function ProfileArticlesSection({
+  username,
+}: {
+  username: string;
+}) {
   const user = await getUserByUsername(username);
-  if (!user) return <NotFound />;
+  if (!user) return notFound();
+
   const myData = await getUser();
   const isOwner = user.id === myData?.id;
-  const articles = await getArticlesByUsername(username, myData?.id);
 
+  const articles = await getArticlesByUsername(username, myData?.id);
   return <AuthorClient articles={articles} isOwner={isOwner} />;
 }

@@ -36,24 +36,6 @@ export default function ArticlesList({
 
   return (
     <div>
-      {/* Section Header */}
-      <div className="flex items-center justify-between my-4">
-        <div className="noir-section-bar-left">
-          <div className="noir-section-line" aria-hidden="true" />
-          <span className="noir-section-title">Latest Articles</span>
-        </div>
-        <span
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: "11px",
-            color: "var(--noir-muted)",
-            letterSpacing: "0.06em",
-          }}
-        >
-          {articles.length} articles
-        </span>
-      </div>
-
       {/* Grid */}
       {articles && articles.length > 0 ? (
         <>

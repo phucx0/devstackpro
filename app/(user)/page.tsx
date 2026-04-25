@@ -5,6 +5,9 @@ import {
   getArticles,
   getFeaturedArticles,
 } from "@/server/articles/articles.user.service";
+import { Suspense } from "react";
+import FeaturedSkeleton from "@/public/components/user/FeaturedSkeleton";
+import ArticlesListSkeleton from "@/public/components/user/ArticlesListSkeleton";
 
 export const metadata: Metadata = {
   title: "Dev Stack Pro",
@@ -13,16 +16,30 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const articles = await getArticles();
-  const featuredArticles = await getFeaturedArticles();
   return (
     <div>
-      <Featured articles={featuredArticles.slice(0, 3)} />
-      <ArticlesList
-        initialArticles={articles}
-        initialPage={1}
-        initialTotalPages={1}
-      />
+      <Suspense fallback={<FeaturedSkeleton />}>
+        <FeaturedSection />
+      </Suspense>
+      <Suspense fallback={<ArticlesListSkeleton />}>
+        <ArticlesSection />
+      </Suspense>
     </div>
+  );
+}
+
+export async function FeaturedSection() {
+  const featuredArticles = await getFeaturedArticles();
+  return <Featured articles={featuredArticles.slice(0, 3)} />;
+}
+
+export async function ArticlesSection() {
+  const articles = await getArticles();
+  return (
+    <ArticlesList
+      initialArticles={articles}
+      initialPage={1}
+      initialTotalPages={1}
+    />
   );
 }

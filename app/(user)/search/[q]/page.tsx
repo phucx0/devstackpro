@@ -1,5 +1,8 @@
 import ArticleCard from "@/public/components/user/ArticleCard";
+import ArticlesList from "@/public/components/user/ArticlesList";
+import ArticlesListSkeleton from "@/public/components/user/ArticlesListSkeleton";
 import { searchArticles } from "@/server/search-article/search-article.service";
+import { Suspense } from "react";
 
 export default async ({ params }: { params: Promise<{ q: string }> }) => {
   const { q } = await params;
@@ -14,22 +17,24 @@ export default async ({ params }: { params: Promise<{ q: string }> }) => {
           Found {articles.length} results for "{decodedQuery}"
         </div>
       </div>
-      {articles && articles?.length > 0 ? (
-        <div className="noir-articles-grid">
-          {articles.map((article, i) => (
-            <ArticleCard
-              index={i}
-              key={article.id}
-              article={article}
-              isOwner={false}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center text-neutral-300/80 py-10">
-          No articles found.
-        </div>
-      )}
+      <Suspense fallback={<ArticlesListSkeleton />}>
+        <ArticlesSection decodedQuery={decodedQuery || ""} />
+      </Suspense>
     </div>
   );
 };
+
+type Props = {
+  decodedQuery: string | "";
+};
+
+export async function ArticlesSection({ decodedQuery }: Props) {
+  const articles = await searchArticles(decodedQuery);
+  return (
+    <ArticlesList
+      initialArticles={articles}
+      initialPage={1}
+      initialTotalPages={1}
+    />
+  );
+}

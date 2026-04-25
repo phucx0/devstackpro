@@ -21,47 +21,65 @@ const AuthContext = createContext<AuthContextType>({
 
 export function AuthProvider({
   children,
-  initialProfile,
 }: {
   children: React.ReactNode;
-  initialProfile: UserPublish | null;
 }) {
-  const [profile, setProfile] = useState<UserPublish | null>(initialProfile);
+  const [profile, setProfile] = useState<UserPublish | null>(null);
   const [loading, setLoading] = useState(false);
 
   const supabase = createClient();
   const router = useRouter();
 
   useEffect(() => {
-    if (initialProfile) {
+    const init = async () => {
+      console.log("Loading profle");
+      setLoading(true);
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        setProfile(data ?? null);
+      } else {
+        setProfile(null);
+      }
+
       setLoading(false);
-      return;
-    }
-    console.log("Loading Profile");
+    };
+
+    init();
+
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        console.log("Loading profle v2");
+
         if (_event === "SIGNED_OUT") {
           setProfile(null);
           return;
         }
 
-        if (_event === "SIGNED_IN" || _event === "TOKEN_REFRESHED" || _event === "USER_UPDATED") {
-          const user = session?.user;
-          if (!user) return;
+        const user = session?.user;
+        if (!user) return;
 
-          const { data } = await supabase
-            .from("users")
-            .select("*")
-            .eq("id", user.id)
-            .maybeSingle();
+        const { data } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", user.id)
+          .maybeSingle();
 
-          setProfile(data ?? null);
-        }
+        setProfile(data ?? null);
       },
     );
 
     return () => listener.subscription.unsubscribe();
-  }, [initialProfile]);
+  }, []);
 
   const logout = async () => {
     await supabase.auth.signOut();

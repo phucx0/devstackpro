@@ -80,12 +80,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await getUser();
   return (
     <html lang="en">
       <head>
@@ -107,7 +106,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Toaster />
-        <AuthProvider initialProfile={user}>{children}</AuthProvider>
+        {children}
       </body>
     </html>
   );

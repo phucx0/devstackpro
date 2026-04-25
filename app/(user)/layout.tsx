@@ -1,4 +1,7 @@
+import EditProfileModal from "@/public/components/user/EditProfileModal";
 import Header from "@/public/components/user/Header";
+import { AuthProvider } from "@/public/providers/AuthProvider";
+import { ModalProvider } from "@/public/providers/ModalProvider";
 
 export default function UserLayout({
   children,
@@ -6,9 +9,14 @@ export default function UserLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <Header />
-      <main className="noir-main">{children}</main>
-    </>
+    <div className="flex flex-col">
+      <AuthProvider>
+        <ModalProvider>
+          <Header />
+          <main className="noir-main">{children}</main>
+          <EditProfileModal />
+        </ModalProvider>
+      </AuthProvider>
+    </div>
   );
 }

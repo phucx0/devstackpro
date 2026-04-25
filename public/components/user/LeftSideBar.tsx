@@ -3,20 +3,26 @@ import { UserPublish } from "@/public/lib/types";
 import { useAuth } from "@/public/providers/AuthProvider";
 import { Edit } from "lucide-react";
 import FollowButton from "./FollowButton";
-import { useFollowStats } from "@/hooks/useFollow";
 import { useModal } from "@/public/providers/ModalProvider";
+import { Suspense } from "react";
 
 interface Props {
   user: UserPublish;
+  followerCount: number;
+  followingCount: number;
 }
-export default function LeftSideBar({ user }: Props) {
-  const { followerCount, followingCount, loading } = useFollowStats(user.id);
+
+export default function LeftSideBar({
+  user,
+  followerCount,
+  followingCount,
+}: Props) {
   const { setOpen } = useModal();
+  const { profile } = useAuth();
 
   const avatarSrc = user.avatar_url
     ? (process.env.NEXT_PUBLIC_URL_IMAGE ?? "") + user.avatar_url
     : null;
-  const { profile } = useAuth();
   const isOwner = profile && profile.id === user.id;
   const initials =
     user.display_name ??
@@ -92,59 +98,57 @@ export default function LeftSideBar({ user }: Props) {
 
       {/* Stats */}
 
-      {!loading && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <span style={{ fontSize: "12px", color: "var(--noir-muted)" }}>
+            Following
+          </span>
+          <span
+            style={
+              {
+                fontSize: "12px",
+                fontWeight: 500,
+                color: "var(--noir-white)",
+                fontFamily: "var(--font-mono)",
+                tabularNums: true,
+              } as any
+            }
           >
-            <span style={{ fontSize: "12px", color: "var(--noir-muted)" }}>
-              Following
-            </span>
-            <span
-              style={
-                {
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  color: "var(--noir-white)",
-                  fontFamily: "var(--font-mono)",
-                  tabularNums: true,
-                } as any
-              }
-            >
-              {followingCount}
-            </span>
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <span style={{ fontSize: "12px", color: "var(--noir-muted)" }}>
-              Follower
-            </span>
-            <span
-              style={
-                {
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  color: "var(--noir-white)",
-                  fontFamily: "var(--font-mono)",
-                  tabularNums: true,
-                } as any
-              }
-            >
-              {followerCount}
-            </span>
-          </div>
+            {followingCount ?? 0}
+          </span>
         </div>
-      )}
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <span style={{ fontSize: "12px", color: "var(--noir-muted)" }}>
+            Follower
+          </span>
+          <span
+            style={
+              {
+                fontSize: "12px",
+                fontWeight: 500,
+                color: "var(--noir-white)",
+                fontFamily: "var(--font-mono)",
+                tabularNums: true,
+              } as any
+            }
+          >
+            {followerCount ?? 0}
+          </span>
+        </div>
+      </div>
 
       <div style={{ flex: 1 }} />
 

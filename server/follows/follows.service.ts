@@ -88,3 +88,26 @@ export async function getFollowingCount(userId: string): Promise<number> {
 
   return count ?? 0;
 }
+
+export async function getUserFollowCounts(userId: string): Promise<{ followerCount: number; followingCount: number }> {
+    const supabase = await createClient();
+
+    const [followerResult, followingResult] = await Promise.all([
+        supabase
+            .from("follows")
+            .select("*", { count: "exact", head: true })
+            .eq("following_id", userId),
+        supabase
+            .from("follows")
+            .select("*", { count: "exact", head: true })
+            .eq("follower_id", userId),
+    ]);
+
+    if (followerResult.error) throw followerResult.error;
+    if (followingResult.error) throw followingResult.error;
+
+    return {
+        followerCount: followerResult.count ?? 0,
+        followingCount: followingResult.count ?? 0,
+    };
+}

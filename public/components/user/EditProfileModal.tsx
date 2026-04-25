@@ -11,13 +11,12 @@ import { useModal } from "@/public/providers/ModalProvider";
 
 export default function EditProfileModal() {
   const { profile } = useAuth();
-  if (!profile) return null;
 
   const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
   const router = useRouter();
   const { uploadFile } = useFileUpload();
-  const [name, setName] = useState(profile.display_name || "");
-  const [bio, setBio] = useState<string>(profile.bio || "");
+  const [name, setName] = useState<string>("");
+  const [bio, setBio] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -25,17 +24,14 @@ export default function EditProfileModal() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Cập nhật lại preview khi name thay đổi (nếu chưa có ảnh)
-  useEffect(() => {
-    setAvatarPreview(IMAGE_BASE_URL + profile.avatar_url);
-  }, []);
-
   const getInitial = () => {
+    if (!profile) return;
     const text = name || profile.display_name || profile.email || "U";
     return text.charAt(0).toUpperCase();
   };
 
   const handleSave = async () => {
+    if (!profile) return;
     setLoading(true);
     try {
       await updateInfo({
@@ -43,7 +39,7 @@ export default function EditProfileModal() {
         bio: bio,
       });
 
-      router.refresh(); // ← Quan trọng: cập nhật dữ liệu mà không reload trang
+      router.refresh();
       setOpen(false);
     } catch (err: any) {
       console.error(err);
@@ -78,7 +74,16 @@ export default function EditProfileModal() {
     }
   };
 
-  if (!open) return null;
+  // Cập nhật lại preview khi name thay đổi (nếu chưa có ảnh)
+  useEffect(() => {
+    if (profile) {
+      setName(profile.display_name || "");
+      setBio(profile.bio || "");
+      setAvatarPreview(IMAGE_BASE_URL + profile.avatar_url);
+    }
+  }, [profile, IMAGE_BASE_URL]);
+
+  if (!open || !profile) return null;
 
   return (
     <div
