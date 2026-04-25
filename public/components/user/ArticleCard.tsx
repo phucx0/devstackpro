@@ -48,13 +48,13 @@ function ArticleMenu({
   const ownerItems = [
     {
       icon: <Edit size={14} />,
-      label: "Chỉnh sửa bài viết",
+      label: "Edit post",
       danger: false,
       onClick: handleEdit,
     },
     {
       icon: <Trash size={14} />,
-      label: "Xóa bài viết",
+      label: "Delete post",
       danger: true,
       onClick: onDelete,
     },
@@ -63,13 +63,13 @@ function ArticleMenu({
   const visitorItems = [
     {
       icon: <Bookmark size={14} />,
-      label: "Lưu bài viết",
+      label: "Save",
       danger: false,
       onClick: () => {},
     },
     {
       icon: <Flag size={14} />,
-      label: "Báo cáo nội dung",
+      label: "Report this post",
       danger: true,
       onClick: () => {},
     },

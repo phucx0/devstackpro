@@ -43,7 +43,7 @@ export default function EditProfileModal() {
       setOpen(false);
     } catch (err: any) {
       console.error(err);
-      alert("Lưu thông tin thất bại: " + (err.message || "Vui lòng thử lại"));
+      toast.error("Failed to save profile. Please try again ");
     } finally {
       setLoading(false);
     }
@@ -59,14 +59,14 @@ export default function EditProfileModal() {
       const { fileKey, success } = await uploadFile(file, "image");
       if (success && fileKey) {
         setAvatarPreview(IMAGE_BASE_URL + fileKey);
-        toast.success("Upload thumbnail successfully");
         updateAvatar(fileKey);
+        toast.success("Avatar uploaded successfully");
       } else {
         toast.error("Upload thumbnail failed");
       }
     } catch (err: any) {
       console.error(err);
-      alert("Tải ảnh lên thất bại. Vui lòng thử lại.");
+      toast.error("Failed to upload avatar");
     } finally {
       setUploading(false);
       // Reset input
@@ -97,7 +97,7 @@ export default function EditProfileModal() {
         {/* Header */}
         <div className="p-4 border-b border-(--noir-border) flex items-center justify-between">
           <p className="text-xl font-semibold text-(--noir-white)">
-            Chỉnh sửa hồ sơ
+            Edit Profile
           </p>
           <button
             onClick={() => setOpen(false)}
@@ -153,35 +153,35 @@ export default function EditProfileModal() {
             />
 
             <p className="text-(--noir-muted) text-sm mt-4">
-              Nhấn vào biểu tượng để thay đổi ảnh đại diện
+              Click the icon to change your avatar
             </p>
           </div>
 
           {/* Name */}
           <div>
             <label className="block text-sm text-(--noir-muted) mb-2 font-medium">
-              Tên hiển thị
+              Display name
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full bg-(--noir-surface) border border-(--noir-border-md) rounded-2xl px-5 py-3.5 text-lg focus:outline-none focus:border-(--noir-white)/40 transition-colors"
-              placeholder="Tên hiển thị"
+              placeholder="Enter your display name"
             />
           </div>
 
           {/* Bio */}
           <div>
             <label className="block text-sm text-(--noir-muted) mb-2 font-medium">
-              Giới thiệu
+              Bio
             </label>
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               rows={5}
               className="w-full bg-(--noir-surface) border border-(--noir-border-md) rounded-3xl px-5 py-4 resize-y min-h-[120px] focus:outline-none focus:border-(--noir-white)/40 transition-colors"
-              placeholder="Viết vài dòng về bản thân..."
+              placeholder="Write a short bio about yourself..."
             />
           </div>
         </div>
@@ -192,7 +192,7 @@ export default function EditProfileModal() {
             onClick={() => setOpen(false)}
             className="flex-1 py-4 rounded-2xl border border-(--noir-border-md) hover:bg-(--noir-surface) transition-colors font-medium"
           >
-            Hủy
+            Cancel
           </button>
 
           <button
@@ -201,7 +201,7 @@ export default function EditProfileModal() {
             className="flex-1 py-4 rounded-2xl bg-white text-black font-semibold hover:bg-white/90 active:bg-white transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading && <Loader2 size={20} className="animate-spin" />}
-            {loading ? "Đang lưu..." : "Lưu thay đổi"}
+            {loading ? "Saving..." : "Save changes"}
           </button>
         </div>
       </div>
