@@ -160,13 +160,13 @@ export default function Header() {
             ) : (
               <div className="hidden items-center gap-2  md:flex">
                 <Link
-                  href="/auth/sign-in"
+                  href="/sign-in"
                   className="text-[13px] text-(--noir-accent) px-3.5 py-2 rounded-md border border-(--noir-accent) transition-colors"
                 >
                   Sign in
                 </Link>
                 <Link
-                  href="/auth/sign-up"
+                  href="/sign-up"
                   className="text-[13px] font-medium text-(--noir-black) px-3.5 py-2 rounded-md bg-(--noir-accent) hover:bg-(--noir-accent-dim) transition-colors"
                 >
                   Sign up
@@ -272,14 +272,14 @@ export default function Header() {
           ) : (
             <div className="flex flex-col gap-2 mt-1">
               <Link
-                href="/auth/sign-in"
+                href="/sign-in"
                 className="text-[13px] text-center text-(--noir-accent) px-3.5 py-2 rounded-md border border-(--noir-accent) hover:text-(--noir-white) transition-colors"
                 onClick={() => setDrawerOpen(false)}
               >
                 Sign in
               </Link>
               <Link
-                href="/auth/sign-up"
+                href="/sign-up"
                 className="text-[13px] font-medium text-center text-(--noir-black) px-3.5 py-2 rounded-md bg-(--noir-accent) hover:bg-(--noir-accent-dim) transition-colors"
                 onClick={() => setDrawerOpen(false)}
               >
