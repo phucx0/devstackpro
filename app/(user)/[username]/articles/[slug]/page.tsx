@@ -118,7 +118,7 @@ export default async function ArticlePage({
                   {article.tags.slice(0, 3).map((tag: any, i: number) => (
                     <Link
                       key={i}
-                      href={`/articles/search/${tag.name}`}
+                      href={`/search/${tag.name}`}
                       className="noir-tag"
                     >
                       {tag.name}
