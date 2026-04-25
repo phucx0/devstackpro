@@ -1,7 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserPublish } from "../lib/types";
 
@@ -19,62 +19,36 @@ const AuthContext = createContext<AuthContextType>({
   logout: async () => {},
 });
 
-export function AuthProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserPublish | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const supabase = createClient();
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  const supabase = useMemo(() => createClient(), []);
+
+  const fetchProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from("users")
+      .select(
+        "id, username, display_name, avatar_url, created_at, email, bio, updated_at",
+      )
+      .eq("id", userId)
+      .maybeSingle();
+    return data ?? null;
+  };
+
   useEffect(() => {
-    const init = async () => {
-      console.log("Loading profle");
-      setLoading(true);
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (user) {
-        const { data } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        setProfile(data ?? null);
-      } else {
-        setProfile(null);
-      }
-
-      setLoading(false);
-    };
-
-    init();
-
     const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        console.log("Loading profle v2");
-
-        if (_event === "SIGNED_OUT") {
+      async (event, session) => {
+        if (event === "SIGNED_OUT" || !session?.user) {
           setProfile(null);
+          setLoading(false);
           return;
         }
 
-        const user = session?.user;
-        if (!user) return;
-
-        const { data } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        setProfile(data ?? null);
+        const profile = await fetchProfile(session.user.id);
+        setProfile(profile);
+        setLoading(false);
       },
     );
 
