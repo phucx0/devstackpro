@@ -10,5 +10,5 @@ export async function getAllTags(): Promise<Tag[]> {
 
     if (error) throw error;
 
-    return data as Tag[];
+    return data ?? [];
 }

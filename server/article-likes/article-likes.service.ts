@@ -1,7 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "../users/users.service";
-import { ArticleLike } from "@/public/lib/types";
-import { SupabaseClient } from "@supabase/supabase-js";
 
 // Check if user has liked the article 
 export async function isHasUserLikeArticle(articleId: number): Promise<boolean> {

@@ -12,7 +12,7 @@ import { getUser } from "../users/users.service";
 export const revalidate = 60;
 
 // Helper tái sử dụng để map raw data → ArticlePublish
-function mapArticle(a: any, currentUserId?: string): ArticlePublish {
+function mapArticle(a: any, likedSet: Set<number> = new Set()): ArticlePublish {
     return {
         ...a,
         user: {
@@ -27,9 +27,7 @@ function mapArticle(a: any, currentUserId?: string): ArticlePublish {
             name: x.tag.name,
         })) ?? [],
         likes_count: Number(a.likes_count?.[0]?.count ?? 0),
-        is_liked: currentUserId
-            ? !!(a.is_liked?.some((like: any) => like.user_id === currentUserId))
-            : false,
+        is_liked: likedSet.has(a.id)
     };
 }
 
@@ -119,24 +117,39 @@ export const getArticlesByUsername = cache(async (username: string, viewerId?: s
     return articles.map((a) => mapArticle(a));
 });
 
-export const getArticles = cache(async (keyword?: string): Promise<ArticlePublish[]> => {
+export const getArticles = cache(async (): Promise<ArticlePublish[]> => {
     const supabase = await createClient();
     const authUser =  await getUser();
     
-    let query = supabase
+    // Query 1: articles + likes_count, không có is_liked
+    const { data: articles, error } = await supabase
         .from("articles")
-        .select(buildSelect(authUser?.id))
+        .select(`
+            *,
+            user:users!articles_user_id_fkey (id, username, display_name, avatar_url),
+            article_tags (tag:tags (id, name)),
+            likes_count:article_likes (count)
+        `)
         .eq("status", "published")
-        .is("deleted_at", null);
-
-    if (keyword) query = query.ilike("title", `%${keyword}%`);
-
-    const { data: articles, error } = await query
+        .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(15);
 
     if (error) throw error;
-    return articles.map((a) => mapArticle(a, authUser?.id));
+
+    // Query 2: chỉ chạy nếu có user, tối đa 15 rows
+    let likedSet = new Set<number>();
+    if (authUser) {
+        const { data: likedRows } = await supabase
+            .from("article_likes")
+            .select("article_id")
+            .eq("user_id", authUser.id)
+            .in("article_id", articles.map(a => a.id));
+
+        likedSet = new Set(likedRows?.map(r => r.article_id));
+    }
+
+    return articles.map((a) => mapArticle(a, likedSet));
 });
 
 

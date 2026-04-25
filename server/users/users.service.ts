@@ -4,7 +4,6 @@ import { cache } from "react";
 
 export const getUser = cache( async(): Promise<UserPublish | null> => {
     const supabase = await createClient();
-
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
@@ -30,7 +29,7 @@ export async function getUserByUsername(username: string): Promise<UserPublish |
     const supabase = await createClient();
     const { data, error } = await supabase
         .from("users")
-        .select("*")
+        .select("id, username, display_name, avatar_url, created_at, email, bio, updated_at")
         .eq("username", username)
         .maybeSingle();
 

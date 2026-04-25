@@ -1,10 +1,10 @@
 import ArticleCard from "@/public/components/user/ArticleCard";
-import { getArticles } from "@/server/articles/articles.user.service";
+import { searchArticles } from "@/server/search-article/search-article.service";
 
 export default async ({ params }: { params: Promise<{ q: string }> }) => {
   const { q } = await params;
   const decodedQuery = decodeURIComponent(q);
-  const articles = await getArticles(decodedQuery);
+  const articles = await searchArticles(decodedQuery);
 
   return (
     <div className="min-h-screen">
