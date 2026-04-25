@@ -139,8 +139,8 @@ export default function ArticleCard({
   const thumbColor = ThumbColors[index % ThumbColors.length];
   const redirectUrl =
     article.status === "published"
-      ? `${article.user.username}/articles/${article.slug}`
-      : `${article.user.username}/editor/${article.id}`;
+      ? `/${article.user.username}/articles/${article.slug}`
+      : `/${article.user.username}/editor/${article.id}`;
 
   const handleDelete = async () => {
     setIsDeleting(true);
