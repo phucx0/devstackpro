@@ -12,7 +12,7 @@ interface Props {
   followingCount: number;
 }
 
-export default function LeftSideBar({
+export default function UserProfileSidebar({
   user,
   followerCount,
   followingCount,
@@ -34,7 +34,7 @@ export default function LeftSideBar({
       .toUpperCase();
 
   return (
-    <aside className=" w-60 top-(--header-h) sticky shrink-0 self-start hidden md:flex flex-col h-[calc(100vh-var(--header-h))] gap-6 p-4 border-r border-(--noir-border)">
+    <aside className="w-70 top-(--header-h) sticky shrink-0 self-start hidden md:flex flex-col h-[calc(100vh-var(--header-h))] gap-6 p-4 border-l border-(--noir-border)">
       {/* Avatar + identity */}
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         <div className="w-20 h-20 rounded-full overflow-hidden border border-(--noir-border) shrink-0 mx-auto">
@@ -153,7 +153,7 @@ export default function LeftSideBar({
       <div style={{ flex: 1 }} />
 
       {/* CTA */}
-      {isOwner ? (
+      {/* {isOwner ? (
         <button
           onClick={() => setOpen(true)}
           className="w-full text-[12px] text-(--noir-black) bg-(--noir-accent) px-4 py-2 rounded flex items-center justify-center gap-2 cursor-pointer"
@@ -163,7 +163,7 @@ export default function LeftSideBar({
         </button>
       ) : (
         <FollowButton userId={user.id} />
-      )}
+      )} */}
     </aside>
   );
 }

@@ -4,7 +4,6 @@ import { getArticlesByUsername } from "@/server/articles/articles.user.service";
 import { getUser, getUserByUsername } from "@/server/users/users.service";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 
 type Params = {
   username: string;
@@ -63,11 +62,7 @@ export default async function ProfilePage({ params }: Props) {
   const { username } = await params;
   if (!username || username.trim() === "") return notFound();
 
-  return (
-    <Suspense fallback={<AuthorProfileSkeleton />}>
-      <ProfileArticlesSection username={username} />
-    </Suspense>
-  );
+  return <ProfileArticlesSection username={username} />;
 }
 
 export async function ProfileArticlesSection({

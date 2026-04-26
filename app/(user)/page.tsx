@@ -6,8 +6,8 @@ import {
   getFeaturedArticles,
 } from "@/server/articles/articles.user.service";
 import { Suspense } from "react";
-import FeaturedSkeleton from "@/public/components/user/FeaturedSkeleton";
-import ArticlesListSkeleton from "@/public/components/user/ArticlesListSkeleton";
+import RightSidebar from "@/public/components/user/SideBar/RightSideBar";
+import RootLoading from "@/public/components/user/RootLoading";
 
 export const metadata: Metadata = {
   title: "Dev Stack Pro",
@@ -17,12 +17,10 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   return (
-    <div>
-      <Suspense fallback={<FeaturedSkeleton />}>
-        <FeaturedSection />
-      </Suspense>
-      <Suspense fallback={<ArticlesListSkeleton />}>
+    <div className="flex items-start">
+      <Suspense fallback={<RootLoading />}>
         <ArticlesSection />
+        <RightSidebar />
       </Suspense>
     </div>
   );

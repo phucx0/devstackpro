@@ -30,31 +30,11 @@ export default function RightSidebar() {
   ];
 
   return (
-    <aside
-      className="
-        w-60 shrink-0
-        sticky top-(--header-h) self-start
-        flex flex-col gap-6
-        p-7
-        h-[calc(100vh-var(--header-h))]
-        border-l border-(--noir-border)
-      "
-    >
+    <aside className="w-70 shrink-0 sticky top-(--header-h) self-start hidden md:flex flex-col gap-6 p-7 h-[calc(100vh-var(--header-h))] border-l border-(--noir-border)">
       {/* You might like */}
-      <section>
-        <h3
-          style={{
-            fontSize: "11px",
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "var(--noir-muted)",
-            fontFamily: "var(--font-mono)",
-            marginBottom: "16px",
-          }}
-        >
-          You might like
-        </h3>
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <section className="space-y-4">
+        <div className="text-sm text-(--noir-white)">You might like</div>
+        <div className="space-y-4">
           {suggested.map((user) => (
             <div
               key={user.username}
@@ -111,20 +91,7 @@ export default function RightSidebar() {
                 >
                   {user.bio}
                 </p>
-                <button
-                  style={{
-                    fontSize: "11px",
-                    padding: "3px 10px",
-                    borderRadius: "4px",
-                    border:
-                      "1px solid var(--noir-border-md, rgba(255,255,255,0.1))",
-                    color: "var(--noir-muted)",
-                    background: "transparent",
-                    cursor: "pointer",
-                    fontFamily: "var(--font-body)",
-                    transition: "border-color 0.15s, color 0.15s",
-                  }}
-                >
+                <button className="border border-(--noir-accent) rounded text-[10px] text-(--noir-accent) px-2.5 py-2 cursor-pointer hover:bg-(--noir-accent) hover:text-(--noir-black)">
                   Theo dõi
                 </button>
               </div>
@@ -137,57 +104,16 @@ export default function RightSidebar() {
       <div style={{ height: "1px", background: "var(--noir-border)" }} />
 
       {/* What's happening */}
-      <section>
-        <h3
-          style={{
-            fontSize: "11px",
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "var(--noir-muted)",
-            fontFamily: "var(--font-mono)",
-            marginBottom: "16px",
-          }}
-        >
-          What's happening
-        </h3>
-        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+      <section className="space-y-4">
+        <div className="text-sm text-(--noir-white)">What's happening</div>
+        <div className="space-y-4">
           {trending.map(({ tag, posts }) => (
             <button
               key={tag}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                width: "100%",
-                padding: "9px 10px",
-                borderRadius: "6px",
-                border: "none",
-                background: "transparent",
-                cursor: "pointer",
-                transition: "background 0.12s",
-                textAlign: "left",
-              }}
+              className="flex flex-col items-start cursor-pointer"
             >
-              <span
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  color: "var(--noir-white)",
-                  fontFamily: "var(--font-display)",
-                }}
-              >
-                #{tag}
-              </span>
-              <span
-                style={{
-                  fontSize: "11px",
-                  color: "var(--noir-muted)",
-                  fontFamily: "var(--font-mono)",
-                  marginTop: "1px",
-                }}
-              >
-                {posts}
-              </span>
+              <span className="text-sm text-(--noir-accent)">#{tag}</span>
+              <span className="text-xs text-(--noir-white)">{posts}</span>
             </button>
           ))}
         </div>
