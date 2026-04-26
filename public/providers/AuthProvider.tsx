@@ -49,39 +49,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    console.log("run v1");
+
     const init = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        // Get session
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      if (cancelled) return;
+        // Sẽ ngưng nếu cancelled === true
+        if (cancelled) return;
 
-      if (session?.user) {
-        try {
-          const profile = await fetchProfile(session.user.id);
-          if (!cancelled) setProfile(profile);
-        } catch {
-          if (!cancelled) setProfile(null);
+        // Set null vì không có session
+        if (!session?.user) {
+          setProfile(null);
+          return;
         }
+
+        // Lấy thông tin user
+        const profile = await fetchProfile(session.user.id);
+        if (!cancelled) setProfile(profile);
+      } catch (e: any) {
+        console.log(e);
+        if (!cancelled) setProfile(null);
+      } finally {
+        if (!cancelled) setIsAuthLoading(false);
       }
-      console.log("Init");
-      if (!cancelled) setIsAuthLoading(false);
     };
 
     init();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log("run v2");
         if (cancelled) return;
         if (event === "SIGNED_OUT" || !session?.user) {
           setProfile(null);
-          setIsAuthLoading(false);
           return;
         }
-
-        console.log("run v3");
 
         try {
           const profile = await fetchProfile(session.user.id);
@@ -89,8 +93,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (err) {
           console.error("Failed to fetch profile:", err);
           if (!cancelled) setProfile(null);
-        } finally {
-          if (!cancelled) setIsAuthLoading(false);
         }
       },
     );
