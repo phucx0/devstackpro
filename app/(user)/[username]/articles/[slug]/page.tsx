@@ -2,7 +2,7 @@ import MarkdownRenderer from "@/public/components/MarkdownRenderer";
 import { Metadata } from "next";
 import Link from "next/link";
 import BackButton from "./BackButton";
-import CommentSection from "@/public/components/user/CommentSection";
+import CommentSection from "@/public/components/user/Comment/CommentSection";
 import { notFound } from "next/navigation";
 import {
   getArticleBySlug,
@@ -90,7 +90,7 @@ export default async function ArticlePage({
   void increaseView(article.id);
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
+    <div className="mx-auto w-full max-w-3xl pb-10">
       {/* ── Back nav ── */}
       <div className="my-4">
         <BackButton fallbackHref="/" label="Back" />

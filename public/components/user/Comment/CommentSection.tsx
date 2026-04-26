@@ -5,7 +5,7 @@ import {
   createCommentAction,
   deleteCommentAction,
   getParentCommentsAction,
-} from "@/server/article-comments/article-comments.actions";
+} from "@/server/comments/comments.actions";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { CommentItem } from "./CommentItem";

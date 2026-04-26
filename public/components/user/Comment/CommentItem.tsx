@@ -5,7 +5,7 @@ import {
   createCommentAction,
   deleteCommentAction,
   getRepliesAction,
-} from "@/server/article-comments/article-comments.actions";
+} from "@/server/comments/comments.actions";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -54,6 +54,7 @@ export function CommentItem({
         });
         setReplies((prev) => [...prev, newReply]);
         setCollapsed(false); // mở ra để thấy reply mới
+        setLoading(false);
       } else {
         onReply(parentId, text);
       }
@@ -61,6 +62,30 @@ export function CommentItem({
       toast.error(e.message);
     }
   };
+
+  function timeAgo(dateString: string) {
+    const date = new Date(dateString);
+    const now = new Date();
+
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    const intervals = [
+      { label: "y", seconds: 31536000 },
+      { label: "mo", seconds: 2592000 },
+      { label: "d", seconds: 86400 },
+      { label: "h", seconds: 3600 },
+      { label: "m", seconds: 60 },
+    ];
+
+    for (const interval of intervals) {
+      const value = Math.floor(seconds / interval.seconds);
+      if (value >= 1) {
+        return `${value}${interval.label}`;
+      }
+    }
+
+    return "just now";
+  }
 
   const handleDelete = async (id: string) => {
     await deleteCommentAction(id);
@@ -75,6 +100,12 @@ export function CommentItem({
         .finally(() => setLoading(false));
     }
   }, [collapsed]);
+
+  // useEffect(() => {
+  //   if(replies.length > 0) {
+
+  //   }
+  // }, [replies])
 
   return (
     <div className="relative">
@@ -112,7 +143,7 @@ export function CommentItem({
               {comment.user.display_name}
             </Link>
             <span className="text-[11px] text-(--noir-muted)">
-              {comment.created_at}
+              {timeAgo(comment.created_at)}
             </span>
 
             {/* Expand replies */}
