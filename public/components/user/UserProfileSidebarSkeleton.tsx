@@ -1,6 +1,6 @@
-export default function LeftSideBarSkeleton() {
+export default function UserProfileSidebarSkeleton() {
   return (
-    <aside className="w-60 top-(--header-h) sticky shrink-0 self-start hidden md:flex flex-col h-[calc(100vh-var(--header-h))] gap-6 p-4 border-r border-(--noir-border)">
+    <aside className="w-70 top-(--header-h) sticky shrink-0 self-start hidden md:flex flex-col h-[calc(100vh-var(--header-h))] gap-6 p-4 border-r border-(--noir-border)">
       {/* Avatar + identity */}
       <div className="flex flex-col gap-4">
         {/* Avatar */}

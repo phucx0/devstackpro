@@ -82,5 +82,7 @@ export async function ProfileArticlesSection({
   const isOwner = user.id === myData?.id;
 
   const articles = await getArticlesByUsername(username, myData?.id);
-  return <AuthorClient username={username} articles={articles} isOwner={isOwner} />;
+  return (
+    <AuthorClient username={username} articles={articles} isOwner={isOwner} />
+  );
 }

@@ -1,6 +1,5 @@
-import ArticleCardSkeleton from "./ArticleCardSkeleton";
+import ArticleCardSkeleton from "@/public/components/user/ArticleCardSkeleton";
 
-// AuthorProfileSkeleton.tsx
 export default function AuthorProfileSkeleton() {
   return (
     <div className="w-full bg-(--noir-black) text-(--noir-white)">
@@ -9,7 +8,10 @@ export default function AuthorProfileSkeleton() {
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center gap-6">
             {[80, 64, 48].map((w) => (
-              <div key={w} className={`h-3 w-${w} bg-white/10 animate-pulse rounded`} />
+              <div
+                key={w}
+                className={`h-3 w-${w} bg-white/10 animate-pulse rounded`}
+              />
             ))}
           </div>
           <div className="h-7 w-20 bg-white/10 animate-pulse rounded-md" />

@@ -117,7 +117,7 @@ export default function SignUp() {
       );
       if (result.user) {
         localStorage.setItem("token", result.session?.access_token ?? "");
-        redirect("/auth/sign-in");
+        redirect("/sign-in");
       }
     } finally {
       setLoading(false);
@@ -162,7 +162,7 @@ export default function SignUp() {
             <p className="noir-auth-sub">
               Already have one?{" "}
               <a
-                href="/auth/sign-in"
+                href="/sign-in"
                 style={{
                   color: "var(--noir-accent)",
                   textDecoration: "underline",

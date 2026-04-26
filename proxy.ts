@@ -12,10 +12,10 @@ interface Profile {
 const ROUTE_CONFIG = {
     admin: "/admin",
     editor: "/editor",
-    guestOnly: ["/auth/sign-in", "/auth/sign-up"],
+    guestOnly: ["/sign-in", "/sign-up"],
     redirects: {
         afterLogin: "/admin/dashboard",
-        noAuth: "/auth/sign-in",
+        noAuth: "/sign-in",
         noPermission: "/",
     },
 } as const;

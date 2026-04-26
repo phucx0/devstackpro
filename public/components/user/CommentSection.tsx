@@ -125,7 +125,7 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
             </div>
           )}
           <Link
-            href={"/auth/sign-in"}
+            href={"/sign-in"}
             className="text-center font-bold text-[14px] text-(--noir-black) py-4 rounded bg-(--noir-accent)"
           >
             Sign in to join the conversation

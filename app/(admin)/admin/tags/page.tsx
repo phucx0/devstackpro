@@ -1,8 +1,8 @@
 "use client";
-import Loading from "@/public/components/Loading";
 import { Tag } from "@/public/lib/types";
 import { useAuth } from "@/public/providers/AuthProvider";
 import { Newspaper, Trash2, Plus, X } from "lucide-react";
+import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const monoLabel = {
@@ -14,7 +14,7 @@ const monoLabel = {
 } as const;
 
 export default function TagsPage() {
-  const { loading } = useAuth();
+  const { isAuthLoading } = useAuth();
   const [tags, setTags] = useState<Tag[]>([]);
   const [isLoadingTags, setIsLoadingTags] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -69,11 +69,13 @@ export default function TagsPage() {
     }
   };
 
-  useEffect(() => {
-    if (!loading) fetchTags();
-  }, [loading]);
+  // useEffect(() => {
+  //   if (!isAuthLoading) fetchTags();
+  // }, [isAuthLoading]);
 
-  if (loading || isLoadingTags) return <Loading />;
+  // if (isAuthLoading || isLoadingTags) return <Loading />;
+
+  return notFound();
 
   return (
     <div>

@@ -78,7 +78,7 @@ export default function SignIn() {
             <p className="noir-auth-sub">
               New here?{" "}
               <a
-                href="/auth/sign-up"
+                href="/sign-up"
                 style={{
                   color: "var(--noir-accent)",
                   textDecoration: "underline",

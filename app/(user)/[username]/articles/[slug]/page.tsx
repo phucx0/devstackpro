@@ -1,5 +1,4 @@
 import MarkdownRenderer from "@/public/components/MarkdownRenderer";
-import NotFound from "@/public/components/NotFound";
 import {
   getArticleBySlug,
   increaseView,
@@ -8,6 +7,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import BackButton from "./BackButton";
 import CommentSection from "@/public/components/user/CommentSection";
+import { notFound } from "next/navigation";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -86,18 +86,18 @@ export default async function ArticlePage({
     }).format(date);
   }
 
-  if (!article) return <NotFound />;
+  if (!article) return notFound();
   void increaseView(article.id);
 
   return (
-    <div className="pt-4 w-full">
+    <div className="mx-auto w-full max-w-3xl">
       {/* ── Back nav ── */}
-      <div className="ml-4">
+      <div className="my-4">
         <BackButton fallbackHref="/" label="Back" />
       </div>
 
       {/* ── Article layout ── */}
-      <main className="p-4">
+      <main className="">
         {/* ── Main content ── */}
         <article>
           {article.thumbnail && (

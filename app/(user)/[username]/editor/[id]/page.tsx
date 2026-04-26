@@ -7,7 +7,6 @@ import { useAuth } from "@/public/providers/AuthProvider";
 import { Tag, UpdateArticleRequest } from "@/public/lib/types";
 import { useParams } from "next/navigation";
 import MarkdownRenderer from "@/public/components/MarkdownRenderer";
-import Loading from "@/public/components/Loading";
 import TagSelector from "@/public/components/admin/TagSelector";
 import MarkdownTextarea from "@/public/components/MarkdownTextarea";
 import {
@@ -46,13 +45,14 @@ function NoirInput({
 
 export default function UpdateArticlePage() {
   const { id } = useParams();
-  const { profile, loading } = useAuth();
-
   const [_loading, setLoading] = useState(true);
-  const [selectedTags, setSelectedTags] = useState<Pick<Tag, "id" | "name">[]>([]);
+  const [selectedTags, setSelectedTags] = useState<Pick<Tag, "id" | "name">[]>(
+    [],
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const [originalArticle, setOriginalArticle] = useState<UpdateArticleRequest>();
+  const [originalArticle, setOriginalArticle] =
+    useState<UpdateArticleRequest>();
   const [updatedArticle, setUpdatedArticle] = useState<UpdateArticleRequest>();
   const { uploadFile } = useFileUpload();
   const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
@@ -69,7 +69,9 @@ export default function UpdateArticlePage() {
     );
   }, [originalArticle, updatedArticle]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     setUpdatedArticle((prev) => {
       if (!prev) return prev;
@@ -90,18 +92,28 @@ export default function UpdateArticlePage() {
   };
 
   const handleRemoveThumbnail = () => {
-    setUpdatedArticle((prev) => prev ? { ...prev, thumbnail: undefined } : prev);
+    setUpdatedArticle((prev) =>
+      prev ? { ...prev, thumbnail: undefined } : prev,
+    );
   };
 
   const handleUpload = async (file: File) => {
     if (!file) return;
-    if (!file.type.startsWith("image/")) { toast.warning("Images only!"); return; }
-    if (file.size > 10 * 1024 * 1024) { toast.warning("Max file size is 10MB."); return; }
+    if (!file.type.startsWith("image/")) {
+      toast.warning("Images only!");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.warning("Max file size is 10MB.");
+      return;
+    }
     try {
       const { fileKey, success } = await uploadFile(file, "image");
       if (success) {
         toast.success("Thumbnail uploaded successfully");
-        setUpdatedArticle((prev) => prev ? { ...prev, thumbnail: fileKey } : prev);
+        setUpdatedArticle((prev) =>
+          prev ? { ...prev, thumbnail: fileKey } : prev,
+        );
         return;
       }
       toast.error("Thumbnail upload failed");
@@ -149,9 +161,7 @@ export default function UpdateArticlePage() {
         setLoading(false);
       })();
     }
-  }, [id, loading]);
-
-  if (_loading) return <UpdateArticleSkeleton />;
+  }, [id, _loading]);
 
   if (!updatedArticle || !originalArticle) {
     return (
@@ -179,9 +189,10 @@ export default function UpdateArticlePage() {
             <button
               onClick={() => setShowPreview((p) => !p)}
               className={`flex items-center gap-2 px-3 py-2 text-[10px] uppercase tracking-widest font-mono border rounded transition cursor-pointer
-                ${showPreview
-                  ? "text-(--noir-accent) border-(--noir-accent)"
-                  : "text-(--noir-muted) border-(--noir-border)"
+                ${
+                  showPreview
+                    ? "text-(--noir-accent) border-(--noir-accent)"
+                    : "text-(--noir-muted) border-(--noir-border)"
                 }`}
             >
               {showPreview ? <EyeOff size={12} /> : <Eye size={12} />}
@@ -205,9 +216,26 @@ export default function UpdateArticlePage() {
         {/* LEFT */}
         <div className="flex flex-col gap-4">
           <div className="p-6 rounded-sm border border-(--noir-border) bg-(--noir-surface) flex flex-col gap-4">
-            <NoirInput label="Title" name="title" value={updatedArticle.title ?? ""} onChange={handleInputChange} required />
-            <NoirInput label="Slug" name="slug" value={updatedArticle.slug ?? ""} onChange={handleInputChange} />
-            <NoirInput label="Description" name="description" value={updatedArticle.description ?? ""} onChange={handleInputChange} required />
+            <NoirInput
+              label="Title"
+              name="title"
+              value={updatedArticle.title ?? ""}
+              onChange={handleInputChange}
+              required
+            />
+            <NoirInput
+              label="Slug"
+              name="slug"
+              value={updatedArticle.slug ?? ""}
+              onChange={handleInputChange}
+            />
+            <NoirInput
+              label="Description"
+              name="description"
+              value={updatedArticle.description ?? ""}
+              onChange={handleInputChange}
+              required
+            />
           </div>
 
           <div className="p-6 rounded-sm border border-(--noir-border) bg-(--noir-surface)">
@@ -216,15 +244,21 @@ export default function UpdateArticlePage() {
             </label>
             <MarkdownTextarea
               content={updatedArticle.content_md ?? ""}
-              onChange={(text) => setUpdatedArticle((p) => p ? { ...p, content_md: text } : p)}
+              onChange={(text) =>
+                setUpdatedArticle((p) => (p ? { ...p, content_md: text } : p))
+              }
             />
           </div>
 
           {/* PREVIEW */}
           {showPreview && (
             <div className="p-6 rounded-sm border border-(--noir-accent) bg-(--noir-surface)">
-              <h3 className="font-display text-2xl text-white mb-2">{updatedArticle.title}</h3>
-              <p className="text-[10px] font-mono text-(--noir-muted) mb-4">/{updatedArticle.slug}</p>
+              <h3 className="font-display text-2xl text-white mb-2">
+                {updatedArticle.title}
+              </h3>
+              <p className="text-[10px] font-mono text-(--noir-muted) mb-4">
+                /{updatedArticle.slug}
+              </p>
               {updatedArticle.thumbnail && (
                 <img
                   src={IMAGE_BASE_URL + updatedArticle.thumbnail}
@@ -247,16 +281,21 @@ export default function UpdateArticlePage() {
             <div className="flex flex-col gap-2">
               {[
                 { value: "draft", icon: <EyeOff size={14} />, label: "Draft" },
-                { value: "published", icon: <Eye size={14} />, label: "Published" },
+                {
+                  value: "published",
+                  icon: <Eye size={14} />,
+                  label: "Published",
+                },
               ].map((opt) => {
                 const active = updatedArticle.status === opt.value;
                 return (
                   <label
                     key={opt.value}
                     className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-sm border cursor-pointer transition-all duration-200
-                      ${active
-                        ? "border-(--noir-accent) bg-(--noir-accent)/5"
-                        : "border-(--noir-border) bg-transparent hover:border-white/20"
+                      ${
+                        active
+                          ? "border-(--noir-accent) bg-(--noir-accent)/5"
+                          : "border-(--noir-border) bg-transparent hover:border-white/20"
                       }`}
                   >
                     <input
@@ -267,10 +306,16 @@ export default function UpdateArticlePage() {
                       onChange={handleInputChange}
                       className="hidden"
                     />
-                    <span className={active ? "text-(--noir-accent)" : "text-(--noir-muted)"}>
+                    <span
+                      className={
+                        active ? "text-(--noir-accent)" : "text-(--noir-muted)"
+                      }
+                    >
                       {opt.icon}
                     </span>
-                    <span className={`font-mono text-[11px] tracking-widest uppercase ${active ? "text-(--noir-accent)" : "text-(--noir-muted)"}`}>
+                    <span
+                      className={`font-mono text-[11px] tracking-widest uppercase ${active ? "text-(--noir-accent)" : "text-(--noir-muted)"}`}
+                    >
                       {opt.label}
                     </span>
                     {active && (
@@ -287,7 +332,10 @@ export default function UpdateArticlePage() {
             <label className="block font-mono text-[10px] uppercase text-(--noir-muted) mb-3">
               Tags
             </label>
-            <TagSelector selectedTags={selectedTags} setSelectedTags={setSelectedTags} />
+            <TagSelector
+              selectedTags={selectedTags}
+              setSelectedTags={setSelectedTags}
+            />
           </div>
 
           {/* Thumbnail */}
