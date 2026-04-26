@@ -1,6 +1,5 @@
-import ArticleCardSkeleton from "./ArticleCardSkeleton";
+import ArticleCardSkeleton from "@/public/components/user/ArticleCardSkeleton";
 
-// AuthorProfileSkeleton.tsx
 export default function AuthorProfileSkeleton() {
   return (
     <div className="w-full bg-(--noir-black) text-(--noir-white)">
