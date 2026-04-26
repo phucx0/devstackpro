@@ -11,7 +11,7 @@ export default function Header() {
   const [query, setQuery] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { profile, logout } = useAuth();
+  const { profile, isAuthLoading, logout } = useAuth();
   const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
   const handleSearch = () => {
@@ -81,17 +81,14 @@ export default function Header() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="noir-nav">
+          {/* <nav className="noir-nav">
             <Link href="/" className="noir-nav-link">
               Home
             </Link>
-            {/* <Link href="/articles" className="noir-nav-link">
-              Articles
-            </Link> */}
             <Link href="/contact" className="noir-nav-link">
               Contact
             </Link>
-          </nav>
+          </nav> */}
 
           {/* Right */}
           <div className="flex items-center gap-2">
@@ -110,7 +107,7 @@ export default function Header() {
             </div>
 
             {/* Auth Area */}
-            {profile ? (
+            {!isAuthLoading && profile ? (
               <div className="relative hidden md:block" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen((v) => !v)}
