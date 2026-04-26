@@ -7,6 +7,7 @@ import {
   getAllContact,
   getContactById,
 } from "@/server/contacts/contact.admin.service";
+import { notFound } from "next/navigation";
 
 const monoLabel = {
   fontFamily: "var(--font-mono)",
@@ -54,7 +55,7 @@ const Status = ({ status }: { status: string }) => {
 };
 
 export default function AdminContactsPage() {
-  const { loading } = useAuth();
+  const { isAuthLoading } = useAuth();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [pageNumber, setPageNumber] = useState(1);
   const [totalContacts, setTotalContacts] = useState(0);
@@ -64,8 +65,8 @@ export default function AdminContactsPage() {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    if (!loading) fetchContacts();
-  }, [pageNumber, loading]);
+    if (!isAuthLoading) fetchContacts();
+  }, [pageNumber, isAuthLoading]);
 
   const fetchContacts = async () => {
     try {
@@ -141,6 +142,8 @@ export default function AdminContactsPage() {
       {icon}
     </button>
   );
+
+  return notFound();
 
   return (
     <div>
@@ -491,11 +494,11 @@ export default function AdminContactsPage() {
 
             {/* Fields */}
             {[
-              { label: "Họ tên", value: selectedContact.name },
-              { label: "Email", value: selectedContact.email },
+              { label: "Họ tên", value: selectedContact?.name },
+              { label: "Email", value: selectedContact?.email },
               {
                 label: "Ngày gửi",
-                value: formatDate(selectedContact.created_at ?? ""),
+                value: formatDate(selectedContact?.created_at ?? ""),
               },
             ].map((f) => (
               <div
@@ -549,7 +552,7 @@ export default function AdminContactsPage() {
                   whiteSpace: "pre-wrap",
                 }}
               >
-                {selectedContact.message}
+                {selectedContact?.message}
               </div>
             </div>
 
@@ -568,7 +571,7 @@ export default function AdminContactsPage() {
                 Đóng
               </button>
               <a
-                href={`mailto:${selectedContact.email}`}
+                href={`mailto:${selectedContact?.email}`}
                 className="noir-read-btn"
                 style={{ textDecoration: "none" }}
               >
