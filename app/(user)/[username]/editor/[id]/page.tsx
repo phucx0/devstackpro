@@ -12,7 +12,7 @@ import MarkdownTextarea from "@/public/components/MarkdownTextarea";
 import {
   getArticleAction,
   updateArticleAction,
-} from "@/server/articles/author.actions";
+} from "@/server/articles/articles.private.action";
 import { toast } from "sonner";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import ImageUpload from "@/public/components/user/ImageUpload";
@@ -43,8 +43,10 @@ function NoirInput({
   );
 }
 
-export default function UpdateArticlePage() {
-  const { id } = useParams();
+export default async function UpdateArticlePage(
+  params: Promise<{ id: string }>,
+) {
+  const { id } = await params;
   const [_loading, setLoading] = useState(true);
   const [selectedTags, setSelectedTags] = useState<Pick<Tag, "id" | "name">[]>(
     [],
@@ -142,7 +144,7 @@ export default function UpdateArticlePage() {
     if (id) {
       (async () => {
         setLoading(true);
-        const result = await getArticleAction(Number(id));
+        const result = await getArticleAction(id);
         if (result) {
           const _article: UpdateArticleRequest = {
             id: result.id,

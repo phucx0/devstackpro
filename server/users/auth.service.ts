@@ -1,8 +1,24 @@
-"use server"
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from 'next/cache'
 
-// For user
+
+/**
+ * Lấy thông tin chi tiết user hiện tại nếu session tồn tại.
+ * @returns Thông tin chi tiết user nếu có, ngược lại trả về null 
+ */
+export async function getAuthUser() {
+    const db = await createClient();
+    const { data : {user}, error } = await db.auth.getUser();
+    if (error) return null;
+    return user;
+}
+
+/**
+ * Đăng nhập tài khoản user với email và mật khẩu 
+ * @param email 
+ * @param password 
+ * @returns 
+ */
 export async function signIn(email: string, password: string) {
     const supabase = await createClient()
     const {data, error} = await supabase.auth.signInWithPassword({
@@ -32,6 +48,15 @@ export async function signIn(email: string, password: string) {
     };
 }   
 
+
+/**
+ * 
+ * @param username 
+ * @param password 
+ * @param display_name 
+ * @param email 
+ * @returns 
+ */
 export async function signUp(
     username: string,
     password: string,

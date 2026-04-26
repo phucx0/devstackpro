@@ -2,17 +2,16 @@
 "use server"
 import { revalidateTag } from "next/cache";
 import {
-    createArticle,
+    insertArticle,
     updateArticle,
     deleteArticleById,
     getDashboardData,
-    getArticle,
-    getArticles,
-} from "@/server/articles/articles.author.service";
+    getArticleById,
+} from "@/server/articles/articles.private.service";
 import { CreateArticleRequest, UpdateArticleRequest } from "@/public/lib/types";
 
-export async function createArticleAction(params: CreateArticleRequest) {
-    const result = await createArticle(params);
+export async function insertArticleAction(params: CreateArticleRequest) {
+    const result = await insertArticle(params);
     
     revalidateTag("articles", "default");              // home list
     revalidateTag("articles-by-username", "default"); // profile list
@@ -21,7 +20,7 @@ export async function createArticleAction(params: CreateArticleRequest) {
 }
 
 export async function updateArticleAction(article: UpdateArticleRequest) {
-    const result = await updateArticle({ article });
+    const result = await updateArticle(article);
 
     revalidateTag("articles", "default");
     revalidateTag("articles-by-username", "default");
@@ -44,9 +43,9 @@ export async function getDashboardDataAction() {
 }
 
 export async function getArticlesAction() {
-    return await getArticles();
+    // return await getArticles();
 }
 
-export async function getArticleAction(id: number) {
-    return await getArticle(id);
+export async function getArticleAction(id: string) {
+    return await getArticleById(id);
 }

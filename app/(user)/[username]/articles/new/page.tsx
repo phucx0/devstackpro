@@ -5,7 +5,7 @@ import { CreateArticleRequest, Tag } from "@/public/lib/types";
 import MarkdownRenderer from "@/public/components/MarkdownRenderer";
 import TagSelector from "@/public/components/admin/TagSelector";
 import MarkdownTextarea from "@/public/components/MarkdownTextarea";
-import { createArticleAction } from "@/server/articles/author.actions";
+import { insertArticleAction } from "@/server/articles/articles.private.action";
 import { toast } from "sonner";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useAuth } from "@/public/providers/AuthProvider";
@@ -310,7 +310,7 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
 
     setIsSubmitting(true);
     try {
-      const result = await createArticleAction(submitData);
+      const result = await insertArticleAction(submitData);
       if (result) {
         router.refresh();
         router.push(`/${profile?.username}`);

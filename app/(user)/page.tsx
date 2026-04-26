@@ -1,13 +1,9 @@
 import ArticlesList from "@/public/components/user/ArticlesList";
-import Featured from "@/public/components/user/Featured";
 import { Metadata } from "next";
-import {
-  getArticles,
-  getFeaturedArticles,
-} from "@/server/articles/articles.user.service";
 import { Suspense } from "react";
 import RightSidebar from "@/public/components/user/SideBar/RightSideBar";
 import RootLoading from "@/public/components/user/RootLoading";
+import { getArticles } from "@/server/articles/articles.public.service";
 
 export const metadata: Metadata = {
   title: "Dev Stack Pro",
@@ -26,10 +22,10 @@ export default async function HomePage() {
   );
 }
 
-export async function FeaturedSection() {
-  const featuredArticles = await getFeaturedArticles();
-  return <Featured articles={featuredArticles.slice(0, 3)} />;
-}
+// export async function FeaturedSection() {
+//   const featuredArticles = await getFeaturedArticles();
+//   return <Featured articles={featuredArticles.slice(0, 3)} />;
+// }
 
 export async function ArticlesSection() {
   const articles = await getArticles();

@@ -15,7 +15,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DeleteArticleDialog from "./DeletetArticleDialog";
-import { deleteArticleAction } from "@/server/articles/author.actions";
+import { deleteArticleAction } from "@/server/articles/articles.private.action";
 import { ToggleLikeArticleAction } from "@/server/article-likes/article-likes.action";
 
 /* ─── Dropdown menu ─── */

@@ -1,6 +1,6 @@
 "use client";
 import { useAuth } from "@/public/providers/AuthProvider";
-import { signIn } from "@/server/users/auth.service";
+import { signInAction } from "@/server/users/user.actions";
 import { useRouter } from "next/navigation";
 import { useState, KeyboardEvent } from "react";
 
@@ -22,7 +22,7 @@ export default function SignIn() {
     setError("");
 
     try {
-      const result = await signIn(email, password);
+      const result = await signInAction(email, password);
       if (result.user) {
         setProfile(result.user);
         router.push("/");

@@ -1,7 +1,6 @@
-import AuthorClient from "@/public/components/user/AuthorClient";
+import AuthorProfile from "@/public/components/user/AuthorProfile";
 import AuthorProfileSkeleton from "@/public/components/user/AuthorProfileSkeleton";
-import { getArticlesByUsername } from "@/server/articles/articles.user.service";
-import { getUser, getUserByUsername } from "@/server/users/users.service";
+import { getUserByUsername } from "@/server/users/users.service";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -65,24 +64,7 @@ export default async function ProfilePage({ params }: Props) {
 
   return (
     <Suspense fallback={<AuthorProfileSkeleton />}>
-      <ProfileArticlesSection username={username} />
+      <AuthorProfile username={username} />
     </Suspense>
-  );
-}
-
-export async function ProfileArticlesSection({
-  username,
-}: {
-  username: string;
-}) {
-  const user = await getUserByUsername(username);
-  if (!user) return notFound();
-
-  const myData = await getUser();
-  const isOwner = user.id === myData?.id;
-
-  const articles = await getArticlesByUsername(username, myData?.id);
-  return (
-    <AuthorClient username={username} articles={articles} isOwner={isOwner} />
   );
 }

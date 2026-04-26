@@ -1,5 +1,5 @@
 "use client";
-import { signUp } from "@/server/users/auth.service";
+import { signUpAction } from "@/server/users/user.actions";
 import { redirect } from "next/navigation";
 import { useCallback, useState } from "react";
 
@@ -109,7 +109,7 @@ export default function SignUp() {
     if (!validate()) return;
     setLoading(true);
     try {
-      const result = await signUp(
+      const result = await signUpAction(
         form.username,
         form.password,
         form.displayName,

@@ -1,13 +1,13 @@
 import MarkdownRenderer from "@/public/components/MarkdownRenderer";
-import {
-  getArticleBySlug,
-  increaseView,
-} from "@/server/articles/articles.user.service";
 import { Metadata } from "next";
 import Link from "next/link";
 import BackButton from "./BackButton";
 import CommentSection from "@/public/components/user/CommentSection";
 import { notFound } from "next/navigation";
+import {
+  getArticleBySlug,
+  increaseView,
+} from "@/server/articles/articles.public.service";
 
 type Props = {
   params: Promise<{ slug: string }>;

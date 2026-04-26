@@ -1,6 +1,16 @@
 "use server"
 import { createClient } from "@/lib/supabase/server";
 import { UpdateInfoUser } from "@/public/lib/types";
+import { signIn, signUp } from "./auth.service";
+
+export async function signInAction(email: string, password: string) {
+    return signIn(email, password);
+}
+
+
+export async function signUpAction(username: string, password: string, display_name: string, email: string) {
+    return signUp(username, password, display_name, email);
+}
 
 export async function updateAvatar(fileKey: string): Promise<boolean> {
     if(!fileKey) throw new Error("Not found image");

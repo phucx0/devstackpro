@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { UserPublish } from "@/public/lib/types";
 import { cache } from "react";
+import * as UserRepo from "@/server/users/user.repository"
 
 export const getUser = cache( async(): Promise<UserPublish | null> => {
     const supabase = await createClient();
@@ -21,21 +22,27 @@ export const getUser = cache( async(): Promise<UserPublish | null> => {
     return existing;
 });
 
+
+/**
+ * Lấy thông tin chi tiết của user theo username 
+ * @param username 
+ * @returns thông tin chi tiết user nếu có, ngược lại trả về null 
+ */
 export async function getUserByUsername(username: string): Promise<UserPublish | null> {
     if (!username || username.trim() === "") {
-        throw new Error("Invalid username");
+        throw new Error("username is required");
     }
+    const user = await UserRepo.getUserByUsername(username);
+    return user;
+}
 
-    const supabase = await createClient();
-    const { data, error } = await supabase
-        .from("users")
-        .select("id, username, display_name, avatar_url, created_at, email, bio, updated_at")
-        .eq("username", username)
-        .maybeSingle();
-
-    if (error) {
-        console.error("getUser error:", error);
-        throw error;
-    }
-    return data;
+/**
+ * Lấy thông tin chi tiết của user theo user_id 
+ * @param userId 
+ * @returns thông tin chi tiết user nếu có, ngược lại trả về null 
+ */
+export async function getUserById(userId: string) {
+    if (!userId) throw new Error("userId is required");
+    
+    return UserRepo.getUserById({userId});
 }
