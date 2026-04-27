@@ -5,6 +5,7 @@ import Script from "next/script";
 import { Metadata } from "next";
 import { Toaster } from "sonner";
 import { getUser } from "@/server/users/users.service";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -107,6 +108,7 @@ export default function RootLayout({
       >
         <Toaster />
         {children}
+        <SpeedInsights />
       </body>
     </html>
   );
