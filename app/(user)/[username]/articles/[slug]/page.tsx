@@ -19,28 +19,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const finalSlug = Array.isArray(slug) ? slug.join("/") : slug;
   const article = await getArticleBySlug(finalSlug);
   const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
-
+  const thumbnailUrl = IMAGE_BASE_URL + article?.thumbnail;
   if (!article) {
     return { title: "Bài viết không tồn tại" };
   }
 
   return {
+    metadataBase: new URL("https://devstackpro.cloud"),
     title: article.title + " - Dev Stack Pro",
     description:
       article.description ||
       article.title ||
       "Master modern web and mobile development with expert guides on CSS, Flutter, Next.js, and UI design principles",
     alternates: {
-      canonical: `https://devstackpro.cloud/articles/${article.slug}`,
+      canonical: `https://devstackpro.cloud/${article.user.username}/articles/${article.slug}`,
     },
     openGraph: {
       title: article.title + " - Dev Stack Pro",
       description: article.description || article.title,
       type: "article",
-      url: `https://devstackpro.cloud/articles/${article.slug}`,
+      url: `https://devstackpro.cloud/${article.user.username}/articles/${article.slug}`,
       images: [
         {
-          url: `${IMAGE_BASE_URL}${article.thumbnail}`,
+          url: thumbnailUrl,
           width: 1200,
           height: 630,
         },
@@ -50,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title: article.title + " - Dev Stack Pro",
       description: article.description || article.title,
-      images: [`${IMAGE_BASE_URL}${article.thumbnail}`],
+      images: [thumbnailUrl],
     },
   };
 }
