@@ -1,7 +1,6 @@
 import ArticlesList from "@/public/components/user/ArticlesList";
 import { Metadata } from "next";
 import { Suspense } from "react";
-import RightSidebar from "@/public/components/user/SideBar/RightSideBar";
 import RootLoading from "@/public/components/user/RootLoading";
 import { getArticles } from "@/server/articles/articles.public.service";
 
@@ -13,12 +12,9 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   return (
-    <div className="flex items-start">
-      <Suspense fallback={<RootLoading />}>
-        <ArticlesSection />
-        <RightSidebar />
-      </Suspense>
-    </div>
+    <Suspense fallback={<RootLoading />}>
+      <ArticlesSection />
+    </Suspense>
   );
 }
 

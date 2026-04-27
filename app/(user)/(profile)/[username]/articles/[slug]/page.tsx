@@ -145,7 +145,11 @@ export default async function ArticlePage({
             <MarkdownRenderer content={article.content_md ?? ""} />
           </div>
         </article>
-        <CommentSection articleId={article.id} />
+        <CommentSection
+          articleId={article.id}
+          username={article.user.username || ""}
+          slug={article.slug}
+        />
       </main>
 
       {/* ── Responsive: hide sidebar on mobile ── */}

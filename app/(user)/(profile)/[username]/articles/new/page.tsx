@@ -61,9 +61,9 @@ function AIGenerateModal({
   if (!open) return null;
 
   const examples = [
-    "Viết bài về xu hướng AI trong năm 2025",
-    "Bài viết về cách tối ưu hiệu suất Next.js",
-    "Phân tích thị trường công nghệ Việt Nam Q1 2025",
+    "Write an article about AI trends in 2025",
+    "How to optimize Next.js performance",
+    "Modern state management in React applications",
   ];
 
   return (
@@ -96,12 +96,12 @@ function AIGenerateModal({
         {/* Textarea */}
         <div className="mb-3.5">
           <label className="block font-mono text-[10px] font-medium tracking-[0.12em] uppercase text-(--noir-muted) mb-2">
-            Mô tả bài viết bạn muốn tạo
+            Describe the article you want to generate
           </label>
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="VD: Hãy tạo 1 bài viết đầy đủ về xu hướng AI năm 2025..."
+            placeholder="E.g: Write a full article about AI trends in 2026..."
             rows={4}
             className="w-full bg-(--noir-card) border border-(--noir-border) rounded-md
               text-(--noir-white) font-body text-sm px-3.5 py-[11px] outline-none
@@ -112,17 +112,17 @@ function AIGenerateModal({
         {/* Quick prompts */}
         <div className="mb-5">
           <p className="font-mono text-[10px] font-medium tracking-[0.12em] uppercase text-(--noir-muted) mb-1.5">
-            Gợi ý nhanh
+            Quick prompts
           </p>
           <div className="flex flex-wrap gap-1.5">
             {examples.map((ex) => (
               <button
                 key={ex}
                 onClick={() => setPrompt(ex)}
-                className="font-mono text-[9px] tracking-[0.06em] text-(--noir-muted)
+                className={`font-mono text-[9px] tracking-[0.06em] text-(--noir-muted)
                   bg-(--noir-card) border border-(--noir-border) rounded px-2.5 py-1.5
                   cursor-pointer transition-all duration-150
-                  hover:border-(--noir-accent) hover:text-(--noir-accent)"
+                  hover:border-(--noir-accent) hover:text-(--noir-accent)`}
               >
                 {ex}
               </button>
@@ -134,11 +134,11 @@ function AIGenerateModal({
         <div className="flex gap-2 justify-end">
           <button
             onClick={onClose}
-            className="font-mono text-[10px] tracking-[0.1em] uppercase text-(--noir-muted)
+            className={`font-mono text-[10px] tracking-[0.1em] uppercase text-(--noir-muted)
               bg-transparent border border-(--noir-border) px-4 py-2 rounded cursor-pointer
-              hover:text-(--noir-white) hover:border-(--noir-border-md) transition-colors"
+              hover:text-(--noir-white) hover:border-(--noir-border-md) transition-colors`}
           >
-            Huỷ
+            Cancel
           </button>
           <button
             onClick={() => {
@@ -149,13 +149,13 @@ function AIGenerateModal({
               }
             }}
             disabled={!prompt.trim()}
-            className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.1em] uppercase
+            className={`inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.1em] uppercase
               text-(--noir-black) px-4 py-2 rounded border-none transition-all duration-200
               enabled:bg-(--noir-accent) enabled:cursor-pointer
-              disabled:bg-(--noir-border) disabled:opacity-70 disabled:cursor-not-allowed"
+              disabled:bg-(--noir-border) disabled:opacity-70 disabled:cursor-not-allowed`}
           >
             <Sparkles size={11} />
-            Tạo bài viết
+            Generate
           </button>
         </div>
       </div>
@@ -215,53 +215,58 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
     });
   };
 
-  //   const handleAIGenerate = async (userPrompt: string) => {
-  //     setIsGenerating(true);
-  //     setFormData((prev) => ({ ...prev, content_md: "" }));
-  //     try {
-  //       const response = await fetch("/api/ai-generate", {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify({ prompt: userPrompt }),
-  //       });
-  //       if (!response.ok) {
-  //         const err = await response.json().catch(() => ({}));
-  //         throw new Error(err.error || "Không thể tạo bài viết");
-  //       }
-  //       const metaHeader = response.headers.get("X-Blog-Meta");
-  //       let meta: any = null;
-  //       if (metaHeader) {
-  //         try {
-  //           meta = JSON.parse(metaHeader);
-  //         } catch {}
-  //       }
+  const handleAIGenerate = async (userPrompt: string) => {
+    setIsGenerating(true);
+    setFormData((prev) => ({ ...prev, content_md: "" }));
+    try {
+      const response = await fetch("/api/ai-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: userPrompt, userId: profile?.id }),
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || "Can't create post");
+      }
+      const metaHeader = response.headers.get("X-Blog-Meta");
+      let meta: any = null;
+      if (metaHeader) {
+        try {
+          meta = JSON.parse(metaHeader);
+        } catch {}
+      }
 
-  //       const reader = response.body?.getReader();
-  //       const decoder = new TextDecoder();
-  //       let content = "";
-  //       if (reader) {
-  //         while (true) {
-  //           const { done, value } = await reader.read();
-  //           if (done) break;
-  //           content += decoder.decode(value, { stream: true });
-  //           setFormData((prev) => ({ ...prev, content_md: content }));
-  //         }
-  //       }
-  //       if (meta) {
-  //         setFormData((prev) => ({
-  //           ...prev,
-  //           title: meta.title ?? prev.title,
-  //           slug: toSlug(meta.title ?? prev.title),
-  //           description: meta.description ?? prev.description,
-  //           content_md: content,
-  //         }));
-  //       }
-  //     } catch (err: any) {
-  //       alert(err.message || "Có lỗi khi tạo bài viết.");
-  //     } finally {
-  //       setIsGenerating(false);
-  //     }
-  //   };
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let content = "";
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          content += decoder.decode(value, { stream: true });
+          setFormData((prev) => ({ ...prev, content_md: content }));
+        }
+      }
+      if (meta) {
+        setFormData((prev) => ({
+          ...prev,
+          title: meta.title ?? prev.title,
+          slug: toSlug(meta.title ?? prev.title),
+          description: meta.description ?? prev.description,
+          content_md: content,
+        }));
+      }
+    } catch (err: any) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : err?.message || "Something went wrong";
+
+      toast.error(message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   // Upload Image to R2
   const handleUpload = async (file: File) => {
@@ -328,11 +333,11 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
 
   return (
     <div className="w-full px-4">
-      {/* <AIGenerateModal
+      <AIGenerateModal
         open={showAIModal}
         onClose={() => setShowAIModal(false)}
         onGenerate={handleAIGenerate}
-      /> */}
+      />
 
       {/* ── Header — sticky bên trong scroll container của parent ── */}
       <header className="sticky top-0 z-50 bg-black/95 backdrop-blur-2xl border-b border-(--noir-border) -mx-4 px-4 mb-6">
@@ -348,7 +353,7 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
           {/* Actions */}
           <div className="flex items-center gap-1.5">
             {/* AI Generate */}
-            {/* <button
+            <button
               onClick={() => setShowAIModal(true)}
               disabled={isGenerating}
               className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.1em] uppercase
@@ -362,7 +367,7 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
                 <Sparkles size={11} />
               )}
               AI Generate
-            </button> */}
+            </button>
 
             <div className="w-px h-4 bg-(--noir-border)" />
 

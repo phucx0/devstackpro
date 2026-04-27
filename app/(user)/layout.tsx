@@ -1,26 +1,22 @@
-import EditProfileModal from "@/public/components/user/EditProfileModal";
+import Header from "@/public/components/user/Header";
+import LeftSideBar from "@/public/components/user/SideBar/LeftSideBar";
 import { AuthProvider } from "@/public/providers/AuthProvider";
 import { ModalProvider } from "@/public/providers/ModalProvider";
-import LeftSideBar from "../../public/components/user/SideBar/LeftSideBar";
-import Header from "@/public/components/user/Header";
 import { getUser } from "@/server/users/users.service";
 
-export default function UserLayout({
+export default function UserRootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col">
-      <ProviderLayout>
-        <Header />
-        <div className="flex items-start mt-(--header-h)">
-          <LeftSideBar />
-          <div className="flex-1 min-w-0">{children}</div>
-        </div>
-        <EditProfileModal />
-      </ProviderLayout>
-    </div>
+    <ProviderLayout>
+      <Header />
+      <div className="flex items-start mt-(--header-h)">
+        <LeftSideBar />
+        <div className="flex-1 min-w-0">{children}</div>
+      </div>
+    </ProviderLayout>
   );
 }
 

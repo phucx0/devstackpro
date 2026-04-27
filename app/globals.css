@@ -49,6 +49,10 @@
 ::-webkit-scrollbar-thumb { background: var(--noir-border-md); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--noir-muted); }
 
+html {
+  overflow-y: scroll;
+}
+
 body {
   background: var(--noir-black);
   color: var(--noir-white);

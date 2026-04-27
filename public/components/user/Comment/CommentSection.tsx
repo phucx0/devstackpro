@@ -1,5 +1,5 @@
 "use client";
-import { CommentPublish } from "@/public/lib/types";
+import { ArticlePublish, CommentPublish } from "@/public/lib/types";
 import { useAuth } from "@/public/providers/AuthProvider";
 import {
   createCommentAction,
@@ -9,7 +9,7 @@ import {
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { CommentItem } from "./CommentItem";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
@@ -24,13 +24,20 @@ function deleteInTree(
 
 type CommentSectionProps = {
   articleId: number;
+  username: string;
+  slug: string;
 };
 
-export default function CommentSection({ articleId }: CommentSectionProps) {
+export default function CommentSection({
+  articleId,
+  username,
+  slug,
+}: CommentSectionProps) {
   const [comments, setComments] = useState<CommentPublish[]>([]);
   const [newComment, setNewComment] = useState("");
   const [sortBy, setSortBy] = useState<"top" | "new">("top");
   const { profile } = useAuth();
+  const router = useRouter();
 
   const handleDelete = async (id: string) => {
     await deleteCommentAction(id);
@@ -49,12 +56,18 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
     setNewComment("");
   };
 
+  const handleClick = () => {
+    const path = `/${username}/articles/${slug}#comment-section`;
+
+    router.push(`/sign-in?callbackUrl=${encodeURIComponent(path)}`);
+  };
+
   useEffect(() => {
     getParentCommentsAction(articleId).then(setComments);
   }, []);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6" id="comment-section">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-(--noir-white)">
@@ -124,12 +137,12 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
               Be the first to start the conversation
             </div>
           )}
-          <Link
-            href={"/sign-in"}
-            className="text-center font-bold text-[14px] text-(--noir-black) py-4 rounded bg-(--noir-accent)"
+          <button
+            onClick={handleClick}
+            className="text-center font-bold text-[14px] text-(--noir-black) py-4 rounded bg-(--noir-accent) cursor-pointer"
           >
             Sign in to join the conversation
-          </Link>
+          </button>
         </div>
       )}
 

@@ -4,17 +4,16 @@ import { generateText, Output, streamText } from "ai";
 import { NextRequest } from "next/server";
 import { z } from 'zod'
 
+/**
+ * 
+ * Hãy tìm hiểu một chủ đề đang trending về AI thời gian gần đây, phạm vi 1 tuần đổ lại đây. Dựa trên những bài báo uy tín để tham khảo. 
+ */
 
 const CONTENT_SYSTEM_PROMPT = `
     You are a senior technical writer and engineer with 12+ years of real-world experience shipping production systems at companies like Vercel, Stripe, and Anthropic. 
     You write for an audience of senior developers, AI/ML engineers, and tech leaders. Your tone is confident, grounded, slightly opinionated, and practical — never hype-heavy or marketing-like.
 
     Write a complete, publication-ready blog post in Markdown.
-
-    STRICT STYLE RULES:
-    - Write like a seasoned engineer sharing hard-earned lessons, not a hype article. Use direct, concise language. Vary sentence length. Avoid buzzwords: revolutionary, unprecedented, paradigm shift, game-changing, unleash, amplify human potential, symbiotic, blazing, cutting-edge, etc.
-    - Be honest about limitations and trade-offs. Include real-world gotchas and implementation challenges.
-    - Occasionally weave in phrases that show experience: "In production we've seen...", "One common pitfall is...", "From our benchmarks...", "I recommend prioritizing this when...".
 
     STRUCTURE RULES:
     - Start directly with a strong hook: a provocative question, surprising but believable statistic, or bold but grounded claim. No "Introduction" heading.
@@ -37,25 +36,65 @@ const CONTENT_SYSTEM_PROMPT = `
     - Weave the target keyword/phrase naturally into the first paragraph, at least one H2 section, and the conclusion.
     - Vary vocabulary and sentence structure heavily to sound human and engaging.
 
+    STRICT STYLE RULES:
+    - Write like a seasoned engineer sharing hard-earned lessons, not a hype article.
+    - Use direct, concise language. Vary sentence length.
+    - Avoid buzzwords such as: revolutionary, unprecedented, paradigm shift, game-changing, unleash, amplify human potential, symbiotic, blazing, cutting-edge.
+    - Be honest about limitations, trade-offs, and real-world constraints.
+    - Use experience-based framing when relevant (e.g. "In production we've seen...", "One common pitfall is...", "From our benchmarks...").
+
+    - DO NOT use any emojis, emoticons, or decorative symbols.
+    - DO NOT use visual icons or symbolic markers (e.g. ✔ ❌ ❗ 👉 🚀 ✨).
+    - Use plain Markdown only.
+
+    STRUCTURE RULES:
+    - Start directly with a strong hook. No "Introduction" heading.
+    - Use ## for H2, ### for H3.
+    - Use bullet points only when necessary. Prefer paragraphs for explanations.
+    - Use only "-" for bullet points. Do not use other bullet styles.
+    - Use **bold** sparingly and *italic* only for subtle emphasis.
+    - Include at least one comparison table when relevant.
+
+    STRICT FACTUALITY RULES:
+    - Do NOT invent facts, benchmarks, adoption claims, or company usage details.
+    - Do NOT make strong macro claims without clear, widely established grounding.
+    - Avoid speculative or absolute statements such as "always", "never", "guaranteed".
+
+    - When discussing trends:
+    - Use neutral phrasing such as "reports suggest", "observations indicate", or "some engineering teams report".
+    - If evidence is unclear, explicitly state uncertainty (e.g. "there is no widely agreed consensus").
+
+    SOURCE HANDLING RULES:
+    - You do NOT have access to external sources.
+    - Do NOT fabricate citations or reference specific articles.
+    - You may refer generically to reputable publications (e.g. MIT Technology Review, Wired, Bloomberg) only as context categories, not as exact sources.
+
     OUTPUT RULES:
-    - Markdown text ONLY. No JSON, no preamble, no explanations, no "Here is the article", no notes.
-    - Start directly with the first sentence of the blog post.
-    - End with a strong, actionable conclusion that includes a clear CTA or practical next step for the reader.
+    - Markdown ONLY.
+    - No preamble, no explanations, no metadata.
+    - Do NOT include any emojis, icons, or decorative formatting.
+    - Start directly with the blog content.
+    - End with a practical, actionable conclusion.
 `.trim();
 
 const model = xai("grok-4-1-fast-non-reasoning");
 
 export async function POST(req: NextRequest) {
     try {
-        const { prompt } = await req.json();
-
+        const { prompt, userId } = await req.json();
+        if(userId !== "9d0db667-9e8c-4dda-b514-ed92e2404afa") {
+            return new Response(
+                JSON.stringify({ error: "You are not allowed to perform this action" }),
+                { status: 403, headers: { "Content-Type": "application/json" } }
+            );
+        }
         if (!prompt?.trim()) {
             return new Response(
-                JSON.stringify({ error: "Prompt không được để trống" }),
+                JSON.stringify({ error: "Prompt is required!" }),
                 { status: 400, headers: { "Content-Type": "application/json" } }
             );
         }
-
+        console.log()
         // === 1. Tạo Metadata (title, description, slug) ===
         const metadataResult = await generateText({
             model,
