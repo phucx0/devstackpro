@@ -221,7 +221,7 @@ export default function ArticleCard({
               className="object-cover"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 768px, 768px"
               placeholder="blur"
-              blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+              blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mMUrgcAAKsAlNU6bZMAAAAASUVORK5CYII="
             />
           ) : (
             <div
