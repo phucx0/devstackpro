@@ -2,7 +2,7 @@ import UserLayoutContent from "@/public/components/user/UserLayoutContent";
 import { Suspense } from "react";
 import UserProfileSidebarSkeleton from "@/public/components/user/UserProfileSidebarSkeleton";
 
-export default async function UserLayout({
+export default async function ProfileLayout({
   children,
   params,
 }: {
@@ -11,9 +11,9 @@ export default async function UserLayout({
 }) {
   const { username } = await params;
   return (
-    <div className="flex items-start justify-between w-full">
+    <div className="flex">
       <div className="flex-1 min-w-0">{children}</div>
-      <Suspense fallback={<UserProfileSidebarSkeleton/>}>
+      <Suspense fallback={<UserProfileSidebarSkeleton />}>
         <UserLayoutContent username={username} />
       </Suspense>
     </div>

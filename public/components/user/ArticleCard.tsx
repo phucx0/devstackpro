@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import DeleteArticleDialog from "./DeletetArticleDialog";
 import { deleteArticleAction } from "@/server/articles/articles.private.action";
 import { ToggleLikeArticleAction } from "@/server/article-likes/article-likes.action";
+import Image from "next/image";
 
 /* ─── Dropdown menu ─── */
 function ArticleMenu({
@@ -213,10 +214,14 @@ export default function ArticleCard({
         {/* Thumbnail */}
         <div className="w-full aspect-video relative overflow-hidden">
           {article.thumbnail ? (
-            <img
+            <Image
               src={IMAGE_BASE_URL + article.thumbnail}
               alt={article.title}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 768px, 768px"
+              placeholder="blur"
+              blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
             />
           ) : (
             <div

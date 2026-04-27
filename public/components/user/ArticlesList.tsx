@@ -23,7 +23,7 @@ export default function ArticlesList({
   const limit = 10;
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
+    <div className="w-full">
       {/* Grid */}
       {articles && articles.length > 0 ? (
         articles.map((article, i) => (
