@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function MobileDrawer({ open, onClose }: Props) {
-  const { profile, isAuthLoading, logout } = useAuth();
+  const { profile, logout } = useAuth();
   const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
   const avatarLetter =
@@ -40,13 +40,7 @@ export function MobileDrawer({ open, onClose }: Props) {
         </Link>
 
         {/* Auth section */}
-        {isAuthLoading ? (
-          // Skeleton khi đang load
-          <div className="flex items-center gap-2.5 py-4">
-            <div className="w-10 h-10 rounded-full bg-(--noir-card) animate-pulse" />
-            <div className="h-3 w-24 rounded bg-(--noir-card) animate-pulse" />
-          </div>
-        ) : profile ? (
+        {profile ? (
           <>
             <div className="flex items-center gap-2.5 py-4">
               {profile.avatar_url ? (

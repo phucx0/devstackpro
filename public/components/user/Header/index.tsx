@@ -9,7 +9,7 @@ import { MobileDrawer } from "@/public/components/user/Header/MobileDrawer";
 
 export default function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const { profile, isAuthLoading } = useAuth();
+  const { profile } = useAuth();
 
   return (
     <>
@@ -34,7 +34,7 @@ export default function Header() {
 
           <div className="flex items-center gap-2">
             <SearchBox />
-            <AuthArea isAuthLoading={isAuthLoading} profile={profile} />
+            <AuthArea profile={profile} />
           </div>
 
           <button

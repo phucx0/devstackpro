@@ -7,18 +7,7 @@ export const getUser = cache( async(): Promise<UserPublish | null> => {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
-
-    const { data: existing, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", String(user?.id))
-        .maybeSingle();
-
-    if (error) {
-        console.error("getUser error:", error);
-        return null;
-    }
-
+    const existing = await UserRepo.getUserById({userId: user.id});
     return existing;
 });
 
