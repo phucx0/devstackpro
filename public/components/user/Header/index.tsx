@@ -6,11 +6,20 @@ import { useAuth } from "@/public/providers/AuthProvider";
 import { SearchBox } from "@/public/components/user/Header/SearchBox";
 import { AuthArea } from "@/public/components/user/Header/AuthArea";
 import { MobileDrawer } from "@/public/components/user/Header/MobileDrawer";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { profile } = useAuth();
+  const router = useRouter();
 
+  const handleClick = () => {
+    if (profile) {
+      router.push(`${profile.username}/articles/new`);
+      return;
+    }
+    router.push("/sign-in?callbackUrl=/articles/new");
+  };
   return (
     <>
       <header className="noir-header">
@@ -32,12 +41,12 @@ export default function Header() {
             <span className="noir-logo-text">DevStack</span>
           </Link>
           <div className="flex items-center gap-2">
-            <Link
-              href={profile ? `/${profile.username}/articles/new` : "/sign-in"}
-              className={`mr-2 cta-btn text-[13px] font-medium text-(--noir-black) px-3.5 py-2 rounded-md bg-(--noir-accent) hover:bg-(--noir-accent-dim) transition-colors`}
+            <button
+              onClick={handleClick}
+              className={`mr-2 cta-btn text-[13px] font-medium text-(--noir-black) px-3.5 py-2 rounded-md bg-(--noir-accent) cursor-pointer hover:bg-(--noir-accent-dim) transition-colors`}
             >
               {profile ? "Write an article" : "Join to write"}
-            </Link>
+            </button>
             <SearchBox />
             <AuthArea profile={profile} />
           </div>

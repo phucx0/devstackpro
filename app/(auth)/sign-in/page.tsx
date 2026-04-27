@@ -1,7 +1,9 @@
 "use client";
+import { UserPublish } from "@/public/lib/types";
 import { useAuth } from "@/public/providers/AuthProvider";
 import { signInAction } from "@/server/users/user.actions";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, KeyboardEvent } from "react";
 
 export default function SignIn() {
@@ -12,6 +14,17 @@ export default function SignIn() {
   const [error, setError] = useState("");
   const router = useRouter();
   const { setProfile } = useAuth();
+  const searchParams = useSearchParams();
+
+  const handleCallbackUrl = (user: UserPublish) => {
+    const callbackUrl = searchParams.get("callbackUrl") || "/";
+    console.log(callbackUrl);
+    if (callbackUrl.includes("/articles/new")) {
+      router.replace(`/${user.username}/articles/new`);
+    } else {
+      router.replace(callbackUrl);
+    }
+  };
 
   const handleSignIn = async () => {
     if (!email.trim() || !password.trim()) {
@@ -25,7 +38,7 @@ export default function SignIn() {
       const result = await signInAction(email, password);
       if (result.user) {
         setProfile(result.user);
-        router.push("/");
+        handleCallbackUrl(result.user);
         router.refresh();
       } else {
         setError("Invalid email or password.");
@@ -45,8 +58,8 @@ export default function SignIn() {
     <div className="noir-auth-wrap">
       <div style={{ width: "100%", maxWidth: 420 }}>
         {/* Logo */}
-        <a
-          href="/"
+        <Link
+          href={"/"}
           className="noir-logo"
           style={{ marginBottom: 40, display: "flex" }}
         >
@@ -66,7 +79,7 @@ export default function SignIn() {
             </svg>
           </div>
           <span className="noir-logo-text">DevStack Pro</span>
-        </a>
+        </Link>
 
         <div className="noir-auth-card">
           {/* Header */}
