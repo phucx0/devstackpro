@@ -7,11 +7,11 @@ import { useAuth } from "@/public/providers/AuthProvider";
 import { UserPublish } from "@/public/lib/types";
 
 interface Props {
-  isAuthLoading: boolean;
+  // isAuthLoading: boolean;
   profile: UserPublish | null;
 }
 
-export function AuthArea({ isAuthLoading, profile }: Props) {
+export function AuthArea({ profile }: Props) {
   const router = useRouter();
   const { logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -39,17 +39,18 @@ export function AuthArea({ isAuthLoading, profile }: Props) {
   }, []);
 
   const handleSignOut = async () => {
+    console.log("Logout");
     await logout();
     setDropdownOpen(false);
     router.push("/");
   };
 
   // 1. Đang load → skeleton tránh layout shift
-  if (isAuthLoading) {
-    return (
-      <div className="hidden md:block w-10 h-10 rounded-full bg-(--noir-card) border border-(--noir-border) animate-pulse" />
-    );
-  }
+  // if (isAuthLoading) {
+  //   return (
+  //     <div className="hidden md:block w-10 h-10 rounded-full bg-(--noir-card) border border-(--noir-border) animate-pulse" />
+  //   );
+  // }
 
   // 2. Đã đăng nhập
   if (profile) {

@@ -1,48 +1,37 @@
-"use client";
 import ArticleCard from "@/public/components/user/ArticleCard";
-import { ArticlePublish } from "@/public/lib/types";
-import { useState } from "react";
+import {
+  getArticlesByUsername,
+  getMyArticles,
+} from "@/server/articles/articles.public.service";
+import { getAuthUser } from "@/server/users/auth.service";
+import { getUserByUsername } from "@/server/users/users.service";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 interface Props {
-  articles: ArticlePublish[];
-  isOwner: boolean;
   username: string;
 }
 
 // ── Main Component ───────────────────────────────────────────────
-export default function AuthorProfile({ username, articles, isOwner }: Props) {
-  const [filter, setFilter] = useState<"latest" | "popular" | "series">(
-    "latest",
-  );
+export default async function AuthorProfile({ username }: Props) {
+  const user = await getUserByUsername(username);
+  if (!user) return notFound();
+
+  const myData = await getAuthUser();
+  const isOwner = user.id === myData?.id;
+
+  const articles = isOwner
+    ? await getMyArticles(myData.id, 15)
+    : await getArticlesByUsername(username, 15);
 
   return (
     <div className="w-full  bg-(--noir-black) text-(--noir-white)">
       <main className="px-4 pb-8">
-        <div className="flex items-center justify-between py-4">
-          <div className="flex items-center gap-6">
-            {(["latest", "popular", "series"] as const).map((tab) => {
-              const labels = {
-                latest: "Newest",
-                popular: "Featured",
-                series: "Series",
-              };
-              const active = filter === tab;
-              return (
-                <button
-                  key={tab}
-                  onClick={() => setFilter(tab)}
-                  className={`text-[12px] font-(--font-body) pb-1 cursor-pointer transition-colors duration-150 border-b ${active ? "text-(--noir-white) border-(--noir-accent)" : "text-(--noir-muted) border-transparent"}`}
-                >
-                  {labels[tab]}
-                </button>
-              );
-            })}
-          </div>
+        <div className="flex py-4 justify-end">
           {isOwner && (
             <Link
               href={`${username}/articles/new`}
-              className={`text-[12px] px-4 py-[7px] rounded-md font-medium transition-colors duration-150 cursor-pointer bg-(--noir-accent) text-(--noir-black)`}
+              className={`items-end text-[12px] px-4 py-[7px] rounded font-medium transition-colors duration-150 cursor-pointer bg-(--noir-accent) text-(--noir-black)`}
             >
               New post
             </Link>

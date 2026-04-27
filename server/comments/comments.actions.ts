@@ -1,6 +1,6 @@
 "use server"
 import { CommentPublish } from "@/public/lib/types";
-import { createComment, deleteComment, getParentComments, getReplies } from "./article-comments.service";
+import { createComment, deleteComment, getParentComments, getReplies } from "./comments.service";
 
 // Check if user has liked the article 
 export async function getParentCommentsAction(articleId: number){

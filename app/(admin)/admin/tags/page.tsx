@@ -14,7 +14,7 @@ const monoLabel = {
 } as const;
 
 export default function TagsPage() {
-  const { isAuthLoading } = useAuth();
+  // const { isAuthLoading } = useAuth();
   const [tags, setTags] = useState<Tag[]>([]);
   const [isLoadingTags, setIsLoadingTags] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);

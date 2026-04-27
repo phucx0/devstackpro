@@ -55,7 +55,7 @@ const Status = ({ status }: { status: string }) => {
 };
 
 export default function AdminContactsPage() {
-  const { isAuthLoading } = useAuth();
+  // const { isAuthLoading } = useAuth();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [pageNumber, setPageNumber] = useState(1);
   const [totalContacts, setTotalContacts] = useState(0);
@@ -64,9 +64,9 @@ export default function AdminContactsPage() {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    if (!isAuthLoading) fetchContacts();
-  }, [pageNumber, isAuthLoading]);
+  // useEffect(() => {
+  //   if (!isAuthLoading) fetchContacts();
+  // }, [pageNumber, isAuthLoading]);
 
   const fetchContacts = async () => {
     try {
