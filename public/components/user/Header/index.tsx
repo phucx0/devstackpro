@@ -31,8 +31,13 @@ export default function Header() {
             </div>
             <span className="noir-logo-text">DevStack</span>
           </Link>
-
           <div className="flex items-center gap-2">
+            <Link
+              href={profile ? `/${profile.username}/articles/new` : "/sign-in"}
+              className={`mr-2 cta-btn text-[13px] font-medium text-(--noir-black) px-3.5 py-2 rounded-md bg-(--noir-accent) hover:bg-(--noir-accent-dim) transition-colors`}
+            >
+              {profile ? "Write an article" : "Join to write"}
+            </Link>
             <SearchBox />
             <AuthArea profile={profile} />
           </div>
