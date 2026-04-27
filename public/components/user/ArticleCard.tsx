@@ -159,6 +159,20 @@ export default function ArticleCard({
     setLikes((n) => (result.liked ? n + 1 : n - 1));
   };
 
+  const getImageUrl = (path: string) => {
+    if (!path) return "";
+
+    const isAvif = path.endsWith(".avif");
+
+    // AVIF → không dùng resize
+    if (isAvif) {
+      return IMAGE_BASE_URL + path;
+    }
+
+    // các loại khác → dùng Cloudflare resize
+    return `${IMAGE_BASE_URL}cdn-cgi/image/width=768,quality=75/${path}`;
+  };
+
   return (
     /* Wrapper div để tách link ra khỏi các interactive element */
     <div className="relative group">
@@ -215,13 +229,12 @@ export default function ArticleCard({
         <div className="w-full aspect-video relative overflow-hidden">
           {article.thumbnail ? (
             <Image
-              src={IMAGE_BASE_URL + article.thumbnail}
+              src={getImageUrl(article.thumbnail)}
               alt={article.title}
               fill
               className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 768px, 768px"
-              placeholder="blur"
-              blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mMUrgcAAKsAlNU6bZMAAAAASUVORK5CYII="
+              sizes="(max-width: 768px) 100vw, 768px"
+              priority
             />
           ) : (
             <div
