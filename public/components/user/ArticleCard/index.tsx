@@ -131,15 +131,18 @@ export default function ArticleCard({
             </p>
           )}
 
-          <div className="h-px bg-(--noir-border) mb-3" />
-
-          <CardActions
-            liked={liked}
-            likes={likes}
-            reposted={reposted}
-            onLike={handleLike}
-            onRepost={handleRepost}
-          />
+          {article.status === "published" && (
+            <div>
+              <div className="h-px bg-(--noir-border) mb-3" />
+              <CardActions
+                liked={liked}
+                likes={likes}
+                reposted={reposted}
+                onLike={handleLike}
+                onRepost={handleRepost}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
