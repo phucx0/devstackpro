@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 import RootLoading from "@/public/components/user/RootLoading";
 import { getArticles } from "@/server/articles/articles.public.service";
+import { WritePromptCard } from "@/public/components/user/WritePromptCard";
 
 export const metadata: Metadata = {
   title: "Dev Stack Pro",
@@ -26,10 +27,15 @@ export default async function HomePage() {
 export async function ArticlesSection() {
   const articles = await getArticles();
   return (
-    <ArticlesList
-      initialArticles={articles}
-      initialPage={1}
-      initialTotalPages={1}
-    />
+    <div className="flex flex-col">
+      <div className="my-4">
+        <WritePromptCard />
+      </div>
+      <ArticlesList
+        initialArticles={articles}
+        initialPage={1}
+        initialTotalPages={1}
+      />
+    </div>
   );
 }

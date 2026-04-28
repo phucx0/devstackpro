@@ -45,14 +45,14 @@ export default function Header() {
             <span className="noir-logo-text">DevStack</span>
           </Link>
           <div className="flex items-center gap-2">
-            {!isWriting && (
+            {/* {!isWriting && (
               <button
                 onClick={handleClick}
                 className={`mr-2 cta-btn text-[13px] font-medium text-(--noir-black) px-3.5 py-2 rounded-md bg-(--noir-accent) cursor-pointer hover:bg-(--noir-accent-dim) transition-colors`}
               >
                 {profile ? "Write an article" : "Join to write"}
               </button>
-            )}
+            )} */}
             <SearchBox />
             <AuthArea profile={profile} />
           </div>
