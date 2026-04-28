@@ -6,7 +6,7 @@ import { getAuthUser } from "@/server/users/auth.service";
 import { getUserByUsername } from "@/server/users/users.service";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ArticleCard from "@/public/components/user/ArticleCard";
+import ArticlesList from "./ArticlesList";
 
 interface Props {
   username: string;
@@ -38,16 +38,11 @@ export default async function AuthorProfile({ username }: Props) {
           )}
         </div>
         {articles.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {articles.map((article, i) => (
-              <ArticleCard
-                key={article.id}
-                article={article}
-                isOwner={isOwner}
-                index={i}
-              />
-            ))}
-          </div>
+          <ArticlesList
+            initialArticles={articles}
+            initialPage={1}
+            initialTotalPages={1}
+          />
         ) : (
           <div
             style={{

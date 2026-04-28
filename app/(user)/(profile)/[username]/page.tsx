@@ -63,8 +63,10 @@ export default async function ProfilePage({ params }: Props) {
   if (!username || username.trim() === "") return notFound();
 
   return (
-    <Suspense fallback={<AuthorProfileSkeleton />}>
-      <AuthorProfile username={username} />
-    </Suspense>
+    <div className="mx-auto w-full max-w-3xl">
+      <Suspense fallback={<AuthorProfileSkeleton />}>
+        <AuthorProfile username={username} />
+      </Suspense>
+    </div>
   );
 }
