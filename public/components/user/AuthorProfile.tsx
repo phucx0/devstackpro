@@ -1,4 +1,3 @@
-import ArticleCard from "@/public/components/user/ArticleCard";
 import {
   getArticlesByUsername,
   getMyArticles,
@@ -7,6 +6,7 @@ import { getAuthUser } from "@/server/users/auth.service";
 import { getUserByUsername } from "@/server/users/users.service";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ArticleCard from "@/public/components/user/ArticleCard";
 
 interface Props {
   username: string;

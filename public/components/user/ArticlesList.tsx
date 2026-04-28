@@ -1,8 +1,8 @@
 "use client";
 import { ArticlePublish } from "@/public/lib/types";
 import { useState } from "react";
-import ArticleCard from "./ArticleCard";
 import { useAuth } from "@/public/providers/AuthProvider";
+import ArticleCard from "@/public/components/user/ArticleCard";
 
 interface Props {
   initialArticles: ArticlePublish[];

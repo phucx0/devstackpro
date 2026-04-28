@@ -8,6 +8,7 @@ import {
   getArticleBySlug,
   increaseView,
 } from "@/server/articles/articles.public.service";
+import { getThumbnailUrl } from "@/lib/utils/image";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -104,7 +105,7 @@ export default async function ArticlePage({
           {article.thumbnail && (
             <div className="relative w-full aspect-16/7 overflow-hidden">
               <img
-                src={`${IMAGE_BASE_URL}${article.thumbnail}`}
+                src={getThumbnailUrl(article.thumbnail)}
                 alt="Thumbnail"
                 className="w-full h-full object-cover"
               />

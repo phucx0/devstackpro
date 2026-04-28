@@ -1,4 +1,3 @@
-import ArticleCard from "@/public/components/user/ArticleCard";
 import ArticlesList from "@/public/components/user/ArticlesList";
 import ArticlesListSkeleton from "@/public/components/user/ArticlesListSkeleton";
 import { searchArticles } from "@/server/search-article/search-article.service";
