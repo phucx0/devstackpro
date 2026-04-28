@@ -33,7 +33,8 @@ export async function POST(request: NextRequest) {
         }
         
         // Generate unique file key
-        const fileKey = `${Date.now()}-${nanoid(8)}-${fileName}`;
+        const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const fileKey = `uploads/${data.user.id}/${Date.now()}-${nanoid(8)}-${safeName}`;
 
         // Create presigned URL for PUT operation
         const command = new PutObjectCommand({
