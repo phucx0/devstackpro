@@ -47,7 +47,7 @@ export interface CommentPublish extends Omit<Comment, "deleted_at"> {
 }
 
 // UserPublish
-export interface UserPublish extends Omit<User, "role" | "deleted_at"> {}
+export interface UserPublish extends Omit<User, "deleted_at"> {}
 export interface UpdateInfoUser {
   display_name: string;
   bio?: string;

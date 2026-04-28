@@ -1,4 +1,6 @@
 // app/api/ai-generate/route.ts
+import { getAuthUser } from "@/server/users/auth.service";
+import { getUserById } from "@/server/users/users.service";
 import { webSearch, xai } from "@ai-sdk/xai";
 import { generateText, Output, streamText } from "ai";
 import { NextRequest } from "next/server";
@@ -112,13 +114,15 @@ const writingModel = xai("grok-4-1-fast-non-reasoning");
 
 export async function POST(req: NextRequest) {
     try {
-        const { prompt, userId } = await req.json();
-        if(userId !== "9d0db667-9e8c-4dda-b514-ed92e2404afa") {
-            return new Response(
-                JSON.stringify({ error: "You are not allowed to perform this action" }),
-                { status: 403, headers: { "Content-Type": "application/json" } }
-            );
+        // Kiểm tra user 
+        const authUser = await getAuthUser();
+        if (!authUser) return new Response("Unauthorized", { status: 401 });
+        const profile = await getUserById(authUser.id);
+        if (!profile || profile.role !== "admin") {
+            return new Response("Forbidden", { status: 403 });
         }
+
+        const { prompt } = await req.json();
         if (!prompt?.trim()) {
             return new Response(
                 JSON.stringify({ error: "Prompt is required!" }),

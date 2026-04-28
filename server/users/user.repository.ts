@@ -14,7 +14,7 @@ export async function getUserById(params: { userId: string}) {
 
     const { data, error } = await db
         .from("users")
-        .select("id, username, display_name, avatar_url, created_at, email, bio, updated_at")
+        .select("id, username, display_name, avatar_url, created_at, email, bio, updated_at, role")
         .eq("id", userId)
         .is("deleted_at", null)
         .maybeSingle();
@@ -36,7 +36,7 @@ export async function getUserByUsername(username: string) {
 
     const { data, error } = await db
         .from("users")
-        .select("id, username, display_name, avatar_url, created_at, email, bio, updated_at")
+        .select("id, username, display_name, avatar_url, created_at, email, bio, updated_at, role")
         .eq("username", username)
         .is("deleted_at", null)
         .maybeSingle();
