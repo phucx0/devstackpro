@@ -108,26 +108,35 @@ export default function MarkdownTextarea({
 
   return (
     <div>
-      <div className="flex items-center gap-2 flex-wrap my-2">
-        <button onClick={() => applyMarkdown("**")} className={buttonMarkdown}>
-          Bold
-        </button>
-        <button onClick={() => applyMarkdown("*")} className={buttonMarkdown}>
-          Italic
-        </button>
-        <button onClick={() => applyMarkdown("`")} className={buttonMarkdown}>
-          Code
-        </button>
-        <button onClick={() => insertImage()} className={buttonMarkdown}>
-          Image
-        </button>
-        <button onClick={() => insertTable()} className={buttonMarkdown}>
-          Table
-        </button>
-        <button onClick={() => insertLink()} className={buttonMarkdown}>
-          Link
-        </button>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 flex-wrap my-2">
+          <button
+            onClick={() => applyMarkdown("**")}
+            className={buttonMarkdown}
+          >
+            Bold
+          </button>
+          <button onClick={() => applyMarkdown("*")} className={buttonMarkdown}>
+            Italic
+          </button>
+          <button onClick={() => applyMarkdown("`")} className={buttonMarkdown}>
+            Code
+          </button>
+          <button onClick={() => insertImage()} className={buttonMarkdown}>
+            Image
+          </button>
+          <button onClick={() => insertTable()} className={buttonMarkdown}>
+            Table
+          </button>
+          <button onClick={() => insertLink()} className={buttonMarkdown}>
+            Link
+          </button>
+        </div>
+        <span className="text-sm text-(--noir-muted)">
+          {textareaRef.current?.textLength ?? 0}
+        </span>
       </div>
+
       <textarea
         ref={textareaRef}
         name="content_md"

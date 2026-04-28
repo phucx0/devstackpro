@@ -232,7 +232,7 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
       let meta: any = null;
       if (metaHeader) {
         try {
-          meta = JSON.parse(metaHeader);
+          meta = JSON.parse(decodeURIComponent(metaHeader));
         } catch {}
       }
 
