@@ -5,8 +5,8 @@ import { useRouter, usePathname } from "next/navigation";
 const NAV_ITEMS = [
   { label: "For you", path: "/" },
   { label: "Following", path: "/following" },
-  { label: "New", path: "/new" },
-  { label: "Verified only", path: "/verified-only" },
+  // { label: "New", path: "/new" },
+  // { label: "Verified only", path: "/verified-only" },
 ];
 
 export default function LeftSideBar() {
