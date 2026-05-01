@@ -1,3 +1,4 @@
+import AppModal from "@/public/components/user/AppModal";
 import Header from "@/public/components/user/Header";
 import LeftSideBar from "@/public/components/user/SideBar/LeftSideBar";
 import { AuthProvider } from "@/public/providers/AuthProvider";
@@ -11,6 +12,7 @@ export default function UserRootLayout({
 }) {
   return (
     <ProviderLayout>
+      <AppModal />
       <Header />
       <div className="flex items-start mt-(--header-h)">
         <LeftSideBar />
