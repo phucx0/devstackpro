@@ -1,25 +1,14 @@
-import { ArticleWithTags } from '@/public/lib/types';
+import { ArticlePublish } from '@/public/lib/types';
 import { MetadataRoute } from 'next'
 import { createClient } from "@supabase/supabase-js";
+import { mapArticle } from '@/server/articles/articles.helpers';
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-function mapArticle(a: any): ArticleWithTags {
-    return {
-        ...a,
-        username: a.user?.username ?? "",
-        tags: a.article_tags?.map((x: any) => ({
-            created_at: "",
-            id: x.tag.id,
-            name: x.tag.name,
-        })) ?? [],
-    };
-}
-
-export const getArticles = async (): Promise<ArticleWithTags[]> => {
+export const getArticles = async (): Promise<ArticlePublish[]> => {
     const { data: articles, error } = await supabase
         .from("articles")
         .select(`
@@ -54,8 +43,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             return staticPages;
         }
 
-        const postPages: MetadataRoute.Sitemap = articles.map((article: ArticleWithTags) => ({
-            url: `${baseUrl}/${article.username}/articles/${article.slug}`,
+        const postPages: MetadataRoute.Sitemap = articles.map((article: ArticlePublish) => ({
+            url: `${baseUrl}/${article.user.username}/articles/${article.slug}`,
             lastModified: article.updated_at ? new Date(article.updated_at) : now,
             changeFrequency: 'weekly' as const,
             priority: 0.7,

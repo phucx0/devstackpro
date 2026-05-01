@@ -3,7 +3,11 @@ import ArticlesListSkeleton from "@/public/components/user/ArticlesListSkeleton"
 import { searchArticles } from "@/server/search-article/search-article.service";
 import { Suspense } from "react";
 
-export default async ({ params }: { params: Promise<{ q: string }> }) => {
+export default async function SearchPage({
+  params,
+}: {
+  params: Promise<{ q: string }>;
+}) {
   const { q } = await params;
   const decodedQuery = decodeURIComponent(q);
   const articles = await searchArticles(decodedQuery);
@@ -13,7 +17,8 @@ export default async ({ params }: { params: Promise<{ q: string }> }) => {
       <div className="flex items-center my-4 gap-3">
         <div className="noir-section-line" aria-hidden="true"></div>
         <div className="text-2xl text-white font-bold">
-          Found {articles.length} results for "{decodedQuery}"
+          <span>Found {articles.length} results for</span>{" "}
+          <span className="text-(--noir-accent)">{decodedQuery}</span>
         </div>
       </div>
       <Suspense fallback={<ArticlesListSkeleton />}>
@@ -21,7 +26,7 @@ export default async ({ params }: { params: Promise<{ q: string }> }) => {
       </Suspense>
     </div>
   );
-};
+}
 
 type Props = {
   decodedQuery: string | "";

@@ -77,7 +77,7 @@ export default function ContactPage() {
           <div className="flex-1 min-w-0 flex flex-col">
             <div className="mb-12">
               <span className="category-label">Get In Touch</span>
-              <h1 className="noir-contact-title" style={{ marginTop: "12px" }}>
+              <h1 className="noir-contact-title mt-3">
                 Let's <span>Talk</span>
               </h1>
               <p

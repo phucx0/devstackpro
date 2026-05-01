@@ -1,5 +1,5 @@
 "use client";
-import { ArticlePublish, CommentPublish } from "@/public/lib/types";
+import { CommentPublish } from "@/public/lib/types";
 import { useAuth } from "@/public/providers/AuthProvider";
 import {
   createCommentAction,
@@ -63,8 +63,9 @@ export default function CommentSection({
   };
 
   useEffect(() => {
+    if (!articleId) return;
     getParentCommentsAction(articleId).then(setComments);
-  }, []);
+  }, [articleId]);
 
   return (
     <div className="flex flex-col gap-6" id="comment-section">

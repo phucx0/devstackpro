@@ -1,7 +1,7 @@
 // app/api/ai-generate/route.ts
 import { getAuthUser } from "@/server/users/auth.service";
 import { getUserById } from "@/server/users/users.service";
-import { webSearch, xai } from "@ai-sdk/xai";
+import { xai } from "@ai-sdk/xai";
 import { generateText, Output, streamText } from "ai";
 import { NextRequest } from "next/server";
 import { z } from 'zod'

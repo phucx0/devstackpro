@@ -4,7 +4,7 @@ import { useAuth } from "@/public/providers/AuthProvider";
 import { Edit } from "lucide-react";
 import FollowButton from "./FollowButton";
 import { useModal } from "@/public/providers/ModalProvider";
-import { Suspense } from "react";
+import Image from "next/image";
 
 interface Props {
   user: UserPublish;
@@ -37,12 +37,13 @@ export default function UserProfileSidebar({
     <aside className="w-70 top-(--header-h) sticky shrink-0 self-start hidden md:flex flex-col h-[calc(100vh-var(--header-h))] gap-6 p-4 border-l border-(--noir-border)">
       {/* Avatar + identity */}
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        <div className="w-20 h-20 rounded-full overflow-hidden border border-(--noir-border) shrink-0 mx-auto">
+        <div className="w-20 h-20 relative rounded-full overflow-hidden border border-(--noir-border) shrink-0 mx-auto">
           {avatarSrc ? (
-            <img
+            <Image
               src={avatarSrc}
               alt={user.display_name ?? ""}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              className="object-cover"
+              fill
             />
           ) : (
             <span
@@ -153,7 +154,7 @@ export default function UserProfileSidebar({
       <div style={{ flex: 1 }} />
 
       {/* CTA */}
-      {/* {isOwner ? (
+      {isOwner ? (
         <button
           onClick={() => setOpen(true)}
           className="w-full text-[12px] text-(--noir-black) bg-(--noir-accent) px-4 py-2 rounded flex items-center justify-center gap-2 cursor-pointer"
@@ -163,7 +164,7 @@ export default function UserProfileSidebar({
         </button>
       ) : (
         <FollowButton userId={user.id} />
-      )} */}
+      )}
     </aside>
   );
 }

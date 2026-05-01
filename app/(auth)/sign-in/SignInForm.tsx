@@ -90,7 +90,7 @@ export default function SignIn() {
             <h1 className="noir-auth-title">Sign In</h1>
             <p className="noir-auth-sub">
               New here?{" "}
-              <a
+              <Link
                 href="/sign-up"
                 style={{
                   color: "var(--noir-accent)",
@@ -98,7 +98,7 @@ export default function SignIn() {
                 }}
               >
                 Create an account
-              </a>
+              </Link>
             </p>
           </div>
 
@@ -156,7 +156,7 @@ export default function SignIn() {
               >
                 Password
               </label>
-              <a
+              <Link
                 href="/forgot-password"
                 style={{
                   fontFamily: "var(--font-mono)",
@@ -167,7 +167,7 @@ export default function SignIn() {
                 }}
               >
                 FORGOT?
-              </a>
+              </Link>
             </div>
             <div style={{ position: "relative" }}>
               <input

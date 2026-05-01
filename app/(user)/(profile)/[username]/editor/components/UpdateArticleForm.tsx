@@ -9,6 +9,7 @@ import { ArticleHeader } from "./ArticleHeader";
 import { ArticleFields } from "./ArticleFields";
 import { ArticleContent } from "./ArticleContent";
 import { ArticleSidebar } from "./ArticleSidebar";
+import { handleError } from "@/lib/utils/handleError";
 
 interface Props {
   initialArticle: UpdateArticleRequest;
@@ -58,8 +59,10 @@ export function UpdateArticleForm({ initialArticle }: Props) {
   };
 
   const handleUpload = async (file: File) => {
-    if (!file.type.startsWith("image/")) return void toast.warning("Images only!");
-    if (file.size > 10 * 1024 * 1024) return void toast.warning("Max file size is 10MB.");
+    if (!file.type.startsWith("image/"))
+      return void toast.warning("Images only!");
+    if (file.size > 10 * 1024 * 1024)
+      return void toast.warning("Max file size is 10MB.");
     try {
       const { fileKey, success } = await uploadFile(file, "image");
       if (success) {
@@ -68,8 +71,9 @@ export function UpdateArticleForm({ initialArticle }: Props) {
       } else {
         toast.error("Thumbnail upload failed");
       }
-    } catch (error: any) {
-      toast.error("Upload error: " + error.message);
+    } catch (error) {
+      const message = handleError(error);
+      toast.error("Upload error: " + message);
     }
   };
 
@@ -85,8 +89,9 @@ export function UpdateArticleForm({ initialArticle }: Props) {
         setOriginalArticle(updatedArticle);
         toast.success("Article updated successfully!");
       }
-    } catch (err: any) {
-      toast.error(err.message || "Something went wrong");
+    } catch (error) {
+      const message = handleError(error);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }

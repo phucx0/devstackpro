@@ -3,6 +3,8 @@ import { X } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/public/providers/AuthProvider";
 import { SearchBox } from "./SearchBox";
+import { getAvatarUrl } from "@/lib/utils/image";
+import Image from "next/image";
 
 interface Props {
   open: boolean;
@@ -43,17 +45,20 @@ export function MobileDrawer({ open, onClose }: Props) {
         {profile ? (
           <>
             <div className="flex items-center gap-2.5 py-4">
-              {profile.avatar_url ? (
-                <img
-                  src={IMAGE_BASE_URL + profile.avatar_url}
-                  alt={profile.display_name || "User"}
-                  className="w-10 h-10 rounded-full overflow-hidden"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-(--noir-accent) text-(--noir-black) text-sm font-semibold flex items-center justify-center shrink-0">
-                  {avatarLetter}
-                </div>
-              )}
+              <div className="w-10 h-10 relative rounded-full overflow-hidden">
+                {profile.avatar_url ? (
+                  <Image
+                    src={getAvatarUrl(profile.avatar_url)}
+                    alt={profile.display_name || "User"}
+                    className="object-cover"
+                    fill
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-(--noir-accent) text-(--noir-black) text-sm font-semibold flex items-center justify-center shrink-0">
+                    {avatarLetter}
+                  </div>
+                )}
+              </div>
               <p className="text-[13px] font-medium text-(--noir-white) m-0">
                 {profile.display_name}
               </p>

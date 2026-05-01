@@ -3,12 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 type UserRole = "admin" | "user" | "moderator";
 
-interface Profile {
-    id: string;
-    role: UserRole;
-    [key: string]: unknown;
-}
-
 const ROUTE_CONFIG = {
     admin: "/admin",
     editor: "/editor",

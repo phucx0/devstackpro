@@ -1,4 +1,5 @@
 "use client";
+import { handleError } from "@/lib/utils/handleError";
 import {
   isFollowingAction,
   toggleFollowAction,
@@ -41,10 +42,11 @@ export default function FollowButton({ userId }: Props) {
     try {
       const result = await toggleFollowAction(userId);
       setIsFollowing(result);
-    } catch (err) {
+    } catch (error) {
+      const message = handleError(error);
       // rollback nếu lỗi
       setIsFollowing((prev) => !prev);
-      toast.error("Something went wrong");
+      toast.error(message);
     } finally {
       setLoading(false);
     }
