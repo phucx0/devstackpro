@@ -88,7 +88,7 @@ export async function getArticlesByUsername(params: { username: string, limit: n
         .from("articles")
         .select(`
             *,
-            user:users!articles_user_id_fkey (id, username, display_name, avatar_url),
+            user:users!articles_user_id_fkey!inner (id, username, display_name, avatar_url),
             article_tags (tag:tags (id, name)),
             likes_count:article_likes (count)
         `)

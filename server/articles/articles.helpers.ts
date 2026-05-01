@@ -3,15 +3,14 @@ import { ArticlePublish } from "@/public/lib/types";
 
 // Helper tái sử dụng để map raw data → ArticlePublish
 export function mapArticle(a: any): ArticlePublish {
-    if(!a.user) throw new Error("Article must have user");
     return {
         ...a,
         user: {
-            id:           a.user.id,
-            username:     a.user.username,
-            display_name: a.user.display_name,
-            avatar_url:   a.user.avatar_url,
-            role:         a.user.role,
+            id:           a.user?.id ?? "",
+            username:     a.user?.username?? "",
+            display_name: a.user?.display_name?? "",
+            avatar_url:   a.user?.avatar_url?? "",
+            role:         a.user?.role ?? "user",
         },
         tags: a.article_tags?.map((x: any) => ({
             id:   x.tag.id,
