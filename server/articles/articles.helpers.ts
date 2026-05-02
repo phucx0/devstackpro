@@ -8,11 +8,11 @@ export function mapArticle(a: RawArticle): ArticlePublish {
     return {
         ...a,
         user: {
-            id:           a.user.id,
-            username:     a.user.username,
-            display_name: a.user.display_name,
-            avatar_url:   a.user.avatar_url,
-            role:         a.user.role,
+            id:           a.user?.id ?? "",
+            username:     a.user?.username?? "",
+            display_name: a.user?.display_name?? "",
+            avatar_url:   a.user?.avatar_url?? "",
+            role:         a.user?.role ?? "user",
         },
         tags: a.article_tags?.map((x: {tag: Tag}) => ({
             id:   x.tag.id,
