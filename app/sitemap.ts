@@ -1,14 +1,11 @@
 import { ArticlePublish } from '@/public/lib/types';
 import { MetadataRoute } from 'next'
-import { createClient } from "@supabase/supabase-js";
 import { mapArticle } from '@/server/articles/articles.helpers';
+import { createClient } from '@/lib/supabase/client';
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export const getArticles = async (): Promise<ArticlePublish[]> => {
+    const supabase = await createClient()
     const { data: articles, error } = await supabase
         .from("articles")
         .select(`
