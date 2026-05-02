@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils/cn";
 import { Heart, MessageCircle, Repeat } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface CardActionsProps {
   liked: boolean;
@@ -7,6 +8,8 @@ interface CardActionsProps {
   reposted: boolean;
   onLike: () => void;
   onRepost: () => void;
+  username: string;
+  slug: string;
 }
 
 const BASE_BTN = `
@@ -20,8 +23,11 @@ export function CardActions({
   reposted,
   onLike,
   onRepost,
+  username,
+  slug,
 }: CardActionsProps) {
   const stopPropagation = (e: React.MouseEvent) => e.preventDefault();
+  const router = useRouter();
 
   return (
     <div className="flex items-center gap-1" onClick={stopPropagation}>
@@ -36,22 +42,29 @@ export function CardActions({
             : "bg-transparent text-(--noir-muted) hover:bg-white/[0.04]",
         )}
       >
-        <Heart size={14} />
+        <Heart
+          size={16}
+          fill={liked ? "red" : "currentColor"}
+          strokeWidth={0}
+        />
         {likes}
       </button>
 
       <button
-        onClick={stopPropagation}
+        onClick={(e) => {
+          stopPropagation(e);
+          router.push(`/${username}/articles/${slug}#comment-section`);
+        }}
         aria-label="Bình luận"
         className={cn(
           BASE_BTN,
           "bg-transparent text-(--noir-muted) hover:bg-white/[0.04]",
         )}
       >
-        <MessageCircle size={14} />
+        <MessageCircle size={16} />
       </button>
 
-      <button
+      {/* <button
         onClick={onRepost}
         aria-label={reposted ? "Bỏ repost" : "Repost"}
         aria-pressed={reposted}
@@ -62,8 +75,8 @@ export function CardActions({
             : "bg-transparent text-(--noir-muted) hover:bg-white/[0.04]",
         )}
       >
-        <Repeat size={14} />
-      </button>
+        <Repeat size={16} />
+      </button> */}
     </div>
   );
 }

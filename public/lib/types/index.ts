@@ -78,8 +78,8 @@ export type ArticleWithTags = ArticleWithAuthor & {
   tags: Tag[]
 }
 
-export type ArticlePublish = Omit<Article, "role" | "deleted_at" | "content_html"> & {
-  user: Omit<User, "deleted_at" | "updated_at" | "created_at" | "email">;
+export type ArticlePublish = Omit<Article, "deleted_at" | "content_html"> & {
+  user: UserPublish;
   tags: Pick<Tag, "id" | "name">[];
   likes_count: number,
   is_liked: boolean

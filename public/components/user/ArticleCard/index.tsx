@@ -46,6 +46,7 @@ export default function ArticleCard({
     handleLike,
     handleRepost,
     handleDelete,
+    toggleMenu,
   } = useArticleCard(article);
   const router = useRouter();
   const thumbColor = ThumbColors[index % ThumbColors.length];
@@ -61,7 +62,7 @@ export default function ArticleCard({
         menuOpen={menuOpen}
         showDeleteDialog={showDeleteDialog}
         isDeleting={isDeleting}
-        onMenuToggle={() => setMenuOpen((o) => !o)}
+        onMenuToggle={toggleMenu}
         onMenuClose={() => setMenuOpen(false)}
         onDeleteRequest={() => {
           setMenuOpen(false);
@@ -76,7 +77,7 @@ export default function ArticleCard({
         className={`block cursor-pointer overflow-hidden bg-(--noir-card) border border-(--noir-border) hover:border-(--noir-border-md) transition-colors duration-200`}
       >
         {/* Author */}
-        <div className="flex items-center gap-2 mx-4 my-2">
+        <div className="flex items-center gap-2 p-4">
           <Link
             href={`/${article.user.username}`}
             onClick={(e) => e.stopPropagation()}
@@ -89,28 +90,33 @@ export default function ArticleCard({
             />
           </Link>
 
-          <Link
-            href={`/${article.user.username}`}
-            onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1 group/author"
-          >
-            <span className="text-sm group-hover/author:underline">
-              {article.user.display_name}
-            </span>
-            <BadgeCheck size={16} />
-          </Link>
+          <div className="flex flex-col gap-0">
+            <Link
+              href={`/${article.user.username}`}
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1 group/author"
+              title={article.user.username || ""}
+            >
+              <span className="text-sm group-hover/author:underline">
+                {article.user.display_name}
+              </span>
+              {article.user.role === "admin" && (
+                <BadgeCheck size={16} className="text-(--noir-accent)" />
+              )}
+            </Link>
 
-          <time
-            className="text-xs text-(--noir-muted)"
-            dateTime={article.created_at ?? undefined}
-            title={
-              article.created_at
-                ? new Date(article.created_at).toLocaleString()
-                : ""
-            }
-          >
-            {article.created_at ? formatArticleTime(article.created_at) : ""}
-          </time>
+            <time
+              className="text-xs text-(--noir-muted)"
+              dateTime={article.created_at ?? undefined}
+              title={
+                article.created_at
+                  ? new Date(article.created_at).toLocaleString()
+                  : ""
+              }
+            >
+              {article.created_at ? formatArticleTime(article.created_at) : ""}
+            </time>
+          </div>
         </div>
 
         <CardThumbnail
@@ -120,7 +126,7 @@ export default function ArticleCard({
         />
 
         {/* Body */}
-        <div className="px-[18px] pt-4 pb-3.5">
+        <div className="p-4">
           <h2 className="font-display font-medium text-[15px] leading-[1.45] text-(--noir-white) mb-2 tracking-[-0.01em] line-clamp-1">
             {article.title}
           </h2>
@@ -132,7 +138,7 @@ export default function ArticleCard({
           )}
 
           {article.status === "published" && (
-            <div>
+            <div onClick={(e) => e.stopPropagation()}>
               <div className="h-px bg-(--noir-border) mb-3" />
               <CardActions
                 liked={liked}
@@ -140,6 +146,8 @@ export default function ArticleCard({
                 reposted={reposted}
                 onLike={handleLike}
                 onRepost={handleRepost}
+                username={article.user.username || ""}
+                slug={article.slug}
               />
             </div>
           )}

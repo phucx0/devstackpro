@@ -33,12 +33,10 @@ export async function getArticles(cursor?: string): Promise<ArticlePublish[]> {
         ? (await ArticleRepo.getArticles({ limit: 15, cursor, db }))
         : await getCachedArticles();
 
-    // const user = await getAuthUser();
-    // const likedSet = user
-    //     ? await getLikedSet(raw.map(a => a.id), user.id)
-    //     : new Set<number>();
-
-    const likedSet = new Set<number>();
+    const user = await getAuthUser();
+    const likedSet = user
+        ? await getLikedSet(raw.map(a => a.id), user.id)
+        : new Set<number>();
 
     return raw.map(a => ({ ...mapArticle(a), is_liked: likedSet.has(a.id) }));
 } 

@@ -18,14 +18,6 @@ export default function ArticleMenu({
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [onClose]);
-
   const handleEdit = () => {
     router.push(`/${article.user.username}/editor/${article.id}`);
   };

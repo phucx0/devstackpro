@@ -4,6 +4,7 @@ import { MoreHorizontal } from "lucide-react";
 import { ArticlePublish } from "@/public/lib/types";
 import DeleteArticleDialog from "@/public/components/user/DeletetArticleDialog";
 import ArticleMenu from "@/public/components/user/ArticleCard/ArticleMenu";
+import { useEffect } from "react";
 
 interface CardOverlayProps {
   article: ArticlePublish;
@@ -20,17 +21,38 @@ interface CardOverlayProps {
 
 /** Nút 3-chấm + menu + dialog — nằm ngoài <Link> */
 export function CardOverlay({
-  article, isOwner,
-  menuOpen, showDeleteDialog, isDeleting,
-  onMenuToggle, onMenuClose,
-  onDeleteRequest, onDeleteConfirm, onDeleteDialogClose,
+  article,
+  isOwner,
+  menuOpen,
+  showDeleteDialog,
+  isDeleting,
+  onMenuToggle,
+  onMenuClose,
+  onDeleteRequest,
+  onDeleteConfirm,
+  onDeleteDialogClose,
 }: CardOverlayProps) {
   const stopPropagation = (e: React.MouseEvent) => e.preventDefault();
 
+  useEffect(() => {
+    console.log(menuOpen);
+  }, [menuOpen]);
   return (
-    <div className="absolute top-2.5 right-2.5 z-10" onClick={stopPropagation}>
+    <div
+      onMouseLeave={onMenuClose}
+      className="absolute top-2.5 right-2.5 z-10"
+      onClick={stopPropagation}
+    >
       <button
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMenuToggle(); }}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (menuOpen) {
+            onMenuClose(); // đóng trực tiếp thay vì toggle
+          } else {
+            onMenuToggle(); // mở
+          }
+        }}
         aria-label="Mở menu bài viết"
         className="
           w-7 h-7 flex items-center justify-center rounded-full

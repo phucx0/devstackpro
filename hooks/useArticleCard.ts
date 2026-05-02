@@ -1,4 +1,5 @@
 import { ArticlePublish } from "@/public/lib/types";
+import { ToggleLikeArticleAction } from "@/server/article-likes/article-likes.action";
 import { useState } from "react";
 
 export function useArticleCard(article: ArticlePublish) {
@@ -10,9 +11,30 @@ export function useArticleCard(article: ArticlePublish) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleLike = () => {
-    setLiked((v) => !v);
-    setLikes((n) => (liked ? n - 1 : n + 1));
+  const handleLike = async () => {
+    const prevLiked = liked;
+    const prevLikes = likes;
+
+     const nextLiked = !prevLiked;
+
+    setLiked(nextLiked);
+    setLikes((n) => n + (nextLiked ? 1 : -1));
+
+    try {
+        const result = await ToggleLikeArticleAction(article.id);
+        // Sync lại với server
+        setLiked(result.liked);
+        setLikes((n) => {
+            const realDiff = result.liked ? 1 : -1;
+            const currentDiff = nextLiked ? 1 : -1;
+
+           return n + (realDiff - currentDiff);
+        });
+    } catch {
+        // Rollback nếu lỗi
+        setLiked(prevLiked);
+        setLikes(prevLikes);
+    }
   };
 
   const handleRepost = () => {
@@ -27,11 +49,15 @@ export function useArticleCard(article: ArticlePublish) {
     setShowDeleteDialog(false);
   };
 
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+  }
+
   return {
     liked, likes, reposted, reposts,
     menuOpen, setMenuOpen,
     showDeleteDialog, setShowDeleteDialog,
     isDeleting,
-    handleLike, handleRepost, handleDelete,
+    handleLike, handleRepost, handleDelete, toggleMenu
   };
 }
