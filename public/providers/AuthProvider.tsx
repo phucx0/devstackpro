@@ -1,7 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserPublish } from "../lib/types";
 
@@ -34,6 +34,10 @@ export function AuthProvider({
     router.push("/sign-in");
     router.refresh();
   };
+
+  useEffect(() => {
+    setProfile(initialProfile);
+  }, [initialProfile]);
 
   return (
     <AuthContext.Provider value={{ profile, setProfile, logout }}>
