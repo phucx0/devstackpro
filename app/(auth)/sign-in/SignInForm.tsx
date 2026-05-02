@@ -1,7 +1,7 @@
 "use client";
 import { UserPublish } from "@/public/lib/types";
 import { useAuth } from "@/public/providers/AuthProvider";
-import { signInAction } from "@/server/users/user.actions";
+import { signInAction, signInWithGoogleAction } from "@/server/users/user.actions";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, KeyboardEvent } from "react";
@@ -49,6 +49,10 @@ export default function SignIn() {
       setLoading(false);
     }
   };
+
+  const handleSignInWithGoogle = () => {
+
+  }
 
   const onKey = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleSignIn();
@@ -264,7 +268,7 @@ export default function SignIn() {
           </button>
 
           {/* Divider */}
-          {/* <div
+          <div
             style={{
               display: "flex",
               alignItems: "center",
@@ -296,11 +300,11 @@ export default function SignIn() {
                 background: "var(--noir-border)",
               }}
             />
-          </div> */}
+          </div>
 
           {/* Google */}
-          {/* <button
-            onClick={handleSignInWithGoogle}
+          <button
+            onClick={signInWithGoogleAction}
             className="noir-read-btn-ghost"
             style={{
               width: "100%",
@@ -329,7 +333,7 @@ export default function SignIn() {
               />
             </svg>
             Continue with Google
-          </button> */}
+          </button>
         </div>
       </div>
     </div>

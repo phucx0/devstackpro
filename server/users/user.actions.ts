@@ -1,7 +1,7 @@
 "use server"
 import { createClient } from "@/lib/supabase/server";
 import { UpdateInfoUser } from "@/public/lib/types";
-import { signIn, signOut, signUp } from "./auth.service";
+import { signIn, signInWithGoogle, signOut, signUp } from "./auth.service";
 import { getUser } from "./users.service";
 
 export async function signInAction(email: string, password: string) {
@@ -14,6 +14,10 @@ export async function signUpAction(username: string, password: string, display_n
 
 export async function signOutAction() {
     return signOut();
+}
+
+export async function signInWithGoogleAction() {
+    await signInWithGoogle();
 }
 
 export async function getUserAction() {
