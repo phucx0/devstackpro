@@ -107,20 +107,8 @@ export default function UserProfileSidebar({
             alignItems: "center",
           }}
         >
-          <span style={{ fontSize: "12px", color: "var(--noir-muted)" }}>
-            Following
-          </span>
-          <span
-            style={
-              {
-                fontSize: "12px",
-                fontWeight: 500,
-                color: "var(--noir-white)",
-                fontFamily: "var(--font-mono)",
-                tabularNums: true,
-              } as any
-            }
-          >
+          <span className="text-(--noir-muted) text-[12px]">Following</span>
+          <span className="text-(--noir-white) text-[12px] font-medium font-mono">
             {followingCount ?? 0}
           </span>
         </div>
@@ -132,20 +120,8 @@ export default function UserProfileSidebar({
             alignItems: "center",
           }}
         >
-          <span style={{ fontSize: "12px", color: "var(--noir-muted)" }}>
-            Follower
-          </span>
-          <span
-            style={
-              {
-                fontSize: "12px",
-                fontWeight: 500,
-                color: "var(--noir-white)",
-                fontFamily: "var(--font-mono)",
-                tabularNums: true,
-              } as any
-            }
-          >
+          <span className="text-(--noir-muted) text-[12px]">Follower</span>
+          <span className="text-(--noir-white) text-[12px] font-medium font-mono">
             {followerCount ?? 0}
           </span>
         </div>

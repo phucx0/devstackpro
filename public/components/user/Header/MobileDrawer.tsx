@@ -13,7 +13,6 @@ interface Props {
 
 export function MobileDrawer({ open, onClose }: Props) {
   const { profile, logout } = useAuth();
-  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
   const avatarLetter =
     profile?.display_name?.[0]?.toUpperCase() ??

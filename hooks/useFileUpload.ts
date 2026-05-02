@@ -3,12 +3,6 @@ import { handleError } from '@/lib/utils/handleError';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 
-interface UploadProgress {
-    loaded: number;
-    total: number;
-    percentage: number;
-}
-
 interface UploadResult {
     success: boolean;
     fileUrl?: string;

@@ -6,7 +6,6 @@ import { getAuthUser } from "@/server/users/auth.service";
 import { getUserByUsername } from "@/server/users/users.service";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ArticlesList from "./ArticlesList";
 import ArticlesTabView from "./ArticlesTabView";
 
 interface Props {

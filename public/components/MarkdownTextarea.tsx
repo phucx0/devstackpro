@@ -1,5 +1,4 @@
 import { useRef } from "react";
-import MarkdownToolbar from "./MarkdownToolbar";
 
 interface MarkdownTextareaInterface {
   content: string;

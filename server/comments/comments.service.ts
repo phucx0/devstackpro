@@ -1,13 +1,26 @@
 import * as CommentRepo from "@/server/comments/comments.repository";
 import { getUser } from "@/server/users/users.service";
-import { CommentPublish, CommentUser } from "@/public/lib/types";
+import { CommentPublish, CommentUser, RawComment } from "@/public/lib/types";
 
-function mapComment(c: any): CommentPublish {
+function mapComment(c: RawComment): CommentPublish {
+    if (!c) throw new Error("mapComment received undefined comment");
+    if (!c.user) throw new Error(`Comment ${c.id} has no user`);
+
     return {
-        ...c,
+        id: Number(c.id),
+        article_id: Number(c.article_id),
+        parent_id: Number(c.parent_id) || null,
+        user_id: c.user_id,
+        content: c.content,
         reply_count: (c.reply_count as { count: number }[])[0]?.count ?? 0,
         replies: [],
-        user: c.user as CommentUser,
+        user: {
+            id:           c.user.id,
+            username:     c.user.username,
+            display_name: c.user.display_name,
+            avatar_url:   c.user.avatar_url,
+        },
+        created_at: c.created_at
     };
 }
 

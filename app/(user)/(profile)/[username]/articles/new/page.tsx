@@ -231,7 +231,7 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
         throw new Error(err.error || "Can't create post");
       }
       const metaHeader = response.headers.get("X-Blog-Meta");
-      let meta: any = null;
+      let meta = null;
       if (metaHeader) {
         try {
           meta = JSON.parse(decodeURIComponent(metaHeader));

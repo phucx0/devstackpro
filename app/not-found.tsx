@@ -9,7 +9,7 @@ export default function NotFound() {
       </div>
       <h1 className="noir-notfound-title">Page not found</h1>
       <p className="noir-notfound-sub">
-        The page you're looking for doesn't exist or has been moved.
+        The page you&apos;re looking for doesn&apos;t exist or has been moved.
       </p>
       <Link href="/" className="noir-read-btn">
         <ArrowLeft size={12} />

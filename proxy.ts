@@ -1,8 +1,6 @@
 import { createClient } from "@/lib/supabase/middleware";
 import { NextRequest, NextResponse } from "next/server";
 
-type UserRole = "admin" | "user" | "moderator";
-
 const ROUTE_CONFIG = {
     admin: "/admin",
     editor: "/editor",

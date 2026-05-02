@@ -6,7 +6,6 @@ import { useAuth } from "@/public/providers/AuthProvider";
 import { SearchBox } from "@/public/components/user/Header/SearchBox";
 import { AuthArea } from "@/public/components/user/Header/AuthArea";
 import { MobileDrawer } from "@/public/components/user/Header/MobileDrawer";
-import { usePathname, useRouter } from "next/navigation";
 
 export default function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);

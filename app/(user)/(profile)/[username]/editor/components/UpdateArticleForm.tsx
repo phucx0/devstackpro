@@ -6,7 +6,6 @@ import { updateArticleAction } from "@/server/articles/articles.private.action";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { toast } from "sonner";
 import { ArticleHeader } from "./ArticleHeader";
-import { ArticleFields } from "./ArticleFields";
 import { ArticleContent } from "./ArticleContent";
 import { ArticleSidebar } from "./ArticleSidebar";
 import { handleError } from "@/lib/utils/handleError";
@@ -16,8 +15,10 @@ interface Props {
 }
 
 export function UpdateArticleForm({ initialArticle }: Props) {
-  const [originalArticle, setOriginalArticle] = useState(initialArticle);
-  const [updatedArticle, setUpdatedArticle] = useState(initialArticle);
+  const [originalArticle, setOriginalArticle] =
+    useState<UpdateArticleRequest>(initialArticle);
+  const [updatedArticle, setUpdatedArticle] =
+    useState<UpdateArticleRequest>(initialArticle);
   const [selectedTags, setSelectedTags] = useState<Pick<Tag, "id" | "name">[]>(
     initialArticle.tags ?? [],
   );
@@ -42,7 +43,7 @@ export function UpdateArticleForm({ initialArticle }: Props) {
     const { name, value } = e.target;
     setUpdatedArticle((prev) => {
       if (!prev) return prev;
-      const next: any = { ...prev, [name]: value };
+      const next: UpdateArticleRequest = { ...prev, [name]: value };
       if (name === "title") {
         next.slug = value
           .toLowerCase()

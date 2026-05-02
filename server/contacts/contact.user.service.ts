@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
-import { Contact, ContactFormData } from "@/public/lib/types";
+import { ContactFormData } from "@/public/lib/types";
 
 // ==================================
 // Service này sử dụng cho các user 

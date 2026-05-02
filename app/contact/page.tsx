@@ -78,7 +78,7 @@ export default function ContactPage() {
             <div className="mb-12">
               <span className="category-label">Get In Touch</span>
               <h1 className="noir-contact-title mt-3">
-                Let's <span>Talk</span>
+                Let&apos;s <span>Talk</span>
               </h1>
               <p
                 style={{
@@ -89,7 +89,8 @@ export default function ContactPage() {
                   maxWidth: "480px",
                 }}
               >
-                Send a message and I'll get back to you as soon as possible.
+                Send a message and I&apos;ll get back to you as soon as
+                possible.
               </p>
             </div>
             {/* Form */}
@@ -130,7 +131,8 @@ export default function ContactPage() {
                     Message Sent!
                   </h2>
                   <p style={{ color: "var(--noir-muted)", fontSize: "14px" }}>
-                    Thank you for reaching out. I'll respond within 24–48 hours.
+                    Thank you for reaching out. I&apos;ll respond within 24–48
+                    hours.
                   </p>
                 </div>
               ) : (

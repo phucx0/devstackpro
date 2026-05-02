@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import { ArticlePublish } from "@/public/lib/types";
+import { ArticlePublish, Tag } from "@/public/lib/types";
+import { RawArticle } from "@/types/article";
 
 // Helper tái sử dụng để map raw data → ArticlePublish
-export function mapArticle(a: any): ArticlePublish {
+export function mapArticle(a: RawArticle): ArticlePublish {
     if(!a.user) throw new Error("Article must have user");
     return {
         ...a,
@@ -13,7 +14,7 @@ export function mapArticle(a: any): ArticlePublish {
             avatar_url:   a.user.avatar_url,
             role:         a.user.role,
         },
-        tags: a.article_tags?.map((x: any) => ({
+        tags: a.article_tags?.map((x: {tag: Tag}) => ({
             id:   x.tag.id,
             name: x.tag.name,
         })) ?? [],

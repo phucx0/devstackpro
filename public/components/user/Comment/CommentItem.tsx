@@ -95,12 +95,19 @@ export function CommentItem({
   };
 
   useEffect(() => {
-    if (!collapsed && replies.length === 0) {
+    if (collapsed || replies.length > 0) return;
+
+    const fetchReplies = async () => {
       setLoading(true);
-      getRepliesAction(comment.id)
-        .then(setReplies)
-        .finally(() => setLoading(false));
-    }
+      try {
+        const data = await getRepliesAction(comment.id);
+        setReplies(data);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReplies();
   }, [collapsed, comment.id]);
 
   return (

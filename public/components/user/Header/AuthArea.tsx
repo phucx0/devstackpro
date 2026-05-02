@@ -18,7 +18,6 @@ export function AuthArea({ profile }: Props) {
   const { logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
