@@ -11,6 +11,8 @@ import { useFileUpload } from "@/hooks/useFileUpload";
 import { useAuth } from "@/public/providers/AuthProvider";
 import { useRouter } from "next/navigation";
 import ImageUpload from "@/public/components/user/ImageUpload";
+import Image from "next/image";
+import { getThumbnailUrl } from "@/lib/utils/image";
 
 /* ─── NoirInput ─── */
 function NoirInput({
@@ -229,7 +231,7 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
         throw new Error(err.error || "Can't create post");
       }
       const metaHeader = response.headers.get("X-Blog-Meta");
-      let meta: any = null;
+      let meta = null;
       if (metaHeader) {
         try {
           meta = JSON.parse(decodeURIComponent(metaHeader));
@@ -256,12 +258,9 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
           content_md: content,
         }));
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       const message =
-        err instanceof Error
-          ? err.message
-          : err?.message || "Something went wrong";
-
+        err instanceof Error ? err.message : "Something went wrong";
       toast.error(message);
     } finally {
       setIsGenerating(false);
@@ -273,13 +272,13 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.warning("Chỉ upload hình ảnh thôi!");
+      toast.warning("Images only!");
       return;
     }
 
+    // 10MB
     if (file.size > 10 * 1024 * 1024) {
-      // 10MB
-      toast.warning("File quá lớn! Tối đa 10MB.");
+      toast.warning("File too large. Max 10MB.");
       return;
     }
 
@@ -294,9 +293,9 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
         return;
       }
       toast.error("Upload thumbnail failed");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Upload error: ", error.message);
+      toast.error("Failed to upload image. Please try again.");
     }
   };
 
@@ -321,7 +320,7 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
         router.push(`/${profile?.username}`);
       }
     } catch (err) {
-      // console.error(err);
+      console.error(err);
       toast.error("Something error");
     } finally {
       setIsSubmitting(false);
@@ -512,11 +511,14 @@ export default function CreateArticle({ onClose }: { onClose?: () => void }) {
                 /{formData.slug}
               </p>
               {formData.thumbnail && (
-                <img
-                  src={formData.thumbnail}
-                  alt="Preview"
-                  className="w-full h-[200px] object-cover rounded-md mb-5 border border-(--noir-border)"
-                />
+                <div className="relative w-full aspect-video mb-5 border border-(--noir-border)">
+                  <Image
+                    src={getThumbnailUrl(formData.thumbnail)}
+                    alt="Preview"
+                    className="object-cover"
+                    fill
+                  />
+                </div>
               )}
               {formData.content_md && (
                 <div className="noir-markdown">

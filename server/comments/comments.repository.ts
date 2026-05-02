@@ -1,16 +1,6 @@
 // comments.repository.ts
 import { createClient } from "@/lib/supabase/server";
-
-const COMMENT_SELECT = `
-    id,
-    user_id,
-    parent_id,
-    article_id,
-    content,
-    created_at,
-    user:users!user_id (id, username, display_name, avatar_url),
-    reply_count:comments!parent_id(count)
-`;
+import { RawComment } from "@/public/lib/types";
 
 /**
  * Lấy danh sách comment gốc (không có parent) theo bài viết
@@ -23,14 +13,23 @@ export async function findParentComments(articleId: number) {
     const db = await createClient();
     const { data, error } = await db
         .from("comments")
-        .select(COMMENT_SELECT)
+        .select(`
+            id,
+            user_id,
+            parent_id,
+            article_id,
+            content,
+            created_at,
+            user:users!user_id!inner (id, username, display_name, avatar_url),
+            reply_count:comments!parent_id(count)    
+        `)
         .eq("article_id", articleId)
         .is("deleted_at", null)
         .is("parent_id", null)
         .order("created_at", { ascending: false });
 
     if (error) throw error;
-    return data ?? [];
+    return (data ?? []) as unknown as RawComment[];
 }
 
 /**
@@ -44,13 +43,22 @@ export async function findReplies(parentId: number) {
     const db = await createClient();
     const { data, error } = await db
         .from("comments")
-        .select(COMMENT_SELECT)
+        .select(`
+            id,
+            user_id,
+            parent_id,
+            article_id,
+            content,
+            created_at,
+            user:users!user_id!inner (id, username, display_name, avatar_url),
+            reply_count:comments!parent_id(count)    
+        `)
         .eq("parent_id", parentId)
         .is("deleted_at", null)
         .order("created_at", { ascending: true });
 
     if (error) throw error;
-    return data ?? [];
+    return (data ?? []) as unknown as RawComment[];
 }
 
 /**

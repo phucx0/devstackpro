@@ -1,5 +1,6 @@
 "use client";
 import { signUpAction } from "@/server/users/user.actions";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { useCallback, useState } from "react";
 
@@ -130,7 +131,7 @@ export default function SignUp() {
     <div className="noir-auth-wrap" style={{ padding: "40px 24px" }}>
       <div style={{ width: "100%", maxWidth: 480 }}>
         {/* Logo */}
-        <a
+        <Link
           href="/"
           className="noir-logo"
           style={{ marginBottom: 40, display: "flex" }}
@@ -151,7 +152,7 @@ export default function SignUp() {
             </svg>
           </div>
           <span className="noir-logo-text">DevStack Pro</span>
-        </a>
+        </Link>
 
         <div className="noir-auth-card" style={{ maxWidth: 480 }}>
           <div style={{ marginBottom: 32 }}>
@@ -161,7 +162,7 @@ export default function SignUp() {
             <h1 className="noir-auth-title">Create Account</h1>
             <p className="noir-auth-sub">
               Already have one?{" "}
-              <a
+              <Link
                 href="/sign-in"
                 style={{
                   color: "var(--noir-accent)",
@@ -169,7 +170,7 @@ export default function SignUp() {
                 }}
               >
                 Sign in
-              </a>
+              </Link>
             </p>
           </div>
 
@@ -378,7 +379,7 @@ export default function SignUp() {
             }}
           >
             By creating an account you agree to our{" "}
-            <a
+            <Link
               href="/terms"
               style={{
                 color: "var(--noir-muted)",
@@ -386,9 +387,9 @@ export default function SignUp() {
               }}
             >
               Terms
-            </a>{" "}
+            </Link>{" "}
             and{" "}
-            <a
+            <Link
               href="/privacy"
               style={{
                 color: "var(--noir-muted)",
@@ -396,7 +397,7 @@ export default function SignUp() {
               }}
             >
               Privacy Policy
-            </a>
+            </Link>
             .
           </p>
         </div>

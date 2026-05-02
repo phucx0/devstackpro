@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import { ReplyEditor } from "./ReplyEditor";
 import { ThreeDotMenu } from "./CommentMenu";
 import { toast } from "sonner";
+import { handleError } from "@/lib/utils/handleError";
 
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
@@ -58,8 +59,9 @@ export function CommentItem({
       } else {
         onReply(parentId, text);
       }
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (error) {
+      const message = handleError(error);
+      toast.error(message);
     }
   };
 
@@ -93,19 +95,20 @@ export function CommentItem({
   };
 
   useEffect(() => {
-    if (!collapsed && replies.length === 0) {
+    if (collapsed || replies.length > 0) return;
+
+    const fetchReplies = async () => {
       setLoading(true);
-      getRepliesAction(comment.id)
-        .then(setReplies)
-        .finally(() => setLoading(false));
-    }
-  }, [collapsed]);
+      try {
+        const data = await getRepliesAction(comment.id);
+        setReplies(data);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // useEffect(() => {
-  //   if(replies.length > 0) {
-
-  //   }
-  // }, [replies])
+    fetchReplies();
+  }, [collapsed, comment.id]);
 
   return (
     <div className="relative">

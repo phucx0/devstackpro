@@ -1,25 +1,13 @@
 import { R2_CONFIG } from '@/lib/cloudflare/r2';
-import { useState, useCallback } from 'react';
+import { handleError } from '@/lib/utils/handleError';
+import { useCallback } from 'react';
 import { toast } from 'sonner';
-
-interface UploadProgress {
-    loaded: number;
-    total: number;
-    percentage: number;
-}
 
 interface UploadResult {
     success: boolean;
     fileUrl?: string;
     fileKey?: string;
     error?: string;
-}
-
-interface UploadState {
-    isUploading: boolean;
-    progress: UploadProgress | null;
-    error: string | null;
-    result: UploadResult | null;
 }
 
 export function useFileUpload() {
@@ -99,7 +87,8 @@ export async function uploadToR2(
             console.error("Response:", errorText);
             throw new Error(`Upload thất bại (${uploadRes.status})`);
         }
-    } catch (e: any) {
-        toast.error(`Error: ${e.message}`);
+    } catch (error) {
+        const message = handleError(error);
+        toast.error(message);
     }
 }

@@ -29,7 +29,7 @@ const DropdownPortal = ({
         right: window.innerWidth - rect.right,
       });
     }
-  }, [open]);
+  }, [open, anchorRef]);
 
   if (!open || typeof document === "undefined") return null;
 

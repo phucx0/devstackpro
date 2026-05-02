@@ -28,7 +28,7 @@ export async function signIn(email: string, password: string) {
     if (error) throw error
     if (!data.user) throw new Error("No user returned");
 
-    const { data: profile, error: profileError, status } = await supabase
+    const { data: profile, error: profileError } = await supabase
         .from("users")        
         .select("*")
         .eq("id", data.user.id)

@@ -40,6 +40,18 @@ export type CommentUser = {
     avatar_url: string;
 }
 
+export type RawComment = {
+    id: string;
+    user_id: string;
+    parent_id: string | null;
+    article_id: string;
+    content: string;
+    created_at: string;
+    user: CommentUser;        
+    reply_count: { count: number }[];
+};
+
+
 export interface CommentPublish extends Omit<Comment, "deleted_at"> {
   reply_count: number;
   replies: CommentPublish[];
@@ -47,7 +59,7 @@ export interface CommentPublish extends Omit<Comment, "deleted_at"> {
 }
 
 // UserPublish
-export interface UserPublish extends Omit<User, "deleted_at"> {}
+export type UserPublish = Omit<User, "deleted_at">;
 export interface UpdateInfoUser {
   display_name: string;
   bio?: string;

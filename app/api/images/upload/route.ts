@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { DeleteObjectCommand, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { nanoid } from "nanoid";
-import { getPublicUrl, R2_BUCKET, R2_PUBLIC_URL, r2Client } from "@/lib/cloudflare/r2";
+import { r2Client } from "@/lib/cloudflare/r2";
 
 
 export const R2_CONFIG = {

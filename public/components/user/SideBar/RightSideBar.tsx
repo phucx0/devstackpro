@@ -105,7 +105,7 @@ export default function RightSidebar() {
 
       {/* What's happening */}
       <section className="space-y-4">
-        <div className="text-sm text-(--noir-white)">What's happening</div>
+        <div className="text-sm text-(--noir-white)">What&apos;s happening</div>
         <div className="space-y-4">
           {trending.map(({ tag, posts }) => (
             <button

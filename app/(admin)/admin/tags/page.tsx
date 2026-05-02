@@ -51,8 +51,12 @@ export default function TagsPage() {
       // } else {
       //     setError(result.message || "Không thể tạo tag")
       // }
-    } catch (err: any) {
-      setError(err.message || "Đã có lỗi xảy ra");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -64,8 +68,12 @@ export default function TagsPage() {
       // const result = await tagAPI.deleteTag(token, tagId)
       // if (result.success) await fetchTags()
       // else alert(result.message || "Không thể xóa tag")
-    } catch (err: any) {
-      alert(err.message || "Đã có lỗi xảy ra");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
     }
   };
 

@@ -5,6 +5,8 @@ import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/public/providers/AuthProvider";
 import { UserPublish } from "@/public/lib/types";
+import Image from "next/image";
+import { getAvatarUrl } from "@/lib/utils/image";
 
 interface Props {
   // isAuthLoading: boolean;
@@ -16,7 +18,6 @@ export function AuthArea({ profile }: Props) {
   const { logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -65,14 +66,14 @@ export function AuthArea({ profile }: Props) {
           onClick={() => setDropdownOpen((v) => !v)}
           aria-expanded={dropdownOpen}
           aria-haspopup="menu"
-          className="w-10 h-10 border border-(--noir-border) rounded-full bg-(--noir-card) cursor-pointer flex items-center justify-center"
+          className="w-10 h-10 relative border border-(--noir-border) rounded-full bg-(--noir-card) cursor-pointer flex items-center justify-center"
         >
           {profile.avatar_url ? (
-            <img
-              src={IMAGE_BASE_URL + profile.avatar_url}
-              loading="lazy"
+            <Image
+              src={getAvatarUrl(profile.avatar_url)}
               alt={profile.display_name || "User"}
-              className="w-10 h-10 rounded-full overflow-hidden"
+              fill
+              className="object-cover"
             />
           ) : (
             <span className="text-sm font-semibold text-(--noir-white)">

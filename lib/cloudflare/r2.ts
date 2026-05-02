@@ -1,4 +1,4 @@
-import { S3Client } from "@aws-sdk/client-s3";
+import { S3Client, S3ServiceException } from "@aws-sdk/client-s3";
 
 export const R2_BUCKET = process.env.R2_BUCKET_NAME!;
 export const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL; 
@@ -38,10 +38,19 @@ export function getPublicUrl(fileKey: string): string {
     return `${R2_PUBLIC_URL}/${cleanKey}`;
 }
 
-export function handleR2Error(error: any): string {
-    if (error.name === 'NoSuchBucket') return 'Bucket does not exist.';
-    if (error.name === 'InvalidAccessKeyId') return 'Invalid access key.';
-    if (error.name === 'SignatureDoesNotMatch') return 'Authentication failed.';
-    if (error.name === 'AccessDenied') return 'Access denied. Check your token permissions.';
-    return `R2 operation failed: ${error.message || 'Unknown error'}`;
+export function handleR2Error(error: unknown): string {
+    if (error instanceof S3ServiceException) {
+        switch (error.name) {
+            case 'NoSuchBucket':
+                return 'Bucket does not exist.';
+            case 'InvalidAccessKeyId':
+                return 'Invalid access key.';
+            case 'SignatureDoesNotMatch':
+                return 'Authentication failed.';
+            case 'AccessDenied':
+                return 'Access denied. Check your token permissions.';
+        }
+        return `R2 operation failed: ${error.message}`;
+    }
+    return 'R2 operation failed: Unknown error';
 }

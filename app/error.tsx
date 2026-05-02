@@ -1,6 +1,8 @@
 // app/error.tsx
 "use client";
 
+import Link from "next/link";
+
 export default function GlobalError({ reset }: { reset: () => void }) {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#080808] px-8 py-12">
@@ -48,7 +50,7 @@ export default function GlobalError({ reset }: { reset: () => void }) {
             Reload page
           </button>
 
-          <a
+          <Link
             href="/"
             className="inline-flex items-center gap-2 border border-[#2a2a2a] bg-transparent px-6 py-2.5 font-body text-[13px] font-medium tracking-[0.04em] text-[#747470] transition-colors hover:border-[#333330] hover:text-[#f4f4f0]"
           >
@@ -59,7 +61,7 @@ export default function GlobalError({ reset }: { reset: () => void }) {
               />
             </svg>
             Back to home
-          </a>
+          </Link>
         </div>
 
         {/* Footer note */}

@@ -1,5 +1,4 @@
 import { useRef } from "react";
-import MarkdownToolbar from "./MarkdownToolbar";
 
 interface MarkdownTextareaInterface {
   content: string;
@@ -132,11 +131,7 @@ export default function MarkdownTextarea({
             Link
           </button>
         </div>
-        <span className="text-sm text-(--noir-muted)">
-          {textareaRef.current?.textLength ?? 0}
-        </span>
       </div>
-
       <textarea
         ref={textareaRef}
         name="content_md"

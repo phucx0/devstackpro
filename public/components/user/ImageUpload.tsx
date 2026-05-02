@@ -1,4 +1,5 @@
 import { Upload, X } from "lucide-react";
+import Image from "next/image";
 import {
   useRef,
   useState,
@@ -87,11 +88,14 @@ export default function ImageUpload({
 
       {displayUrl ? (
         <div className="relative">
-          <img
-            src={displayUrl}
-            alt="preview"
-            className="w-full aspect-video object-cover rounded"
-          />
+          <div className="relative w-full aspect-video rounded">
+            <Image
+              src={displayUrl}
+              alt="preview"
+              className="object-cover"
+              fill
+            />
+          </div>
           <button
             type="button"
             onClick={handleRemove}

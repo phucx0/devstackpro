@@ -78,8 +78,8 @@ export default function DeleteArticleDialog({
           <p className="text-[13px] text-(--noir-muted) leading-[1.7]">
             Bạn có chắc muốn xóa bài viết
           </p>
-          <p className="text-[13px] text-(--noir-white) font-medium leading-[1.5] mt-1 line-clamp-2">
-            "{articleTitle}"
+          <p className="text-[13px] text-(--noir-accent) font-medium leading-[1.5] mt-1 line-clamp-2">
+            `{articleTitle}`
           </p>
           <p className="text-[12px] text-(--noir-muted) leading-[1.7] mt-3">
             Bài viết sẽ bị xóa vĩnh viễn và không thể khôi phục lại.

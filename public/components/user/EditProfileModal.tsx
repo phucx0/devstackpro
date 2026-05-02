@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { updateAvatar, updateInfo } from "@/server/users/user.actions";
 import { useAuth } from "@/public/providers/AuthProvider";
 import { useModal } from "@/public/providers/ModalProvider";
+import { handleError } from "@/lib/utils/handleError";
+import Image from "next/image";
 
 export default function EditProfileModal() {
   const { profile } = useAuth();
@@ -41,9 +43,9 @@ export default function EditProfileModal() {
 
       router.refresh();
       setOpen(false);
-    } catch (err: any) {
-      console.error(err);
-      toast.error("Failed to save profile. Please try again ");
+    } catch (error) {
+      const message = handleError(error);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -64,9 +66,9 @@ export default function EditProfileModal() {
       } else {
         toast.error("Upload thumbnail failed");
       }
-    } catch (err: any) {
-      console.error(err);
-      toast.error("Failed to upload avatar");
+    } catch (error) {
+      const message = handleError(error);
+      toast.error(message);
     } finally {
       setUploading(false);
       // Reset input
@@ -112,12 +114,13 @@ export default function EditProfileModal() {
           <div className="flex flex-col items-center">
             {/* Avatar Section */}
             <div className="relative">
-              <div className="w-[100px] h-[100px] rounded-3xl overflow-hidden border-4">
+              <div className="w-[100px] h-[100px] relative rounded-3xl overflow-hidden border-4">
                 {avatarPreview ? (
-                  <img
+                  <Image
                     src={avatarPreview}
                     alt="Avatar preview"
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-7xl font-bold text-(--noir-muted) bg-(--noir-surface)">

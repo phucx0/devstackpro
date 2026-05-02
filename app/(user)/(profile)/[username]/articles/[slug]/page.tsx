@@ -9,6 +9,8 @@ import {
   increaseView,
 } from "@/server/articles/articles.public.service";
 import { getThumbnailUrl } from "@/lib/utils/image";
+import Image from "next/image";
+import { Tag } from "@/public/lib/types";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -65,28 +67,6 @@ export default async function ArticlePage({
   const { slug } = await params;
   const finalSlug = Array.isArray(slug) ? slug.join("/") : slug;
   const article = await getArticleBySlug(finalSlug);
-  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_URL_IMAGE!;
-
-  function formatArticleTime(dateString: string) {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMinutes = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMinutes / 60);
-
-    if (diffHours < 24) {
-      if (diffMinutes < 1) return "Just now";
-      if (diffMinutes < 60) return `${diffMinutes}m ago`;
-      return `${diffHours}h ago`;
-    }
-
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-      timeZone: "UTC",
-    }).format(date);
-  }
 
   if (!article) return notFound();
   void increaseView(article.id);
@@ -104,10 +84,12 @@ export default async function ArticlePage({
         <article>
           {article.thumbnail && (
             <div className="relative w-full aspect-16/7 overflow-hidden">
-              <img
+              <Image
                 src={getThumbnailUrl(article.thumbnail)}
                 alt="Thumbnail"
                 className="w-full h-full object-cover"
+                fill
+                priority
               />
               <div className="absolute inset-0 bg-linear-to-t from-(--noir-black) to-transparent opacity-100" />
             </div>
@@ -117,15 +99,17 @@ export default async function ArticlePage({
             <div className="flex flex-col justify-end">
               {article.tags?.length > 0 && (
                 <div className="flex gap-2 flex-wrap mb-4">
-                  {article.tags.slice(0, 3).map((tag: any, i: number) => (
-                    <Link
-                      key={i}
-                      href={`/search/${tag.name}`}
-                      className="noir-tag"
-                    >
-                      {tag.name}
-                    </Link>
-                  ))}
+                  {article.tags
+                    .slice(0, 3)
+                    .map((tag: Pick<Tag, "id" | "name">, i: number) => (
+                      <Link
+                        key={i}
+                        href={`/search/${tag.name}`}
+                        className="noir-tag"
+                      >
+                        {tag.name}
+                      </Link>
+                    ))}
                 </div>
               )}
               <h1 className="noir-article-title static p-0 max-w-none">
