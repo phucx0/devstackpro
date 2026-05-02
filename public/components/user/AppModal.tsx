@@ -137,7 +137,7 @@ export default function AppModal() {
               </div>
             </div>
             <span className="text-[12px] text-white/40 group-hover:text-white/60 transition-colors select-none">
-              Don't show this again
+              Don&apos;t show this again
             </span>
           </label>
         </div>
